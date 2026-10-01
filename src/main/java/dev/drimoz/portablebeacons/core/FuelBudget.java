@@ -22,14 +22,25 @@ public final class FuelBudget {
     }
 
     /**
-     * Whether an item may be burned into the buffer.
+     * How many fuel items to burn so the buffer covers a charge.
      *
-     * <p>Only if it fits whole. Clamping the overflow away would silently destroy most of a
+     * <p>The fewest that close the gap, capped by what the slot holds and by what the buffer can
+     * take whole. Only whole items: clamping the overflow away would silently destroy most of a
      * netherite ingot, and refusing instead is what gives the Capacity augment and the higher tiers
-     * a purpose: they are what unlock the denser fuels.
+     * a purpose - they are what unlock the denser fuels.
+     *
+     * <p>When even that falls short it still burns what fits. The units stay in the buffer rather
+     * than being lost, and the beacon then runs dry for want of fuel, not of a refill.
+     *
+     * @param available items in the fuel slot
      */
-    public static boolean accepts(int fuel, int units, int capacity) {
-        return units > 0 && fuel + units <= capacity;
+    public static int itemsToBurn(int fuel, int cost, int units, int capacity, int available) {
+        if (fuel >= cost || units <= 0 || available <= 0) {
+            return 0;
+        }
+        int needed = (int) Math.ceil((cost - fuel) / (double) units);
+        int fits = Math.max(0, (capacity - fuel) / units);
+        return Math.min(needed, Math.min(fits, available));
     }
 
     private FuelBudget() {}

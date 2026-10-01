@@ -14,6 +14,7 @@ import dev.drimoz.portablebeacons.registry.BPLookups;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -22,6 +23,7 @@ import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.Capabilities;
@@ -41,11 +43,18 @@ import java.util.Optional;
 @EventBusSubscriber(modid = PortableBeacons.MOD_ID)
 public final class BeaconTicker {
 
-    private static final int INTERVAL = 40;
+    public static final int INTERVAL = 40;
     private static final double SECONDS_PER_INTERVAL = INTERVAL / 20.0;
 
-    /** Comfortably longer than the interval, so effects never flicker between two ticks. */
-    private static final int EFFECT_DURATION = 220;
+    /** Vanilla blinks an effect's HUD icon, and flickers Night Vision, once this few ticks remain. */
+    public static final int VANILLA_BLINK_TICKS = 200;
+
+    /**
+     * Must clear {@link #VANILLA_BLINK_TICKS} by a full interval plus a margin. At 220 every effect
+     * spent half of each interval below that line - icons blinking, Night Vision strobing - so this
+     * is the conduit's figure rather than one picked to merely outlast the interval.
+     */
+    public static final int EFFECT_DURATION = 260;
 
     @SubscribeEvent
     public static void onPlayerTick(PlayerTickEvent.Post event) {
@@ -148,11 +157,17 @@ public final class BeaconTicker {
      * <p>Deliberately coarse - horizontal movement only, and a threshold well above the drift a
      * standing player produces. An augment that pays out differently for moving and standing still
      * must not flicker between the two because someone shifted their feet.
+     *
+     * <p>Read from the movement the client last reported, not from {@code getX() - xOld}. The level
+     * tick resets {@code xOld} to the current position just before the connection tick fires
+     * {@code PlayerTickEvent}, so on the server that difference was always zero: every player
+     * counted as standing still, and Wayfarer only ever charged its surcharge.
      */
     private static boolean isMoving(Player player) {
-        double dx = player.getX() - player.xOld;
-        double dz = player.getZ() - player.zOld;
-        return dx * dx + dz * dz > 0.0025;
+        Vec3 movement = player instanceof ServerPlayer server
+                ? server.getKnownMovement()
+                : player.getDeltaMovement();
+        return movement.horizontalDistanceSqr() > 0.0025;
     }
 
     /**
@@ -171,9 +186,12 @@ public final class BeaconTicker {
     }
 
     /**
-     * Tops the buffer up from the fuel slot, one item at a time, only while it is short. Burning a
-     * netherite ingot to cover a 3-unit shortfall would be an unpleasant surprise, so a single item
-     * is consumed per tick at most.
+     * Tops the buffer up from the fuel slot, only while it is short, and only by as many items as
+     * the shortfall needs - burning a netherite ingot to cover a 3-unit gap would be an unpleasant
+     * surprise.
+     *
+     * <p>This used to burn one item per pass at most, so a build costing more per pass than one
+     * item is worth ran dry with a full stack sitting in the slot.
      */
     private static BeaconState refuel(ItemStack beacon, BeaconState state, BeaconStats stats,
                                     int cost, RegistryAccess access) {
@@ -189,11 +207,18 @@ public final class BeaconTicker {
             return state;
         }
         int units = BPLookups.fuelValue(access, fuel.getItem());
-        if (!FuelBudget.accepts(state.fuel(), units, stats.fuelCapacity())) {
+        int burn = FuelBudget.itemsToBurn(state.fuel(), cost, units, stats.fuelCapacity(),
+                fuel.getCount());
+        if (burn <= 0) {
             return state;
         }
-        handler.extractItem(PortableBeaconItem.FUEL_SLOT, 1, false);
-        return state.withFuel(state.fuel() + units);
+        // Simulated first, so a slot that will not give up all of them leaves the buffer untouched
+        // rather than crediting fuel that was never burned.
+        if (handler.extractItem(PortableBeaconItem.FUEL_SLOT, burn, true).getCount() != burn) {
+            return state;
+        }
+        handler.extractItem(PortableBeaconItem.FUEL_SLOT, burn, false);
+        return state.withFuel(state.fuel() + burn * units);
     }
 
     /**

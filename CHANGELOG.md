@@ -3,6 +3,18 @@
 All notable changes to this project are documented here, newest first.
 Versions follow `{mod version}+{minecraft version}`.
 
+## Unreleased
+
+### Fixed
+- **Wayfarer and Sentinel now see you move.** The server read movement in a way its own tick order
+  always reset to zero, so every carrier counted as standing still: Wayfarer only ever charged its
+  surcharge, and Sentinel always gave its discount.
+- **Effect icons no longer blink, and Night Vision no longer strobes.** Effects were refreshed with
+  too little time left on them, and spent half of every refresh inside vanilla's "about to expire"
+  window.
+- **A beacon no longer runs dry with fuel in the slot.** It burned one item per refresh at most, so a
+  build costing more than one item per refresh switched off with a full stack waiting.
+
 ## 1.1.0
 
 ### Added

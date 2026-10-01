@@ -278,6 +278,70 @@ public final class BPGameTests {
      * {@link AuraMode#SELF} — which is correct, and would make an aura test fail for a reason that
      * has nothing to do with auras.
      */
+    /**
+     * Regression: movement used to be read as {@code getX() - xOld}, which the server's tick order
+     * makes zero by the time the player tick fires. Every carrier counted as standing still, so
+     * Wayfarer only ever charged its surcharge.
+     */
+    @GameTest(template = PLATFORM, timeoutTicks = TIMEOUT)
+    public static void wayfarerChargesLessWhileMoving(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ServerPlayer carrier = spawnPlayer(helper, cleanup);
+            ItemStack beacon = giveBeacon(carrier, AuraMode.SELF);
+            install(beacon, WAYFARER, 2);
+
+            int still = fuelSpentByOnePass(carrier, beacon);
+            carrier.setKnownMovement(new net.minecraft.world.phys.Vec3(0.25, 0.0, 0.0));
+            int moving = fuelSpentByOnePass(carrier, beacon);
+
+            helper.assertTrue(moving < still,
+                    "Wayfarer charged " + moving + " moving against " + still + " standing still");
+        });
+    }
+
+    /**
+     * Vanilla blinks a status icon and strobes Night Vision under 200 ticks remaining. The effect
+     * has to stay above that for the whole interval until the next refresh, or it blinks every pass.
+     */
+    @GameTest(template = PLATFORM, timeoutTicks = TIMEOUT)
+    public static void effectsOutlastTheBlinkUntilTheNextPass(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ServerPlayer carrier = spawnPlayer(helper, cleanup);
+            giveBeacon(carrier, AuraMode.SELF);
+
+            BeaconTicker.tickPlayer(carrier);
+
+            var speed = carrier.getEffect(MobEffects.MOVEMENT_SPEED);
+            helper.assertTrue(speed != null, "the carrier did not receive the effect");
+            helper.assertFalse(speed.endsWithin(BeaconTicker.VANILLA_BLINK_TICKS + BeaconTicker.INTERVAL),
+                    "the effect drops into vanilla's blink window before the next pass refreshes it");
+        });
+    }
+
+    private static final ResourceKey<AugmentDef> WAYFARER =
+            ResourceKey.create(BPRegistryKeys.AUGMENT, BPRegistryKeys.id("wayfarer"));
+
+    private static int fuelSpentByOnePass(ServerPlayer carrier, ItemStack beacon) {
+        int before = PortableBeaconItem.stateOf(beacon).fuel();
+        BeaconTicker.tickPlayer(carrier);
+        return before - PortableBeaconItem.stateOf(beacon).fuel();
+    }
+
+    /** Fits an augment into the first free augment slot. */
+    private static void install(ItemStack beacon, ResourceKey<AugmentDef> type, int tier) {
+        BeaconState state = PortableBeaconItem.stateOf(beacon);
+        IItemHandlerModifiable slots = (IItemHandlerModifiable) beacon.getCapability(Capabilities.ItemHandler.ITEM);
+        int slot = PortableBeaconItem.augmentSlot(0);
+        while (!slots.getStackInSlot(slot).isEmpty()) {
+            slot++;
+        }
+        ItemStack augment = new ItemStack(BPItems.AUGMENT.get());
+        augment.set(BPComponents.AUGMENT.get(), new AugmentInstance(type, tier));
+        slots.setStackInSlot(slot, augment);
+        // Re-set: writing the augment put the container component on the stack after the state was read.
+        PortableBeaconItem.setState(beacon, state);
+    }
+
     private static ItemStack giveBeacon(ServerPlayer player, AuraMode aura) {
         ItemStack beacon = new ItemStack(BPItems.BEACON_IV.get());
         BeaconState state = new BeaconState(
