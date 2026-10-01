@@ -17,6 +17,7 @@ import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
+import dev.drimoz.portablebeacons.item.BeaconUpgradeRecipe;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import net.minecraft.world.level.ItemLike;
@@ -43,12 +44,26 @@ final class ComponentShapedRecipe {
     static void save(RecipeOutput output, HolderLookup.Provider registries, Identifier id,
                      ItemStackTemplate result, ItemLike unlockedBy,
                      Map<Character, Ingredient> key, String... pattern) {
-        ShapedRecipe recipe = new ShapedRecipe(
+        save(output, registries, id, unlockedBy, new ShapedRecipe(
                 new Recipe.CommonInfo(true),
                 new CraftingRecipe.CraftingBookInfo(CraftingBookCategory.MISC, ""),
                 ShapedRecipePattern.of(key, pattern),
-                result);
+                result));
+    }
 
+    /** The same, as a {@link BeaconUpgradeRecipe}: the beacon in the grid keeps what it carried. */
+    static void saveUpgrade(RecipeOutput output, HolderLookup.Provider registries, Identifier id,
+                            ItemStackTemplate result, ItemLike unlockedBy,
+                            Map<Character, Ingredient> key, String... pattern) {
+        save(output, registries, id, unlockedBy, new BeaconUpgradeRecipe(
+                new Recipe.CommonInfo(true),
+                new CraftingRecipe.CraftingBookInfo(CraftingBookCategory.MISC, ""),
+                ShapedRecipePattern.of(key, pattern),
+                result));
+    }
+
+    private static void save(RecipeOutput output, HolderLookup.Provider registries, Identifier id,
+                             ItemLike unlockedBy, ShapedRecipe recipe) {
         ResourceKey<Recipe<?>> recipeKey = ResourceKey.create(Registries.RECIPE, id);
 
         // The same unlock advancement vanilla's builder writes: without one the recipe never shows

@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "portablebeacons:upgrading_a_beacon_keeps_what_it_carried",
+  "environment": "minecraft:default",
+  "structure": "portablebeacons:platform",
+  "max_ticks": 200
+}

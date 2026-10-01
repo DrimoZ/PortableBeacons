@@ -61,6 +61,9 @@ Sharing is earned rather than given: Beacons I and II keep everything to the car
 reach your team, and anything wider needs Attunement or Vanguard. Each tier's starting point is a
 datapack field, so a pack can hand it all out from the start or lock it all behind an augment.
 
+Crafting a beacon into the next tier, or into a themed beacon, keeps what it carried: installed
+augments, stored fuel and configured effects all move to the new one.
+
 ### Themed beacons
 
 Cinder, Void and Tidal beacons sit alongside tier III with narrower pools drawn from effects the
@@ -85,7 +88,9 @@ main decision the mod asks you to make.
 A master switch stops all consumption instantly, and each effect can be turned off individually
 without losing its settings. An effect a real beacon is already providing is free, and the beacon
 refuses fuel its buffer cannot hold whole rather than burning most of a netherite ingot for
-nothing — which is what gives Capacity and the higher tiers a purpose.
+nothing — which is what gives Capacity and the higher tiers a purpose. Pulling a Capacity augment
+out of a full beacon loses nothing either: the surplus stays and burns down, and the beacon takes no
+new fuel until it has.
 
 Turning `require_fuel` off removes fuel from the game rather than leaving it inert: no fuel slot,
 no gauge, no runtime figures.

@@ -5,6 +5,7 @@ import dev.drimoz.portablebeacons.registry.BPComponents;
 import dev.drimoz.portablebeacons.registry.BPCreativeTabs;
 import dev.drimoz.portablebeacons.registry.BPItems;
 import dev.drimoz.portablebeacons.registry.BPMenus;
+import dev.drimoz.portablebeacons.registry.BPRecipes;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -20,6 +21,7 @@ public class PortableBeacons {
         BPItems.ITEMS.register(modEventBus);
         BPCreativeTabs.TABS.register(modEventBus);
         BPMenus.MENUS.register(modEventBus);
+        BPRecipes.SERIALIZERS.register(modEventBus);
 
         modContainer.registerConfig(ModConfig.Type.SERVER, BPConfig.SPEC);
 

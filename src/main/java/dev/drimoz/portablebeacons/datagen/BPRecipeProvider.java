@@ -88,15 +88,20 @@ public class BPRecipeProvider extends RecipeProvider {
         augment(output, lookup, "recluse", Items.SCULK_SENSOR, 1);
     }
 
+    /** 'P' is the previous tier: when there is one, it is upgraded rather than consumed. */
     private void beacon(RecipeOutput output, HolderLookup.Provider lookup, ItemLike result,
                       Map<Character, Ingredient> key, String... pattern) {
-        ComponentShapedRecipe.save(output, lookup, key(result), new ItemStackTemplate(result.asItem()),
-                Items.BEACON, key, pattern);
+        ItemStackTemplate template = new ItemStackTemplate(result.asItem());
+        if (key.containsKey('P')) {
+            ComponentShapedRecipe.saveUpgrade(output, lookup, key(result), template, Items.BEACON, key, pattern);
+        } else {
+            ComponentShapedRecipe.save(output, lookup, key(result), template, Items.BEACON, key, pattern);
+        }
     }
 
     private void themed(RecipeOutput output, HolderLookup.Provider lookup, ItemLike result,
                         ItemLike core, ItemLike material) {
-        ComponentShapedRecipe.save(output, lookup, key(result), new ItemStackTemplate(result.asItem()), core, Map.of(
+        ComponentShapedRecipe.saveUpgrade(output, lookup, key(result), new ItemStackTemplate(result.asItem()), core, Map.of(
                         'C', Ingredient.of(core),
                         'M', Ingredient.of(material),
                         'P', Ingredient.of(BPItems.BEACON_II.get()),

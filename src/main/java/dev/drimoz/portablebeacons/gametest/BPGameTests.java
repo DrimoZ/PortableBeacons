@@ -33,6 +33,8 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
@@ -235,8 +237,6 @@ public final class BPGameTests {
             ItemStack beacon = giveBeacon(carrier, AuraMode.SELF);
             install(beacon, WAYFARER, 2);
 
-            // One pass first so the buffer is sanitized down to capacity before anything is measured.
-            BeaconTicker.tickPlayer(carrier);
             int still = fuelSpentByOnePass(carrier, beacon);
             carrier.setKnownMovement(new Vec3(0.25, 0.0, 0.0));
             int moving = fuelSpentByOnePass(carrier, beacon);
@@ -282,6 +282,41 @@ public final class BPGameTests {
             List<AugmentInstance> installed = BPLookups.installedAugments(beacon);
             helper.assertTrue(installed.size() == 1 && installed.get(0).type().equals(ATTUNEMENT),
                     "a refused write replaced the installed augment with " + installed);
+        });
+    }
+
+    /**
+     * Regression: the tier recipes were plain shaped recipes, so crafting a Beacon II into a III
+     * built the result from nothing - installed augments, fuel and configured effects all gone.
+     */
+    public static void upgradingABeaconKeepsWhatItCarried(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ItemStack old = new ItemStack(BPItems.BEACON_II.get());
+            BeaconState state = new BeaconState(
+                    List.of(new EffectSlotConfig(SPEED, 0, true, AuraMode.SELF)), 1234, true, 3600);
+            PortableBeaconItem.setState(old, state);
+            install(old, WAYFARER, 1);
+
+            ItemStack star = new ItemStack(net.minecraft.world.item.Items.NETHER_STAR);
+            ItemStack diamond = new ItemStack(net.minecraft.world.item.Items.DIAMOND);
+            ItemStack block = new ItemStack(net.minecraft.world.item.Items.BEACON);
+            CraftingInput grid = CraftingInput.of(3, 3, List.of(
+                    ItemStack.EMPTY, star, ItemStack.EMPTY,
+                    diamond, old, diamond,
+                    ItemStack.EMPTY, block, ItemStack.EMPTY));
+
+            ServerLevel level = helper.getLevel();
+            ItemStack result = level.getServer().getRecipeManager()
+                    .getRecipeFor(RecipeType.CRAFTING, grid, level)
+                    .map(holder -> holder.value().assemble(grid))
+                    .orElse(ItemStack.EMPTY);
+
+            helper.assertTrue(result.is(BPItems.BEACON_III.get()), "the grid did not craft a Beacon III");
+            helper.assertTrue(PortableBeaconItem.stateOf(result).equals(state),
+                    "the upgrade lost the beacon's effects or fuel");
+            List<AugmentInstance> augments = BPLookups.installedAugments(result);
+            helper.assertTrue(augments.size() == 1 && augments.get(0).type().equals(WAYFARER),
+                    "the upgrade lost the installed augment, found " + augments);
         });
     }
 

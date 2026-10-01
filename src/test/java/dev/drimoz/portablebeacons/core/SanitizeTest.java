@@ -98,7 +98,24 @@ class SanitizeTest {
         BeaconState result = BeaconResolver.sanitize(state, stats(tier, 2, 1), EFFECTS, tier);
 
         assertEquals(12000, result.capacity());
-        assertEquals(12000, result.fuel(), "fuel above capacity must be clamped");
+    }
+
+    /** Regression: removing a Capacity augment from a full beacon destroyed the surplus. */
+    @Test
+    void fuelAboveANewlyLowerCapacityIsKept() {
+        BeaconTierDef tier = tier(4, 2, List.of());
+        BeaconState state = new BeaconState(List.of(), 48000, true, 48000);
+
+        BeaconState result = BeaconResolver.sanitize(state, stats(tier, 2, 1), EFFECTS, tier);
+
+        assertEquals(48000, result.fuel());
+        assertEquals(12000, result.capacity());
+        assertEquals(1.0, result.fillRatio(), "the bar reads full, not past full");
+    }
+
+    @Test
+    void aBufferAboveCapacityTakesNoRefill() {
+        assertEquals(0, FuelBudget.itemsToBurn(48000, 48100, 300, 12000, 64));
     }
 
     private static BeaconStats stats(BeaconTierDef tier, int effectSlots, int maxAmplifier) {

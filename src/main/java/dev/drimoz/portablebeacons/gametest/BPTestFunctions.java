@@ -49,6 +49,8 @@ public final class BPTestFunctions {
                     (Consumer<GameTestHelper>) BPGameTests::effectsOutlastTheBlinkUntilTheNextPass);
             helper.register(id("a_refused_slot_write_keeps_what_was_there"),
                     (Consumer<GameTestHelper>) BPGameTests::aRefusedSlotWriteKeepsWhatWasThere);
+            helper.register(id("upgrading_a_beacon_keeps_what_it_carried"),
+                    (Consumer<GameTestHelper>) BPGameTests::upgradingABeaconKeepsWhatItCarried);
         });
     }
 
