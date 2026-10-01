@@ -9,6 +9,7 @@ import dev.drimoz.portablebeacons.core.EffectSlotConfig;
 import dev.drimoz.portablebeacons.core.BeaconState;
 import dev.drimoz.portablebeacons.item.PortableBeaconItem;
 import dev.drimoz.portablebeacons.menu.PortableBeaconMenu;
+import dev.drimoz.portablebeacons.core.AugmentDef;
 import dev.drimoz.portablebeacons.core.AugmentInstance;
 import dev.drimoz.portablebeacons.registry.BPComponents;
 import dev.drimoz.portablebeacons.registry.BPItems;
@@ -27,10 +28,12 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
 
@@ -74,8 +77,10 @@ public final class BPGameTests {
     /** Distinct names per player - see {@link #spawnPlayer(GameTestHelper, Cleanup, String)}. */
     private static final AtomicInteger NEXT_PLAYER = new AtomicInteger();
 
-    private static final ResourceKey<dev.drimoz.portablebeacons.core.AugmentDef> ATTUNEMENT =
+    private static final ResourceKey<AugmentDef> ATTUNEMENT =
             ResourceKey.create(BPRegistryKeys.AUGMENT, BPRegistryKeys.id("attunement"));
+    private static final ResourceKey<AugmentDef> WAYFARER =
+            ResourceKey.create(BPRegistryKeys.AUGMENT, BPRegistryKeys.id("wayfarer"));
 
     /** Mirrors tier_4.json. A test that silently disagreed with the data would prove nothing. */
     private static final int TIER_IV_AURA_RANK = 1;
@@ -220,6 +225,73 @@ public final class BPGameTests {
     }
 
     /**
+     * Regression: movement used to be read as {@code getX() - xOld}, which the server's tick order
+     * makes zero by the time the player tick fires. Every carrier counted as standing still, so
+     * Wayfarer only ever charged its surcharge.
+     */
+    public static void wayfarerChargesLessWhileMoving(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ServerPlayer carrier = spawnPlayer(helper, cleanup);
+            ItemStack beacon = giveBeacon(carrier, AuraMode.SELF);
+            install(beacon, WAYFARER, 2);
+
+            // One pass first so the buffer is sanitized down to capacity before anything is measured.
+            BeaconTicker.tickPlayer(carrier);
+            int still = fuelSpentByOnePass(carrier, beacon);
+            carrier.setKnownMovement(new Vec3(0.25, 0.0, 0.0));
+            int moving = fuelSpentByOnePass(carrier, beacon);
+
+            helper.assertTrue(moving < still,
+                    "Wayfarer charged " + moving + " moving against " + still + " standing still");
+        });
+    }
+
+    /**
+     * Vanilla blinks a status icon and strobes Night Vision under 200 ticks remaining. The effect
+     * has to stay above that for the whole interval until the next refresh, or it blinks every pass.
+     */
+    public static void effectsOutlastTheBlinkUntilTheNextPass(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ServerPlayer carrier = spawnPlayer(helper, cleanup);
+            giveBeacon(carrier, AuraMode.SELF);
+
+            BeaconTicker.tickPlayer(carrier);
+
+            MobEffectInstance speed = carrier.getEffect(MobEffects.SPEED);
+            helper.assertTrue(speed != null, "the carrier did not receive the effect");
+            helper.assertFalse(
+                    speed.endsWithin(BeaconTicker.VANILLA_BLINK_TICKS + BeaconTicker.INTERVAL),
+                    "the effect drops into vanilla's blink window before the next pass refreshes it");
+        });
+    }
+
+    /**
+     * Regression: a slot write was "extract what is there, insert what was asked", committed even
+     * when the insert came up short - keeping the extract and losing the slot's contents.
+     */
+    public static void aRefusedSlotWriteKeepsWhatWasThere(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ServerPlayer carrier = spawnPlayer(helper, cleanup);
+            ItemStack beacon = giveBeacon(carrier, AuraMode.SELF);
+            install(beacon, ATTUNEMENT, 1);
+            PortableBeaconMenu menu = new PortableBeaconMenu(1, carrier.getInventory(), 0);
+
+            // Augments stack to one, so an insert of two is cut short.
+            menu.getSlot(0).set(augment(WAYFARER, 1).copyWithCount(2));
+
+            List<AugmentInstance> installed = BPLookups.installedAugments(beacon);
+            helper.assertTrue(installed.size() == 1 && installed.get(0).type().equals(ATTUNEMENT),
+                    "a refused write replaced the installed augment with " + installed);
+        });
+    }
+
+    private static int fuelSpentByOnePass(ServerPlayer carrier, ItemStack beacon) {
+        int before = PortableBeaconItem.stateOf(beacon).fuel();
+        BeaconTicker.tickPlayer(carrier);
+        return before - PortableBeaconItem.stateOf(beacon).fuel();
+    }
+
+    /**
      * Places a real {@link ServerPlayer} in the level - not a mock object: the aura queries the
      * level for nearby players, so a player that is not in it would pass every test vacuously.
      */
@@ -277,19 +349,33 @@ public final class BPGameTests {
 
         int needed = aura.rank() - TIER_IV_AURA_RANK;
         if (needed > 0) {
-            ResourceHandler<ItemResource> slots = BPLookups.handlerOf(beacon);
-            ItemStack augment = new ItemStack(BPItems.AUGMENT.get());
-            augment.set(BPComponents.AUGMENT.get(), new AugmentInstance(ATTUNEMENT, needed));
-            try (Transaction transaction = Transaction.openRoot()) {
-                slots.insert(PortableBeaconItem.augmentSlot(0), ItemResource.of(augment), 1, transaction);
-                transaction.commit();
-            }
-            // Re-set: the handler wrote the container component onto the same stack, and the state
-            // above was captured before it existed.
-            PortableBeaconItem.setState(beacon, state);
+            install(beacon, ATTUNEMENT, needed);
         }
         player.getInventory().setItem(0, beacon);
         return beacon;
+    }
+
+    /** Fits an augment into the first free augment slot. */
+    private static void install(ItemStack beacon, ResourceKey<AugmentDef> type, int tier) {
+        BeaconState state = PortableBeaconItem.stateOf(beacon);
+        ResourceHandler<ItemResource> slots = BPLookups.handlerOf(beacon);
+        int slot = PortableBeaconItem.augmentSlot(0);
+        while (slots.getAmountAsInt(slot) > 0) {
+            slot++;
+        }
+        try (Transaction transaction = Transaction.openRoot()) {
+            slots.insert(slot, ItemResource.of(augment(type, tier)), 1, transaction);
+            transaction.commit();
+        }
+        // Re-set: the handler wrote the container component onto the same stack, and the state
+        // read above was captured before it did.
+        PortableBeaconItem.setState(beacon, state);
+    }
+
+    private static ItemStack augment(ResourceKey<AugmentDef> type, int tier) {
+        ItemStack augment = new ItemStack(BPItems.AUGMENT.get());
+        augment.set(BPComponents.AUGMENT.get(), new AugmentInstance(type, tier));
+        return augment;
     }
 
     private static void run(GameTestHelper helper, java.util.function.Consumer<Cleanup> body) {

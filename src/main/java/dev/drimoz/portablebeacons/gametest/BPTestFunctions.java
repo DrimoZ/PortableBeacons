@@ -43,6 +43,12 @@ public final class BPTestFunctions {
                     (Consumer<GameTestHelper>) BPGameTests::auraReachesATamedPetButNotAStrayOne);
             helper.register(id("hostile_action_indices_are_rejected"),
                     (Consumer<GameTestHelper>) BPGameTests::hostileActionIndicesAreRejected);
+            helper.register(id("wayfarer_charges_less_while_moving"),
+                    (Consumer<GameTestHelper>) BPGameTests::wayfarerChargesLessWhileMoving);
+            helper.register(id("effects_outlast_the_blink_until_the_next_pass"),
+                    (Consumer<GameTestHelper>) BPGameTests::effectsOutlastTheBlinkUntilTheNextPass);
+            helper.register(id("a_refused_slot_write_keeps_what_was_there"),
+                    (Consumer<GameTestHelper>) BPGameTests::aRefusedSlotWriteKeepsWhatWasThere);
         });
     }
 

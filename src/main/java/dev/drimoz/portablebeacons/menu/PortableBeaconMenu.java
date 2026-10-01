@@ -428,8 +428,11 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
             if (held > 0) {
                 handler.extract(index, handler.getResource(index), held, transaction);
             }
-            if (!resource.isEmpty() && amount > 0) {
-                handler.insert(index, resource, amount, transaction);
+            // The insert's result has to be checked for that rollback to happen at all: committing
+            // regardless kept the extract and lost whatever the slot held.
+            if (!resource.isEmpty() && amount > 0
+                    && handler.insert(index, resource, amount, transaction) != amount) {
+                return;
             }
             transaction.commit();
         }

@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "portablebeacons:wayfarer_charges_less_while_moving",
+  "environment": "minecraft:default",
+  "structure": "portablebeacons:platform",
+  "max_ticks": 200
+}

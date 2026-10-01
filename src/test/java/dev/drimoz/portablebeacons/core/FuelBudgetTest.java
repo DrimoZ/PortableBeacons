@@ -3,8 +3,6 @@ package dev.drimoz.portablebeacons.core;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** The fuel rules are cheap to get subtly wrong and expensive when they are. */
 class FuelBudgetTest {
@@ -23,19 +21,45 @@ class FuelBudgetTest {
 
     @Test
     void fuelIsBurnedOnlyWhenItFitsWhole() {
-        assertTrue(FuelBudget.accepts(0, 3600, 10800));
-        assertTrue(FuelBudget.accepts(7200, 3600, 10800));
+        assertEquals(1, FuelBudget.itemsToBurn(0, 10, 3600, 10800, 64));
+        assertEquals(1, FuelBudget.itemsToBurn(7200, 7300, 3600, 10800, 64));
         // 7201 + 3600 overflows: burning it would destroy the surplus.
-        assertFalse(FuelBudget.accepts(7201, 3600, 10800));
+        assertEquals(0, FuelBudget.itemsToBurn(7201, 7300, 3600, 10800, 64));
     }
 
     @Test
     void fuelDenserThanTheWholeBufferIsNeverBurned() {
-        assertFalse(FuelBudget.accepts(0, 28800, 10800));
+        assertEquals(0, FuelBudget.itemsToBurn(0, 10, 28800, 10800, 64));
     }
 
     @Test
     void nonFuelIsRejected() {
-        assertFalse(FuelBudget.accepts(0, 0, 10800));
+        assertEquals(0, FuelBudget.itemsToBurn(0, 10, 0, 10800, 64));
+    }
+
+    @Test
+    void aBufferThatCoversTheChargeBurnsNothing() {
+        assertEquals(0, FuelBudget.itemsToBurn(500, 400, 300, 36000, 64));
+    }
+
+    /**
+     * Regression: one item per pass at most meant a charge larger than one item ran the beacon dry
+     * with a full stack in the slot - 720 units a pass against 300-unit iron.
+     */
+    @Test
+    void aChargeLargerThanOneItemBurnsEnoughToCoverIt() {
+        assertEquals(3, FuelBudget.itemsToBurn(0, 720, 300, 36000, 64));
+        assertEquals(2, FuelBudget.itemsToBurn(200, 720, 300, 36000, 64));
+    }
+
+    @Test
+    void neverBurnsMoreThanTheSlotHolds() {
+        assertEquals(1, FuelBudget.itemsToBurn(0, 720, 300, 36000, 1));
+    }
+
+    @Test
+    void stopsAtWhatTheBufferCanHold() {
+        // Two fit, three are needed: burn the two, keep the units, let the beacon run dry honestly.
+        assertEquals(2, FuelBudget.itemsToBurn(0, 1000, 300, 600, 64));
     }
 }

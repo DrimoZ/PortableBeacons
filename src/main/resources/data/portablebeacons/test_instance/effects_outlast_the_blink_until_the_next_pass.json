@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "portablebeacons:effects_outlast_the_blink_until_the_next_pass",
+  "environment": "minecraft:default",
+  "structure": "portablebeacons:platform",
+  "max_ticks": 200
+}
