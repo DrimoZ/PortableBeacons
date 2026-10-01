@@ -89,13 +89,16 @@ public class BPRecipeProvider extends RecipeProvider {
 
     private void beacon(RecipeOutput output, HolderLookup.Provider lookup, ItemLike result,
                       Map<Character, Ingredient> key, String... pattern) {
-        ComponentShapedRecipe.save(output, lookup, key(result), new ItemStack(result),
-                Items.BEACON, key, pattern);
+        if (key.containsKey('P')) {
+            ComponentShapedRecipe.saveUpgrade(output, lookup, key(result), new ItemStack(result), Items.BEACON, key, pattern);
+        } else {
+            ComponentShapedRecipe.save(output, lookup, key(result), new ItemStack(result), Items.BEACON, key, pattern);
+        }
     }
 
     private void themed(RecipeOutput output, HolderLookup.Provider lookup, ItemLike result,
                         ItemLike core, ItemLike material) {
-        ComponentShapedRecipe.save(output, lookup, key(result), new ItemStack(result), core, Map.of(
+        ComponentShapedRecipe.saveUpgrade(output, lookup, key(result), new ItemStack(result), core, Map.of(
                         'C', Ingredient.of(core),
                         'M', Ingredient.of(material),
                         'P', Ingredient.of(BPItems.BEACON_II.get()),

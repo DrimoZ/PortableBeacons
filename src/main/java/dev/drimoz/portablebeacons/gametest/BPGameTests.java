@@ -321,6 +321,41 @@ public final class BPGameTests {
     private static final ResourceKey<AugmentDef> WAYFARER =
             ResourceKey.create(BPRegistryKeys.AUGMENT, BPRegistryKeys.id("wayfarer"));
 
+    /**
+     * Regression: the tier recipes were plain shaped recipes, so crafting a Beacon II into a III
+     * built the result from nothing - installed augments, fuel and configured effects all gone.
+     */
+    @GameTest(template = PLATFORM, timeoutTicks = TIMEOUT)
+    public static void upgradingABeaconKeepsWhatItCarried(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ItemStack old = new ItemStack(BPItems.BEACON_II.get());
+            BeaconState state = new BeaconState(
+                    List.of(new EffectSlotConfig(SPEED, 0, true, AuraMode.SELF)), 1234, true, 3600);
+            PortableBeaconItem.setState(old, state);
+            install(old, WAYFARER, 1);
+
+            ItemStack star = new ItemStack(net.minecraft.world.item.Items.NETHER_STAR);
+            ItemStack diamond = new ItemStack(net.minecraft.world.item.Items.DIAMOND);
+            ItemStack block = new ItemStack(net.minecraft.world.item.Items.BEACON);
+            var grid = net.minecraft.world.item.crafting.CraftingInput.of(3, 3, List.of(
+                    ItemStack.EMPTY, star, ItemStack.EMPTY,
+                    diamond, old, diamond,
+                    ItemStack.EMPTY, block, ItemStack.EMPTY));
+
+            var level = helper.getLevel();
+            ItemStack result = level.getServer().getRecipeManager()
+                    .getRecipeFor(net.minecraft.world.item.crafting.RecipeType.CRAFTING, grid, level)
+                    .map(holder -> holder.value().assemble(grid, level.registryAccess()))
+                    .orElse(ItemStack.EMPTY);
+
+            helper.assertTrue(result.is(BPItems.BEACON_III.get()), "the grid did not craft a Beacon III");
+            helper.assertTrue(PortableBeaconItem.stateOf(result).equals(state),
+                    "the upgrade lost the beacon's effects or fuel");
+            helper.assertTrue(dev.drimoz.portablebeacons.registry.BPLookups.installedAugments(result).size() == 1,
+                    "the upgrade lost the installed augment");
+        });
+    }
+
     private static int fuelSpentByOnePass(ServerPlayer carrier, ItemStack beacon) {
         int before = PortableBeaconItem.stateOf(beacon).fuel();
         BeaconTicker.tickPlayer(carrier);

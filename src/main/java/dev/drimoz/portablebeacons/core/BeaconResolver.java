@@ -249,8 +249,10 @@ public final class BeaconResolver {
             kept.add(slot.withAmplifier(Math.clamp(slot.amplifier(), 0, amplifierCap))
                     .withAura(aura));
         }
+        // Fuel above the new capacity is kept, not clamped. Clamping meant pulling a Capacity
+        // augment out of a full beacon destroyed three quarters of what was in it; kept, the
+        // surplus simply burns down, and no refill is accepted until it has.
         return state.withEffects(kept)
-                .withFuel(Math.min(state.fuel(), stats.fuelCapacity()))
                 .withCapacity(stats.fuelCapacity());
     }
 

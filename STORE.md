@@ -45,6 +45,8 @@ provides costs nothing. The block stays the better choice for a base; this is wh
 | Portable Beacon III | 2 | I | your team | 12 blocks | 2 |
 | Portable Beacon IV | 3 | II | your team | 16 blocks | 4 |
 
+Upgrading a beacon keeps its augments, its fuel and its effects — nothing you fitted is lost.
+
 **Cinder**, **Void** and **Tidal** beacons sit alongside tier III with narrow pools drawn from effects
 the vanilla beacon never offered — Fire Resistance, Slow Falling, Water Breathing, Conduit Power,
 Dolphin's Grace. Carrying one instead of a Beacon IV is a trade, not a downgrade.

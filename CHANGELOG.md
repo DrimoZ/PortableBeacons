@@ -6,6 +6,12 @@ Versions follow `{mod version}+{minecraft version}`.
 ## Unreleased
 
 ### Fixed
+- **Upgrading a beacon no longer destroys what it carried.** The tier and themed recipes built their
+  result from nothing, so crafting a Beacon II into a III lost its installed augments, its fuel and
+  its configured effects. They now carry over; whatever the new beacon cannot use is dropped from
+  its configuration exactly as when an augment is removed.
+- **Removing a Capacity augment no longer destroys fuel.** The buffer was cut to the new capacity on
+  the spot. The surplus now stays and burns down, and no fuel is taken in until it has.
 - **Wayfarer and Sentinel now see you move.** The server read movement in a way its own tick order
   always reset to zero, so every carrier counted as standing still: Wayfarer only ever charged its
   surcharge, and Sentinel always gave its discount.

@@ -12,6 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.Ingredient;
+import dev.drimoz.portablebeacons.item.BeaconUpgradeRecipe;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import net.minecraft.world.level.ItemLike;
@@ -32,8 +33,19 @@ final class ComponentShapedRecipe {
     static void save(RecipeOutput output, HolderLookup.Provider registries, ResourceLocation id,
                      ItemStack result, ItemLike unlockedBy,
                      Map<Character, Ingredient> key, String... pattern) {
-        ShapedRecipe recipe = new ShapedRecipe("", CraftingBookCategory.MISC,
-                ShapedRecipePattern.of(key, pattern), result);
+        save(output, id, unlockedBy, new ShapedRecipe("", CraftingBookCategory.MISC,
+                ShapedRecipePattern.of(key, pattern), result));
+    }
+
+    /** The same, as a {@link BeaconUpgradeRecipe}: the beacon in the grid keeps what it carried. */
+    static void saveUpgrade(RecipeOutput output, HolderLookup.Provider registries, ResourceLocation id,
+                            ItemStack result, ItemLike unlockedBy,
+                            Map<Character, Ingredient> key, String... pattern) {
+        save(output, id, unlockedBy, new BeaconUpgradeRecipe("", CraftingBookCategory.MISC,
+                ShapedRecipePattern.of(key, pattern), result, true));
+    }
+
+    private static void save(RecipeOutput output, ResourceLocation id, ItemLike unlockedBy, ShapedRecipe recipe) {
 
         // The same unlock advancement vanilla's builder writes: without one the recipe never shows
         // up in the recipe book, which is the only way to find it without JEI.
