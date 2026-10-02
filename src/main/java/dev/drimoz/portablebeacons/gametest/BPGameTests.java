@@ -208,6 +208,7 @@ public final class BPGameTests {
                     PortableBeaconMenu.ACTION_CYCLE_AMPLIFIER,
                     PortableBeaconMenu.ACTION_TOGGLE_EFFECT,
                     PortableBeaconMenu.ACTION_CYCLE_AURA,
+                    PortableBeaconMenu.ACTION_SET_AMPLIFIER,
             };
             for (int action : actions) {
                 // Each of these threw before the guard was added. The real assertion is that
@@ -317,6 +318,66 @@ public final class BPGameTests {
             List<AugmentInstance> augments = BPLookups.installedAugments(result);
             helper.assertTrue(augments.size() == 1 && augments.get(0).type().equals(WAYFARER),
                     "the upgrade lost the installed augment, found " + augments);
+        });
+    }
+
+    /**
+     * A beacon that runs dry stays on and waits, and resumes by itself once fuel arrives. It used to
+     * switch itself off, so refuelling did nothing until the player found the screen again.
+     */
+    public static void aDryBeaconWaitsThenResumes(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ServerPlayer carrier = spawnPlayer(helper, cleanup);
+            ItemStack beacon = giveBeacon(carrier, AuraMode.SELF);
+            PortableBeaconItem.setState(beacon, PortableBeaconItem.stateOf(beacon).withFuel(0));
+
+            BeaconTicker.tickPlayer(carrier);
+            BeaconState dry = PortableBeaconItem.stateOf(beacon);
+            helper.assertTrue(dry.active() && dry.starved(), "a dry beacon did not stay on and wait");
+            helper.assertTrue(carrier.getEffect(MobEffects.SPEED) == null, "a dry beacon still applied its effect");
+
+            try (Transaction transaction = Transaction.openRoot()) {
+                BPLookups.handlerOf(beacon).insert(PortableBeaconItem.FUEL_SLOT,
+                        ItemResource.of(new ItemStack(net.minecraft.world.item.Items.IRON_INGOT)), 1, transaction);
+                transaction.commit();
+            }
+            BeaconTicker.tickPlayer(carrier);
+
+            helper.assertFalse(PortableBeaconItem.stateOf(beacon).starved(), "fuel arrived and the beacon stayed starved");
+            helper.assertTrue(carrier.getEffect(MobEffects.SPEED) != null, "the beacon did not resume once refuelled");
+        });
+    }
+
+    /** Only one beacon runs, so switching one on switches the rest off rather than leaving them glinting. */
+    public static void switchingOneBeaconOnSwitchesTheOthersOff(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ServerPlayer carrier = spawnPlayer(helper, cleanup);
+            ItemStack first = giveBeacon(carrier, AuraMode.SELF);
+            ItemStack second = new ItemStack(BPItems.BEACON_IV.get());
+            carrier.getInventory().setItem(1, second);
+            PortableBeaconMenu menu = new PortableBeaconMenu(1, carrier.getInventory(), 1);
+
+            menu.applyAction(PortableBeaconMenu.ACTION_TOGGLE_ACTIVE, 0, 0);
+
+            helper.assertTrue(PortableBeaconItem.stateOf(second).active(), "the beacon switched on is not on");
+            helper.assertFalse(PortableBeaconItem.stateOf(first).active(), "the other beacon was left on");
+        });
+    }
+
+    /**
+     * One augment per type still holds across slots, but not against the slot being replaced: a
+     * Wayfarer II dropped on a Wayfarer I is an upgrade, not a duplicate.
+     */
+    public static void anAugmentSwapsForItsOwnType(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ServerPlayer carrier = spawnPlayer(helper, cleanup);
+            ItemStack beacon = giveBeacon(carrier, AuraMode.SELF);
+            install(beacon, WAYFARER, 1);
+            PortableBeaconMenu menu = new PortableBeaconMenu(1, carrier.getInventory(), 0);
+            ItemStack better = augment(WAYFARER, 2);
+
+            helper.assertTrue(menu.getSlot(0).mayPlace(better), "a higher tier could not replace its own type");
+            helper.assertFalse(menu.getSlot(1).mayPlace(better), "a second augment of one type was accepted");
         });
     }
 

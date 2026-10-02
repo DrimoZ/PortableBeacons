@@ -9,7 +9,11 @@ import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.ingredients.subtypes.ISubtypeInterpreter;
 import mezz.jei.api.ingredients.subtypes.UidContext;
+import dev.drimoz.portablebeacons.client.PortableBeaconScreen;
+import mezz.jei.api.gui.handlers.IGuiContainerHandler;
+import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
+import net.minecraft.client.renderer.Rect2i;
 import mezz.jei.api.registration.IRecipeRegistration;
 import mezz.jei.api.registration.ISubtypeRegistration;
 import net.minecraft.client.Minecraft;
@@ -36,6 +40,20 @@ public class PortableBeaconsJeiPlugin implements IModPlugin {
     @Override
     public Identifier getPluginUid() {
         return UID;
+    }
+
+    /**
+     * Tells JEI where the side tabs are. They sit outside the window, which is exactly where JEI
+     * lays its item list - and without this the list covered them, augment slots included.
+     */
+    @Override
+    public void registerGuiHandlers(IGuiHandlerRegistration registration) {
+        registration.addGuiContainerHandler(PortableBeaconScreen.class, new IGuiContainerHandler<>() {
+            @Override
+            public List<Rect2i> getGuiExtraAreas(PortableBeaconScreen screen) {
+                return screen.extraAreas();
+            }
+        });
     }
 
     /**

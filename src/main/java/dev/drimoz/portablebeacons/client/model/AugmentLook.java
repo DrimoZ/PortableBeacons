@@ -61,6 +61,38 @@ public final class AugmentLook {
     }
 
     /**
+     * {@code portablebeacons:augment_tier} — the tier in a stack, which picks the casing with that
+     * many pips lit. Without it the icon could not show a tier at all: Range I and Range III looked
+     * identical until hovered.
+     */
+    public static final class TierProperty implements SelectItemModelProperty<Integer> {
+
+        public static final TierProperty INSTANCE = new TierProperty();
+        public static final SelectItemModelProperty.Type<TierProperty, Integer> TYPE =
+                SelectItemModelProperty.Type.create(MapCodec.unit(INSTANCE), com.mojang.serialization.Codec.INT);
+
+        @Override
+        @Nullable
+        public Integer get(ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity owner,
+                           int seed, ItemDisplayContext context) {
+            AugmentInstance instance = AugmentItem.instanceOf(stack);
+            return instance == null ? null : instance.tier();
+        }
+
+        @Override
+        public com.mojang.serialization.Codec<Integer> valueCodec() {
+            return com.mojang.serialization.Codec.INT;
+        }
+
+        @Override
+        public SelectItemModelProperty.Type<TierProperty, Integer> type() {
+            return TYPE;
+        }
+
+        private TierProperty() {}
+    }
+
+    /**
      * {@code portablebeacons:augment_colour} — tints the shared texture from the registry entry.
      *
      * <p>Item colours became tint sources declared by the model rather than handlers registered in

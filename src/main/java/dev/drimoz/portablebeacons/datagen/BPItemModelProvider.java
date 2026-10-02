@@ -18,6 +18,7 @@ import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.item.SelectItemModel;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceKey;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,35 +50,52 @@ public class BPItemModelProvider extends ModelProvider {
         List<SelectItemModel.SwitchCase<ResourceKey<AugmentDef>>> cases =
                 new ArrayList<>(AUGMENTS.length);
         for (String name : AUGMENTS) {
-            // Each glyph is a model in its own right, tinted from the registry entry so a
-            // datapack augment can reuse one without shipping a texture.
-            ItemModel.Unbaked glyph = ItemModelUtils.tintedModel(
-                    flatModel(itemModels, "augment_" + name), AugmentLook.Tint.INSTANCE);
             cases.add(ItemModelUtils.when(
-                    ResourceKey.create(BPRegistryKeys.AUGMENT, BPRegistryKeys.id(name)), glyph));
+                    ResourceKey.create(BPRegistryKeys.AUGMENT, BPRegistryKeys.id(name)),
+                    byTier(tier -> augmentModel(itemModels, name, tier))));
         }
 
-        // The fallback is the untyped augment, which is what a stack with no component - or one
-        // naming an augment this beacon does not define - should look like.
+        // The fallback has no glyph: what a stack with no component - or a datapack augment with
+        // no texture of its own - looks like. It still shows its colour and its tier.
         itemModels.itemModelOutput.accept(BPItems.AUGMENT.get(), ItemModelUtils.select(
                 AugmentLook.TypeProperty.INSTANCE,
-                ItemModelUtils.tintedModel(flatModel(itemModels, "augment"),
-                        AugmentLook.Tint.INSTANCE),
+                byTier(tier -> augmentModel(itemModels, null, tier)),
                 cases));
     }
 
+    /** One model per tier, chosen by the stack's tier; tier 1 for anything else. */
+    private static ItemModel.Unbaked byTier(java.util.function.IntFunction<ItemModel.Unbaked> model) {
+        // Each built once: building one writes its model file, and datagen rejects a second write.
+        ItemModel.Unbaked first = model.apply(1);
+        return ItemModelUtils.select(AugmentLook.TierProperty.INSTANCE, first,
+                ItemModelUtils.when(1, first),
+                ItemModelUtils.when(2, model.apply(2)),
+                ItemModelUtils.when(3, model.apply(3)));
+    }
+
     /**
-     * A flat model under {@code models/item/<name>}, returning where it was written.
+     * Casing (with the tier's pips), screen, glyph - see {@code tools/GenerateTextures.java}.
      *
-     * <p>Not {@code generateFlatItem}: these are named models the select table points at, not
-     * models for registered items. Referencing one without writing it is a missing-texture
-     * checkerboard and nothing else — nothing checks that the two agree.
+     * <p>Only the screen is tinted: tints apply per layer, and tinting the casing or the white glyph
+     * by the augment's colour is what made the old icons all one muddy colour.
      */
-    private static Identifier flatModel(ItemModelGenerators itemModels, String name) {
-        Identifier id = BPRegistryKeys.id("item/" + name);
-        return ModelTemplates.FLAT_ITEM.create(
-                id,
-                new TextureMapping().put(TextureSlot.LAYER0, new Material(id)),
-                itemModels.modelOutput);
+    private static ItemModel.Unbaked augmentModel(ItemModelGenerators itemModels, @Nullable String glyph,
+                                                  int tier) {
+        Identifier id = BPRegistryKeys.id("item/augment" + (glyph == null ? "" : "_" + glyph) + "_" + tier);
+        TextureMapping textures = new TextureMapping()
+                .put(TextureSlot.LAYER0, texture("augment_casing_" + tier))
+                .put(TextureSlot.LAYER1, texture("augment_screen"));
+        if (glyph == null) {
+            ModelTemplates.TWO_LAYERED_ITEM.create(id, textures, itemModels.modelOutput);
+            return ItemModelUtils.tintedModel(id, ItemModelUtils.constantTint(-1), AugmentLook.Tint.INSTANCE);
+        }
+        ModelTemplates.THREE_LAYERED_ITEM.create(id,
+                textures.put(TextureSlot.LAYER2, texture("augment_glyph_" + glyph)), itemModels.modelOutput);
+        return ItemModelUtils.tintedModel(id, ItemModelUtils.constantTint(-1), AugmentLook.Tint.INSTANCE,
+                ItemModelUtils.constantTint(-1));
+    }
+
+    private static Material texture(String name) {
+        return new Material(BPRegistryKeys.id("item/" + name));
     }
 }

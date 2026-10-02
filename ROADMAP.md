@@ -1,7 +1,9 @@
 # Roadmap
 
-**1.0.1 on two Minecraft versions.** 1.21.1 is the maintained line; 26.1 is ported, green and not
-yet released. Both carry the same mechanics.
+**1.1.0 on two Minecraft versions, and a 26.1 line pulling ahead.** 1.21.1 is the maintained line.
+26.1 carries 1.1.0 plus what is under *Unreleased* in the [changelog](CHANGELOG.md): four economy
+bugs fixed, upgrades that keep their augments, a new screen on FactoryIO's layout, new item art, and
+a beacon that waits when it runs dry instead of switching off. Those have not reached 1.21.1 yet.
 
 What follows is ordered by what actually moves the mod forward — which is no longer "what is
 missing" but "what do players hit first". The pre-release checklist that used to live here is done;
@@ -19,9 +21,14 @@ the listing copy are ready in [CHANGELOG.md](CHANGELOG.md) and [STORE.md](STORE.
 saved beacons — the item ids, the data component and the item tag all moved. That is worth one line
 at the top of the description, not a footnote.
 
-**Play the 26.1 build.** It compiles, passes 33 unit tests and 8 gametests, and has been opened in a
-client — but the parts no test covers are exactly the parts the port rewrote: the screen, the
-augment glyphs, the tooltips. It should not be published on a green build alone.
+**Play the 26.1 build.** It compiles and passes 43 unit tests and 15 gametests, and
+`BEACON_GUI_PREVIEW=1 ./gradlew runClient` captures the screen in its states - but the screen, the
+item art and the tooltips are exactly what no test judges. It should not be published on a green
+build alone.
+
+**Bring the Unreleased work back to 1.21.1**, or decide that 26.1 is where it lives. Note that
+1.21.1's `copyDevMods` is still a Copy: it leaves 26.1's jars in the shared `run/mods`, the same way
+26.1 used to keep 1.21.1's and crash on EMI.
 
 ## Then — the first week
 

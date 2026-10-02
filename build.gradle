@@ -161,14 +161,19 @@ test {
  * directory. Not wiring the task was not enough on its own: the jars stay in run/mods once copied,
  * and every run shared that folder, so the tests loaded Curios anyway and all seven failed on its
  * join-time sync packet.
+ *
+ * A Sync rather than a Copy, so run/mods holds exactly this branch's dev mods. A Copy only ever
+ * adds: run/ is shared with the 1.21.1 branch, its JEI, Curios and EMI jars stayed behind next to
+ * the 26.1 ones, and EMI's 1.21.1 mixins failed to apply and stopped the client loading at all.
+ * The cost is that a jar dropped into run/mods by hand is removed on the next run.
  */
-var copyDevMods = tasks.register('copyDevMods', Copy) {
+var copyDevMods = tasks.register('copyDevMods', Sync) {
     from configurations.devMods
     into file('run/mods')
 }
 
 // The second client has its own directory, so it needs its own copy.
-var copyDevMods2 = tasks.register('copyDevMods2', Copy) {
+var copyDevMods2 = tasks.register('copyDevMods2', Sync) {
     from configurations.devMods
     into file('run-client2/mods')
 }

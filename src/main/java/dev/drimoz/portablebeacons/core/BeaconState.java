@@ -29,8 +29,11 @@ import java.util.List;
  * @param effects configured effect slots, ordered; may be shorter than the tier's slot count
  * @param fuel    remaining fuel units in the internal buffer
  * @param active  master switch; false means nothing is applied and nothing is consumed
+ * @param starved switched on but out of fuel: nothing is applied until fuel arrives, then it resumes
+ *                on its own. Added after release, so it defaults to false like every field
  */
-public record BeaconState(List<EffectSlotConfig> effects, int fuel, boolean active, int capacity) {
+public record BeaconState(List<EffectSlotConfig> effects, int fuel, boolean active, int capacity,
+                          boolean starved) {
 
     public static final BeaconState EMPTY = new BeaconState(List.of(), 0, false, 0);
 
@@ -39,7 +42,8 @@ public record BeaconState(List<EffectSlotConfig> effects, int fuel, boolean acti
                     .forGetter(BeaconState::effects),
             Codec.INT.optionalFieldOf("fuel", 0).forGetter(BeaconState::fuel),
             Codec.BOOL.optionalFieldOf("active", false).forGetter(BeaconState::active),
-            Codec.INT.optionalFieldOf("capacity", 0).forGetter(BeaconState::capacity)
+            Codec.INT.optionalFieldOf("capacity", 0).forGetter(BeaconState::capacity),
+            Codec.BOOL.optionalFieldOf("starved", false).forGetter(BeaconState::starved)
     ).apply(i, BeaconState::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, BeaconState> STREAM_CODEC =
@@ -48,22 +52,33 @@ public record BeaconState(List<EffectSlotConfig> effects, int fuel, boolean acti
                     ByteBufCodecs.VAR_INT, BeaconState::fuel,
                     ByteBufCodecs.BOOL, BeaconState::active,
                     ByteBufCodecs.VAR_INT, BeaconState::capacity,
+                    ByteBufCodecs.BOOL, BeaconState::starved,
                     BeaconState::new);
 
     public BeaconState {
         effects = List.copyOf(effects);
     }
 
+    /** A beacon that is not starved, which is every beacon anyone constructs by hand. */
+    public BeaconState(List<EffectSlotConfig> effects, int fuel, boolean active, int capacity) {
+        this(effects, fuel, active, capacity, false);
+    }
+
     public BeaconState withEffects(List<EffectSlotConfig> newEffects) {
-        return new BeaconState(newEffects, fuel, active, capacity);
+        return new BeaconState(newEffects, fuel, active, capacity, starved);
     }
 
     public BeaconState withFuel(int newFuel) {
-        return new BeaconState(effects, Math.max(0, newFuel), active, capacity);
+        return new BeaconState(effects, Math.max(0, newFuel), active, capacity, starved);
     }
 
+    /** Switching it either way clears starvation: off is off, and on starts a fresh attempt. */
     public BeaconState withActive(boolean newActive) {
-        return new BeaconState(effects, fuel, newActive, capacity);
+        return new BeaconState(effects, fuel, newActive, capacity, false);
+    }
+
+    public BeaconState withStarved(boolean newStarved) {
+        return new BeaconState(effects, fuel, active, capacity, newStarved);
     }
 
     /**
@@ -74,7 +89,7 @@ public record BeaconState(List<EffectSlotConfig> effects, int fuel, boolean acti
      * Refreshed by {@link BeaconResolver#sanitize} on every action and every tick.
      */
     public BeaconState withCapacity(int newCapacity) {
-        return new BeaconState(effects, fuel, active, newCapacity);
+        return new BeaconState(effects, fuel, active, newCapacity, starved);
     }
 
     public double fillRatio() {

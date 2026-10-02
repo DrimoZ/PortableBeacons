@@ -10,6 +10,7 @@ import dev.drimoz.portablebeacons.core.BeaconTierDef;
 import dev.drimoz.portablebeacons.item.AugmentItem;
 import dev.drimoz.portablebeacons.item.PortableBeaconItem;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
@@ -64,11 +65,12 @@ public final class BPLookups {
     }
 
     /** Fuel units the given item is worth, or 0 if it is not fuel. */
-    public static int fuelValue(RegistryAccess access, Item item) {
+    public static int fuelValue(HolderLookup.Provider access, Item item) {
         // An item named directly wins over one matched through a tag, so a beacon can price a single
         // metal without having to exclude it from whatever convention tag it belongs to.
         int viaTag = 0;
-        for (FuelDef def : access.lookupOrThrow(BPRegistryKeys.FUEL)) {
+        for (FuelDef def : (Iterable<FuelDef>) access.lookupOrThrow(BPRegistryKeys.FUEL).listElements()
+                .map(Holder::value)::iterator) {
             if (!def.matches(item)) {
                 continue;
             }
@@ -78,6 +80,23 @@ public final class BPLookups {
             viaTag = Math.max(viaTag, def.units());
         }
         return viaTag;
+    }
+
+    /**
+     * Fuel units sitting in a beacon's fuel slot, not yet burned into its buffer.
+     *
+     * <p>One place for the three that need it - the ticker's warning, the screen's runtime and the
+     * item's tooltip - because the tooltip used to leave it out and promise a fraction of the time
+     * the screen did.
+     */
+    public static int reserveUnits(ItemStack beaconStack, HolderLookup.Provider access) {
+        ResourceHandler<ItemResource> handler = handlerOf(beaconStack);
+        if (handler == null || handler.size() <= PortableBeaconItem.FUEL_SLOT) {
+            return 0;
+        }
+        ItemResource fuel = handler.getResource(PortableBeaconItem.FUEL_SLOT);
+        return fuel.isEmpty() ? 0
+                : fuelValue(access, fuel.getItem()) * handler.getAmountAsInt(PortableBeaconItem.FUEL_SLOT);
     }
 
     /** The augments currently installed in a beacon, read straight from its container component. */

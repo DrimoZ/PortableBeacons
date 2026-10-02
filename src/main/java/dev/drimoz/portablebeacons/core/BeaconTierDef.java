@@ -15,7 +15,7 @@ import java.util.List;
  *
  * @param level        1..4, used for ordering and for {@code min_tier} checks
  * @param effectSlots  how many effects may be configured
- * @param augmentSlots how many augment slots are unlocked (of the 3 drawn)
+ * @param augmentSlots how many augment slots are unlocked (of the four the item carries)
  * @param baseRange    aura radius in blocks; ignored by effects set to {@link AuraMode#SELF}
  * @param fuelCapacity internal buffer in fuel units
  * @param maxAmplifier highest amplifier reachable without an Amplification augment

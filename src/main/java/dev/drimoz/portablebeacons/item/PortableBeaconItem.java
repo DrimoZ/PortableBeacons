@@ -87,9 +87,15 @@ public class PortableBeaconItem extends Item {
 
     void appendTooltip(ItemStack stack, TooltipContext context, Consumer<Component> tooltip) {
         BeaconState state = stateOf(stack);
-        tooltip.accept(Component.translatable(state.active()
-                        ? "portablebeacons.gui.active" : "portablebeacons.gui.inactive")
-                .withStyle(state.active() ? ChatFormatting.GREEN : ChatFormatting.GRAY));
+        // The screen's light, in words and the same colours: green running, red waiting for fuel -
+        // the one state that needs the player - grey off.
+        if (state.active() && state.starved()) {
+            tooltip.accept(Component.translatable("portablebeacons.msg.out_of_fuel").withStyle(ChatFormatting.RED));
+        } else {
+            tooltip.accept(Component.translatable(state.active()
+                            ? "portablebeacons.gui.active" : "portablebeacons.gui.inactive")
+                    .withStyle(state.active() ? ChatFormatting.GREEN : ChatFormatting.GRAY));
+        }
 
         if (!TooltipDetail.expanded()) {
             tooltip.accept(TooltipDetail.HINT);
@@ -128,7 +134,8 @@ public class PortableBeaconItem extends Item {
                             Component.translatable("augment." + augment.type().identifier().getNamespace()
                                     + "." + augment.type().identifier().getPath(),
                                     Component.translatable("portablebeacons.tier." + augment.tier())))
-                    .withStyle(ChatFormatting.DARK_AQUA));
+                    // Grey like every other detail line: one palette for tooltips, FactoryIO's rule.
+                    .withStyle(ChatFormatting.GRAY));
         }
         appendRuntime(stack, context, state, tooltip);
     }
@@ -140,7 +147,13 @@ public class PortableBeaconItem extends Item {
     private void appendRuntime(ItemStack stack, TooltipContext context, BeaconState state,
                                Consumer<Component> tooltip) {
         HolderLookup.Provider registries = context.registries();
-        if (registries == null || state.fuel() <= 0 || !BPConfig.fuelEnabled()) {
+        if (registries == null || !BPConfig.fuelEnabled()) {
+            return;
+        }
+        // The buffer and the slot together, as the screen counts it: the slot is burned before the
+        // beacon runs dry, so leaving it out promised a fraction of the real runtime.
+        int units = state.fuel() + BPLookups.reserveUnits(stack, registries);
+        if (units <= 0) {
             return;
         }
         BeaconTierDef tierDef = lookup(registries, BPRegistryKeys.TIER, tier);
@@ -155,7 +168,7 @@ public class PortableBeaconItem extends Item {
             return;
         }
         tooltip.accept(Component.translatable("portablebeacons.gui.runtime",
-                        Durations.format((int) (state.fuel() / perSecond)))
+                        Durations.format((int) (units / perSecond)))
                 .withStyle(ChatFormatting.DARK_GRAY));
     }
 

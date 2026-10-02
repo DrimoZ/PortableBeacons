@@ -4,6 +4,7 @@ import dev.drimoz.portablebeacons.BPConfig;
 import dev.drimoz.portablebeacons.BeaconProximity;
 import dev.drimoz.portablebeacons.ActionBar;
 import dev.drimoz.portablebeacons.compat.CuriosCompat;
+import dev.drimoz.portablebeacons.core.AugmentInstance;
 import dev.drimoz.portablebeacons.core.AuraMode;
 import dev.drimoz.portablebeacons.core.BeaconEffectDef;
 import dev.drimoz.portablebeacons.core.EffectSlotConfig;
@@ -11,6 +12,7 @@ import dev.drimoz.portablebeacons.core.BeaconResolver;
 import dev.drimoz.portablebeacons.core.BeaconState;
 import dev.drimoz.portablebeacons.core.BeaconStats;
 import dev.drimoz.portablebeacons.core.BeaconTierDef;
+import dev.drimoz.portablebeacons.gui.GuiMetrics;
 import dev.drimoz.portablebeacons.item.AugmentItem;
 import dev.drimoz.portablebeacons.item.PortableBeaconItem;
 import dev.drimoz.portablebeacons.registry.BPLookups;
@@ -51,29 +53,33 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
     public static final int ACTION_CYCLE_AMPLIFIER = 3;
     public static final int ACTION_TOGGLE_EFFECT = 4;
     public static final int ACTION_CYCLE_AURA = 5;
+    /** The level outright, so the screen can step down as well as up; sanitize caps it. */
+    public static final int ACTION_SET_AMPLIFIER = 6;
 
     /**
-     * Augment and fuel slots live in side drawers, outside the main frame.
-     *
-     * <p>Their positions are fixed rather than moved when a drawer opens: {@code Slot.x} and
-     * {@code y} are final, and the screen hides a closed drawer's slots from both rendering and
-     * hit-testing instead.
+     * Bottom of the beacon's own content - sockets, details and the fuel column - and so where the
+     * player inventory starts. Shared with the screen, which draws to the same line.
      */
-    public static final int DRAWER_X = 193;
-    public static final int AUGMENT_DRAWER_Y = 16;
-    public static final int FUEL_DRAWER_Y = 50;
+    /** One effect row per possible effect slot, each one inventory slot tall, under the band. */
+    public static final int CONTENT_BOTTOM = GuiMetrics.CONTENT_TOP + BeaconStats.MAX_EFFECT_SLOTS * GuiMetrics.SLOT;
 
-    private static final int FIRST_AUGMENT_SLOT_X = DRAWER_X + 9;
-    private static final int AUGMENT_SLOT_Y = AUGMENT_DRAWER_Y + 25;
-    private static final int FUEL_SLOT_X = DRAWER_X + 9;
-    private static final int FUEL_SLOT_Y = FUEL_DRAWER_Y + 25;
-    private static final int INVENTORY_X = 17;
-    private static final int INVENTORY_Y = 173;
-    private static final int HOTBAR_Y = 231;
+    /**
+     * The fuel slot sits in column 0 under the gauge, FactoryIO's burner layout: the fuel is what
+     * keeps the beacon alive, so it is on the window rather than in a drawer.
+     */
+    public static final int FUEL_SLOT_X = GuiMetrics.column(0) + 1;
+    public static final int FUEL_SLOT_Y = CONTENT_BOTTOM - GuiMetrics.SLOT + 1;
 
-    public static final int DRAWER_AUGMENTS = 0;
-    public static final int DRAWER_FUEL = 1;
-    public static final int DRAWER_NONE = 2;
+    /**
+     * Augments live in the first right-hand tab. Their positions are where that tab's content is
+     * once it is fully open: {@code Slot.x} and {@code y} are final, so a shut tab hides its slots
+     * from rendering and hit-testing rather than moving them.
+     */
+    public static final int AUGMENT_SLOT_Y = GuiMetrics.FIRST_TAB_CONTENT_Y + 1;
+
+    public static int augmentSlotX(int n) {
+        return GuiMetrics.RIGHT_TAB_CONTENT_X + 1 + n * GuiMetrics.SLOT;
+    }
 
     /**
      * Stands in for "the beacon worn as a curio" where an inventory slot index is expected.
@@ -87,13 +93,14 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
     private final Player player;
     private final int beaconSlotIndex;
     /**
-     * Which side drawer the screen is showing, or -1 on the server where nothing is hidden.
+     * Whether the augment tab is fully open on the client. Always true on the server, where nothing is
+     * hidden.
      *
      * <p>Vanilla skips both rendering and hover for a slot whose {@link Slot#isActive()} is false,
      * which is the only supported way to hide one - the screen's {@code isHovering(Slot, ...)}
      * overload is private.
      */
-    private int visibleDrawer = -1;
+    private boolean augmentsVisible = true;
     /** Only used to back the augment and fuel slots; never read for state - see {@link #beacon()}. */
     private final ItemStack slotBackingStack;
     /** Varies with the fuel config, so shift-clicking cannot assume a fixed boundary. */
@@ -113,7 +120,7 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
 
         ResourceHandler<ItemResource> handler = new LiveBeaconHandler();
         for (int i = 0; i < PortableBeaconItem.AUGMENT_SLOTS; i++) {
-            addSlot(new AugmentSlot(handler, PortableBeaconItem.augmentSlot(i), FIRST_AUGMENT_SLOT_X + i * 18, AUGMENT_SLOT_Y));
+            addSlot(new AugmentSlot(handler, PortableBeaconItem.augmentSlot(i), augmentSlotX(i), AUGMENT_SLOT_Y));
         }
         // No fuel slot at all when fuel is switched off, rather than a slot that refuses
         // everything. Both sides read the same synced config, so the slot counts agree.
@@ -126,11 +133,12 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
             for (int col = 0; col < 9; col++) {
                 int index = col + row * 9 + 9;
                 addSlot(playerSlot(playerInventory, index,
-                        INVENTORY_X + col * 18, INVENTORY_Y + row * 18));
+                        GuiMetrics.column(col) + 1, GuiMetrics.inventoryY(CONTENT_BOTTOM) + row * GuiMetrics.SLOT));
             }
         }
         for (int col = 0; col < 9; col++) {
-            addSlot(playerSlot(playerInventory, col, INVENTORY_X + col * 18, HOTBAR_Y));
+            addSlot(playerSlot(playerInventory, col, GuiMetrics.column(col) + 1,
+                    GuiMetrics.hotbarY(CONTENT_BOTTOM)));
         }
     }
 
@@ -256,6 +264,8 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
                     mutate(effects, slotIndex, slot -> slot.withEnabled(!slot.enabled())));
             case ACTION_CYCLE_AURA -> state().withEffects(
                     mutate(effects, slotIndex, slot -> slot.withAura(nextAura(slot.aura(), stats))));
+            case ACTION_SET_AMPLIFIER -> state().withEffects(
+                    mutate(effects, slotIndex, slot -> slot.withAmplifier(Math.min(value, 3))));
             default -> null;
         };
 
@@ -268,8 +278,40 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
             who.level().playSound(null, who.blockPosition(),
                     state().active() ? SoundEvents.BEACON_ACTIVATE : SoundEvents.BEACON_DEACTIVATE,
                     SoundSource.PLAYERS, 0.4F, 1.0F);
+            if (state().active() && switchOffOtherBeacons()) {
+                ActionBar.send(who, Component.translatable("portablebeacons.msg.others_off"));
+            }
         }
         broadcastChanges();
+        return true;
+    }
+
+    /**
+     * Only one beacon runs at a time, so switching one on switches the others off - the way radio
+     * buttons behave. Two used to stay "on", glinting, while only the first did anything, and
+     * nothing on screen said which.
+     *
+     * @return whether any other beacon was on
+     */
+    private boolean switchOffOtherBeacons() {
+        ItemStack mine = beacon();
+        boolean any = false;
+        Inventory inventory = player.getInventory();
+        for (int i = 0; i < inventory.getContainerSize(); i++) {
+            any |= switchOff(inventory.getItem(i), mine);
+        }
+        // Once, not until none is left: were Curios to hand back a copy, the copy would be switched
+        // off, the original would stay on, and a loop would never end.
+        any |= switchOff(CuriosCompat.findActiveBeacon(player), mine);
+        return any;
+    }
+
+    private static boolean switchOff(ItemStack stack, ItemStack mine) {
+        if (stack == mine || !(stack.getItem() instanceof PortableBeaconItem)
+                || !PortableBeaconItem.stateOf(stack).active()) {
+            return false;
+        }
+        PortableBeaconItem.setState(stack, PortableBeaconItem.stateOf(stack).withActive(false));
         return true;
     }
 
@@ -281,6 +323,7 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
         return action == ACTION_SET_EFFECT
                 || action == ACTION_CLEAR_EFFECT
                 || action == ACTION_CYCLE_AMPLIFIER
+                || action == ACTION_SET_AMPLIFIER
                 || action == ACTION_CYCLE_AURA;
     }
 
@@ -387,7 +430,7 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
         LiveBeaconHandler() {
             super(() -> {
                 ResourceHandler<ItemResource> live = BPLookups.handlerOf(beacon());
-                return live == null ? DETACHED : live;
+                return live == null ? detached : live;
             });
         }
     }
@@ -397,17 +440,29 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
      *
      * <p>Right-sized rather than empty, so the slots stay where they are and simply read as empty.
      * A zero-length handler would put every slot out of range instead, which is a crash rather than
-     * a closed menu. Nothing ever reads what is written here.
+     * a closed menu.
+     *
+     * <p>One per menu, and handed back on close. It used to be one static handler for every menu of
+     * every player, so a stack put into a detached slot was either lost or turned up in someone
+     * else's screen.
      */
-    private static final ResourceHandler<ItemResource> DETACHED =
+    private final ItemStacksResourceHandler detached =
             new ItemStacksResourceHandler(PortableBeaconItem.CONTAINER_SIZE);
 
-    public void setVisibleDrawer(int drawer) {
-        this.visibleDrawer = drawer;
+    @Override
+    public void removed(Player who) {
+        super.removed(who);
+        for (int i = 0; i < detached.size(); i++) {
+            ItemResource resource = detached.getResource(i);
+            int amount = detached.getAmountAsInt(i);
+            if (!resource.isEmpty() && amount > 0) {
+                who.getInventory().placeItemBackInInventory(resource.toStack(amount));
+            }
+        }
     }
 
-    private boolean drawerVisible(int drawer) {
-        return visibleDrawer < 0 || visibleDrawer == drawer;
+    public void setAugmentsVisible(boolean visible) {
+        this.augmentsVisible = visible;
     }
 
     /**
@@ -447,7 +502,7 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
 
         @Override
         public boolean isActive() {
-            return drawerVisible(DRAWER_AUGMENTS);
+            return augmentsVisible;
         }
 
         @Override
@@ -460,8 +515,24 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
             if (getSlotIndex() - 1 >= stats().augmentSlots()) {
                 return false;
             }
-            return BPLookups.installedAugments(beacon()).stream()
-                    .noneMatch(other -> other.type().equals(instance.type()));
+            // Against the other slots only. Counting this one refused a Range III dropped onto the
+            // Range II it was meant to replace, so upgrading an augment took three clicks instead
+            // of the swap every other slot in the game does.
+            ResourceHandler<ItemResource> handler = BPLookups.handlerOf(beacon());
+            if (handler == null) {
+                return false;
+            }
+            for (int i = 0; i < PortableBeaconItem.AUGMENT_SLOTS; i++) {
+                int index = PortableBeaconItem.augmentSlot(i);
+                if (index == getSlotIndex() || index >= handler.size()) {
+                    continue;
+                }
+                AugmentInstance other = AugmentItem.instanceOf(handler.getResource(index));
+                if (other != null && other.type().equals(instance.type())) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         /**
@@ -491,11 +562,6 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
         FuelSlot(ResourceHandler<ItemResource> handler, int index, int x, int y) {
             super(handler, (i, resource, amount) -> setSlot(handler, i, resource, amount),
                     index, x, y);
-        }
-
-        @Override
-        public boolean isActive() {
-            return drawerVisible(DRAWER_FUEL);
         }
 
         @Override

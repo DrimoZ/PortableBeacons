@@ -1,194 +1,165 @@
 package dev.drimoz.portablebeacons.client;
 
 import dev.drimoz.portablebeacons.BPConfig;
-import dev.drimoz.portablebeacons.core.Durations;
+import dev.drimoz.portablebeacons.BeaconTicker;
+import dev.drimoz.portablebeacons.client.gui.GuiSprites;
+import dev.drimoz.portablebeacons.client.gui.GuiTheme;
+import dev.drimoz.portablebeacons.client.gui.SideTab;
+import dev.drimoz.portablebeacons.client.gui.SideTabs;
+import dev.drimoz.portablebeacons.core.AuraMode;
+import dev.drimoz.portablebeacons.core.BPRegistryKeys;
 import dev.drimoz.portablebeacons.core.BeaconEffectDef;
-import dev.drimoz.portablebeacons.core.EffectSlotConfig;
 import dev.drimoz.portablebeacons.core.BeaconResolver;
 import dev.drimoz.portablebeacons.core.BeaconState;
 import dev.drimoz.portablebeacons.core.BeaconStats;
 import dev.drimoz.portablebeacons.core.BeaconTierDef;
+import dev.drimoz.portablebeacons.core.Durations;
+import dev.drimoz.portablebeacons.core.EffectSlotConfig;
+import dev.drimoz.portablebeacons.core.FuelDef;
+import dev.drimoz.portablebeacons.gui.GuiMetrics;
 import dev.drimoz.portablebeacons.item.PortableBeaconItem;
 import dev.drimoz.portablebeacons.menu.PortableBeaconMenu;
 import dev.drimoz.portablebeacons.net.BeaconActionPayload;
+import dev.drimoz.portablebeacons.registry.BPItems;
 import dev.drimoz.portablebeacons.registry.BPLookups;
 import net.minecraft.ChatFormatting;
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.transfer.item.ResourceHandlerSlot;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.neoforged.neoforge.transfer.item.ResourceHandlerSlot;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
 /**
- * The beacon's screen.
+ * The beacon's screen, laid out on FactoryIO's charter so the two mods' screens read as a set.
  *
- * <p>Everything is drawn by hand instead of using vanilla widgets. The effect selector is an
- * overlay, and vanilla widgets always render underneath {@code renderLabels}, so a mixed approach
- * would put the search field behind the panel it belongs to.
+ * <pre>
+ *  ┌────────────────────────────────────────┐
+ *  │ Portable Beacon IV                  ⏻ ● │  band: title, power, status light
+ *  │ ▌ [⚔] Strength              II  👤  ━● │  one row per effect, everything set in place
+ *  │ ▌ [🛡] Resistance             I  👥  ━● │
+ *  │ ▌ [ + ] Click to pick an effect          │
+ *  │ ▌ [🔒] Unlocked by a higher tier…       │
+ *  │ ▣                                        │  fuel gauge and slot in column 0
+ *  │ Inventory                                │
+ *  └────────────────────────────────────────┘
+ * </pre>
  *
- * <p>Layout rule: every panel spans the same {@link #CONTENT_LEFT}..{@link #CONTENT_RIGHT} column
- * and every button row is divided into equal thirds. Text is measured against the space it has
- * rather than assumed to fit — a long translation used to run under the frame.
+ * <p><b>One row per effect, and nothing hidden.</b> The previous screens had a row of sockets and a
+ * separate panel for "the focused one", so every change was two steps and the controls on screen
+ * belonged to whichever socket had last been clicked - state a player had to keep in their head.
+ * Here each row carries its own effect, level, audience and switch; what was a row of buttons is
+ * now the row itself, and the per-effect figures moved into the row's tooltip.
+ *
+ * <p>Tabs: the beacon's figures on the left in yellow, because they inform; augments on the right
+ * in blue, because they are set. The effect picker is FactoryIO's recipe picker - a modal grid over
+ * the whole window. Every colour comes from {@link GuiTheme} and every piece from {@link GuiSprites}.
  */
 public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeaconMenu> {
 
-    private static final Identifier TEXTURE =
-            Identifier.fromNamespaceAndPath("portablebeacons", "textures/gui/beacon.png");
-    private static final int TEXTURE_SIZE = 512;
+    static final int IMAGE_W = GuiMetrics.WIDTH;
+    static final int IMAGE_H = GuiMetrics.height(PortableBeaconMenu.CONTENT_BOTTOM);
 
-    static final int IMAGE_W = 194;
-    static final int IMAGE_H = 256;
+    // Band
 
-    /** The single column everything aligns to. */
-    private static final int CONTENT_LEFT = 16;
-    private static final int CONTENT_RIGHT = 178;
+    private static final int ICON = GuiSprites.ICON_SIZE;
+    /** The master switch, beside the light: what the player chose, next to what is happening. */
+    private static final int POWER_X = GuiMetrics.LED_X - 5 - GuiSprites.BIG_SWITCH_W;
+    private static final int POWER_Y = GuiMetrics.LED_Y + GuiMetrics.LED_SIZE / 2 - GuiSprites.BIG_SWITCH_H / 2;
+    private static final int POWER_W = GuiSprites.BIG_SWITCH_W;
+    private static final int POWER_H = GuiSprites.BIG_SWITCH_H;
 
-    /**
-     * Side tabs, the way Mekanism and Thermal arrange theirs.
-     *
-     * <p>Augments and fuel moved out of the main frame entirely: they are configured once and then
-     * left alone, so keeping them permanently on screen crowded the panel the player actually reads.
-     * Power stays a tab too - the one control that decides whether the beacon runs should not compete
-     * with the settings it governs.
-     */
-    private static final int TAB_W = 30;
-    private static final int TAB_H = 28;
-    /** Content clears the tab's own glyph, which stays put when the panel grows around it. */
-    private static final int PANEL_TEXT_INSET = TAB_W + 6;
+    // Fuel column
 
-    /**
-     * Two columns, not one.
-     *
-     * <p>Four tabs stacked down one edge left the window visibly heavier on that side. Split, each
-     * side carries what belongs together: the two controls that govern the beacon on the left, the
-     * two containers you load on the right.
-     */
-    private static final int LEFT_TAB_X = 1;
-    private static final int RIGHT_TAB_X = IMAGE_W - 1;
+    private static final int GAUGE_Y = GuiMetrics.CONTENT_TOP;
+    /** Down to the fuel slot's frame, with a two-pixel gap. */
+    private static final int GAUGE_H = PortableBeaconMenu.FUEL_SLOT_Y - 1 - 2 - GAUGE_Y;
 
-    private static final int POWER_TAB_Y = 16;
-    private static final int STATS_TAB_Y = 50;
-    private static final int AUGMENT_TAB_Y = 16;
-    private static final int FUEL_TAB_Y = 50;
+    // Effect rows: one inventory slot tall, from column 1 to the content's right edge
 
-    /**
-     * An open tab grows into its panel in place and pushes the tabs below it down, the way Thermal
-     * does it, rather than a detached square appearing alongside.
-     *
-     * <p>This works only because one drawer is open at a time: a tab is displaced only by a panel
-     * above it, and if a panel above is open then this one is shut, so every panel is always drawn
-     * at its tab's resting position. That is what lets the slots inside keep fixed coordinates -
-     * {@code Slot.x} is final and cannot follow a moving panel.
-     */
-    private static final int PANEL_W = 120;
-    private static final int PANEL_H = 46;
-    private static final int STATS_PANEL_H = 62;
-    private static final int PANEL_GAP = 4;
-    /** Short enough that the slots appearing at the end of it does not read as a lag. */
-    private static final long DRAWER_ANIM_MS = 130L;
+    private static final int ROW_X = GuiMetrics.column(1);
+    private static final int ROW_RIGHT = GuiMetrics.CONTENT_RIGHT;
+    private static final int ROW_H = GuiMetrics.SLOT;
+    private static final int NAME_X = ROW_X + 21;
+    /** The row's controls, right to left: switch, audience, level badge. */
+    private static final int SWITCH_X = ROW_RIGHT - 3 - GuiSprites.SWITCH_W;
+    private static final int AURA_X = SWITCH_X - 5 - ICON;
+    private static final int LEVEL_W = 16;
+    private static final int LEVEL_H = 12;
+    private static final int LEVEL_X = AURA_X - 5 - LEVEL_W;
+    private static final int NAME_W = LEVEL_X - 4 - NAME_X;
 
-    /** One accent per tab, so the four are told apart by colour and not only by a grey glyph. */
-    private static final int ACCENT_POWER = 0xFF4BC46A;
-    /** Glyph colour on a shut tab: dark enough to read, quiet enough not to compete. */
-    private static final int GLYPH_OFF = 0xFF4A4A4A;
-    private static final int ACCENT_STATS = 0xFF5B9BD5;
-    private static final int ACCENT_AUGMENTS = 0xFFB07CD8;
-    private static final int ACCENT_FUEL = 0xFFE0913A;
+    /** What a click in a row lands on. */
+    private enum Part { ICON, NAME, LEVEL, AURA, SWITCH, NONE }
 
-    private static final int DRAWER_X = PortableBeaconMenu.DRAWER_X;
-    private static final int AUGMENT_DRAWER_Y = PortableBeaconMenu.AUGMENT_DRAWER_Y;
-    private static final int FUEL_DRAWER_Y = PortableBeaconMenu.FUEL_DRAWER_Y;
-    private static final int SLOT_SIZE = 18;
+    // The picker: FactoryIO's recipe picker, with effects for items
 
-    private static final int CASE_X = CONTENT_LEFT;
-    private static final int CASE_Y = 44;
-    private static final int CASE_SIZE = 26;
-    private static final int CASE_SPACING = 30;
-    /**
-     * Five, now that the stats moved to a drawer and freed the whole row. The beacon itself still
-     * decides how many are unlocked; this is only how many the screen can lay out.
-     */
-    private static final int MAX_CASES = BeaconStats.MAX_EFFECT_SLOTS;
+    private static final int FIELD_X = GuiMetrics.column(0);
+    private static final int FIELD_W = GuiMetrics.CONTENT_RIGHT - FIELD_X;
+    private static final int FIELD_Y = GuiMetrics.CONTENT_TOP - 2;
+    private static final int FIELD_H = 14;
+    private static final int GRID_Y = FIELD_Y + FIELD_H + 4;
+    /** Eight columns of the inventory grid; the ninth carries the scrollbar. */
+    private static final int GRID_COLUMNS = 8;
+    private static final int FOOTER_Y = IMAGE_H - 12;
+    private static final int GRID_ROWS = (FOOTER_Y - 2 - GRID_Y) / GuiMetrics.SLOT;
+    private static final int SCROLLBAR_X = GuiMetrics.column(GRID_COLUMNS) + 3;
+    private static final int SCROLLBAR_W = 12;
 
-    private static final int INFO_X = CONTENT_LEFT;
-    private static final int INFO_Y = 78;
-    private static final int INFO_W = CONTENT_RIGHT - CONTENT_LEFT;
+    private final SideTabs tabs;
 
-    private static final int BTN_H = 16;
-    private static final int BTN_GAP = 3;
-    private static final int ROW_X = INFO_X + 6;
-    private static final int ROW_W = INFO_W - 12;
-    private static final int BTN_W = (ROW_W - 2 * BTN_GAP) / 3;
-    private static final int ROW_CHANGE = INFO_Y + 30;
-    private static final int ROW_SETTINGS = INFO_Y + 48;
-
-    private static final int AUGMENT_SLOT_X = DRAWER_X + 8;
-    private static final int AUGMENT_SLOT_Y = AUGMENT_DRAWER_Y + 24;
-    private static final int FUEL_SLOT_X = DRAWER_X + 8;
-    private static final int FUEL_SLOT_Y = FUEL_DRAWER_Y + 24;
-    private static final int GAUGE_X = DRAWER_X + 30;
-    private static final int GAUGE_Y = FUEL_DRAWER_Y + 26;
-    private static final int GAUGE_W = 70;
-    private static final int GAUGE_H = 14;
-
-    private static final int SELECTOR_W = 138;
-    private static final int SEARCH_H = 20;
-    private static final int ROW_H = 18;
-    private static final int VISIBLE_ROWS = 5;
-    private static final int FOOTER_H = 12;
-    private static final int SELECTOR_H = SEARCH_H + VISIBLE_ROWS * ROW_H + FOOTER_H;
-    /** Gap between the case and the popup, so the two read as related but distinct. */
-    private static final int SELECTOR_OFFSET = 6;
-    /** Above the item layer, which renders around z=150 and otherwise punches through the popup. */
-    private static final long OPEN_ANIM_MS = 110L;
-
-    // Opaque, explicitly. Text colours are strict ARGB now: a bare 0xRRGGBB is alpha 0, which draws
-    // nothing at all rather than defaulting to opaque. Every label on this screen was invisible.
-    private static final int TEXT = 0xFF404040;
-    private static final int TEXT_DIM = 0xFF707070;
-
-    private int focusedCase = 0;
     private boolean selectorOpen;
+    /** The effect row the picker will fill. */
     private int selectorSlot;
-    private int selectorX;
-    private int selectorY;
+    /** In rows of the grid. */
     private int scroll;
-    /** Index into the filtered rows; driven by both the mouse and the arrow keys. */
+    /** Index into the filtered effects; driven by both the mouse and the arrow keys. */
     private int highlighted;
     private String search = "";
-    private long openedAt;
     private List<ResourceKey<BeaconEffectDef>> allKeysCache;
     private List<ResourceKey<BeaconEffectDef>> rowsCache;
     private String rowsCacheKey;
+    private ItemStack fuelGhost;
     /** Cleared at the top of every frame; see {@link #stats()}. */
     private BeaconStats frameStats;
+
+    public PortableBeaconScreen(PortableBeaconMenu menu, Inventory inventory, Component title) {
+        // The size goes through the constructor: both fields are final now.
+        super(menu, inventory, title, IMAGE_W, IMAGE_H);
+        this.titleLabelX = GuiMetrics.MARGIN;
+        this.titleLabelY = GuiMetrics.TITLE_Y;
+        this.inventoryLabelX = GuiMetrics.MARGIN;
+        this.inventoryLabelY = GuiMetrics.inventoryLabelY(PortableBeaconMenu.CONTENT_BOTTOM);
+        this.tabs = new SideTabs(List.of(new InfoTab(), new AugmentTab()), IMAGE_W, AugmentTab.ID);
+    }
 
     /**
      * The beacon's resolved stats, computed at most once per frame.
      *
      * <p>Each call walks the augment slots through a capability lookup and re-applies every
-     * operation. Rendering asked for it around six times a frame - the labels, the drawer, the
-     * cases, and several tooltip branches - which is six times more often than it can change.
+     * operation. Rendering asks for it many times a frame, which is far more often than it can change.
      */
     private BeaconStats stats() {
         if (frameStats == null) {
@@ -197,812 +168,600 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
         return frameStats;
     }
 
-    public PortableBeaconScreen(PortableBeaconMenu menu, Inventory inventory, Component title) {
-        // The size goes through the constructor: both fields are final now.
-        super(menu, inventory, title, IMAGE_W, IMAGE_H);
-        this.titleLabelX = CONTENT_LEFT;
-        this.titleLabelY = 10;
-        this.inventoryLabelX = CONTENT_LEFT;
-        this.inventoryLabelY = 160;
+    /** For JEI, which would otherwise lay its item list over the tabs. */
+    public List<Rect2i> extraAreas() {
+        return selectorOpen ? List.of() : tabs.areas();
     }
-
-    /** Only one drawer at a time, so the side of the screen never becomes a second panel. */
-    private enum Drawer { NONE, STATS, AUGMENTS, FUEL }
-
-    /**
-     * One drawer per side, not one in total.
-     *
-     * <p>They open away from each other, so nothing stops both being out at once - and comparing
-     * the beacon's figures against the augments producing them is exactly when you want both.
-     */
-    private Drawer leftDrawer = Drawer.NONE;
-    private Drawer rightDrawer = Drawer.AUGMENTS;
-
-    private long leftAnimStart = Long.MIN_VALUE;
-    private long rightAnimStart = Long.MIN_VALUE;
-    /** What the menu was last told, so slots are only revealed once the panel has finished opening. */
-    private Drawer syncedRightDrawer = Drawer.NONE;
 
     // ------------------------------------------------------------------ rendering
 
     @Override
-    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY,
-                                  float partialTick) {
+    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos, topPos, 0.0F, 0.0F,
-                imageWidth, imageHeight, TEXTURE_SIZE, TEXTURE_SIZE);
+        frameStats = null;
+        // Tabs first: the window is drawn over their inner edge. The picker covers everything, so
+        // nothing of the beacon - tabs included - shows through it or takes a click.
+        if (!selectorOpen) {
+            tabs.renderBackgrounds(graphics, leftPos, topPos);
+        }
+        GuiSprites.panel(graphics, leftPos, topPos, imageWidth, imageHeight);
+
+        for (Slot slot : menu.slots) {
+            if (!(slot instanceof ResourceHandlerSlot)) {
+                GuiSprites.slot(graphics, leftPos + slot.x, topPos + slot.y);
+            }
+        }
+        if (BPConfig.fuelEnabled()) {
+            GuiSprites.fuelGauge(graphics, leftPos + GuiMetrics.GAUGE_X, topPos + GAUGE_Y,
+                    GuiMetrics.GAUGE_WIDTH, GAUGE_H, (float) fuelFill());
+            GuiSprites.slot(graphics, leftPos + PortableBeaconMenu.FUEL_SLOT_X,
+                    topPos + PortableBeaconMenu.FUEL_SLOT_Y);
+        }
+        drawGhosts(graphics);
     }
 
     /**
-     * Drawing is recorded rather than executed now — the screen describes a frame and the engine
-     * renders it afterwards. The calls are the same ones; only the moment they run changed, so the
-     * drawer animation still reads the clock here and gets a fresh width every frame.
+     * FactoryIO's ghost items: what goes in an empty slot. The fuel slot shows the cheapest fuel,
+     * an open augment slot a bare augment. Last in the background, because each ghost lifts what
+     * follows it onto a new stratum.
      */
-    @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY,
-                                   float partialTick) {
-        frameStats = null;
-        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+    private void drawGhosts(GuiGraphicsExtractor graphics) {
         if (selectorOpen) {
-            renderSelectorTooltip(graphics, mouseX, mouseY);
             return;
         }
-        if (renderFuelSlotTooltip(graphics, mouseX, mouseY)) {
-            return;
+        for (Slot slot : menu.slots) {
+            if (!(slot instanceof ResourceHandlerSlot handler) || !slot.isActive() || slot.hasItem()) {
+                continue;
+            }
+            int index = handler.getSlotIndex();
+            ItemStack ghost;
+            if (index == PortableBeaconItem.FUEL_SLOT) {
+                ghost = fuelGhost();
+            } else if (index - 1 < stats().augmentSlots()) {
+                ghost = new ItemStack(BPItems.AUGMENT.get());
+            } else {
+                continue;
+            }
+            GuiSprites.ghostItem(graphics, ghost, leftPos + slot.x, topPos + slot.y);
         }
-        List<Component> tooltip = tooltipAt(mouseX - leftPos, mouseY - topPos);
-        if (tooltip.isEmpty()) {
-            super.extractTooltip(graphics, mouseX, mouseY);
+    }
+
+    /** The cheapest fuel named by item: the one a player is most likely to have on them. */
+    private ItemStack fuelGhost() {
+        if (fuelGhost == null) {
+            fuelGhost = Minecraft.getInstance().level.registryAccess().lookupOrThrow(BPRegistryKeys.FUEL)
+                    .stream()
+                    .filter(def -> def.item().isPresent())
+                    .min(Comparator.comparingInt(FuelDef::units))
+                    .map(def -> new ItemStack(def.item().get()))
+                    .orElse(ItemStack.EMPTY);
+        }
+        return fuelGhost;
+    }
+
+    @Override
+    public void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        super.extractContents(graphics, mouseX, mouseY, partialTick);
+        if (selectorOpen) {
+            // Labels are drawn before the slots in 26.1, so a picker drawn with them would sit under
+            // the inventory's items. A new stratum puts it over everything already recorded.
+            graphics.nextStratum();
+            graphics.pose().pushMatrix();
+            graphics.pose().translate(leftPos, topPos);
+            drawSelector(graphics, mouseX - leftPos, mouseY - topPos);
+            graphics.pose().popMatrix();
         } else {
+            tabs.renderForegrounds(graphics, font, mouseX, mouseY);
+        }
+    }
+
+    @Override
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+        List<Component> tooltip = selectorOpen ? selectorTooltip(mouseX, mouseY) : tooltipAt(mouseX, mouseY);
+        if (!tooltip.isEmpty()) {
             graphics.setComponentTooltipForNextFrame(font, tooltip, mouseX, mouseY);
+        }
+    }
+
+    @Override
+    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        // Vanilla's slot tooltips, except over the picker or where this screen has its own.
+        if (selectorOpen || !tooltipAt(mouseX, mouseY).isEmpty()) {
+            return;
+        }
+        if (!renderFuelSlotTooltip(graphics, mouseX, mouseY)) {
+            super.extractTooltip(graphics, mouseX, mouseY);
         }
     }
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         super.extractLabels(graphics, mouseX, mouseY);
+        int x = mouseX - leftPos;
+        int y = mouseY - topPos;
+        drawBand(graphics, x, y);
+        if (!selectorOpen) {
+            drawRows(graphics, x, y);
+        }
+    }
 
-        int localX = mouseX - leftPos;
-        int localY = mouseY - topPos;
+    /**
+     * The band: title, the master switch, the light. A slide switch for the beacon itself - the
+     * power glyph that stood here read as neither a button nor a state - and the light beside it,
+     * FactoryIO's, because the two say different things: what the player chose, and what is
+     * actually happening (running, low, dry).
+     */
+    private void drawBand(GuiGraphicsExtractor graphics, int x, int y) {
+        GuiSprites.toggle(graphics, POWER_X, POWER_Y, menu.state().active(), true);
+        if (within(x, y, POWER_X, POWER_Y, POWER_W, POWER_H)) {
+            graphics.requestCursor(CursorTypes.POINTING_HAND);
+        }
+        GuiSprites.statusLight(graphics, status(), GuiMetrics.LED_X, GuiMetrics.LED_Y);
+    }
 
-        BeaconState state = menu.state();
+    /**
+     * The effects as one table: a sunken outline holding a row per slot, the rows split by a hairline.
+     * Five loose slot frames down the left read as five unrelated boxes; a table reads as a list,
+     * which is what it is.
+     */
+    private void drawRows(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         BeaconStats stats = stats();
-
-        graphics.text(font, Component.translatable("portablebeacons.gui.effects"),
-                CONTENT_LEFT, CASE_Y - 12, TEXT, false);
-
-        updateSlotVisibility();
-        drawTabs(graphics, state, localX, localY);
-        drawDrawer(graphics, state, stats, localX, localY);
-        drawCases(graphics, state, stats, localX, localY);
-
-        if (selectorOpen) {
-            drawSelector(graphics, localX, localY);
-        } else {
-            drawInfoPanel(graphics, state, stats, localX, localY);
+        List<EffectSlotConfig> effects = menu.state().effects();
+        int top = GuiMetrics.CONTENT_TOP;
+        int bottom = PortableBeaconMenu.CONTENT_BOTTOM;
+        GuiSprites.table(graphics, ROW_X, top, ROW_RIGHT - ROW_X, bottom - top);
+        for (int i = 1; i < BeaconStats.MAX_EFFECT_SLOTS; i++) {
+            int line = rowY(i) - 1;
+            graphics.fill(ROW_X + 1, line, ROW_RIGHT - 1, line + 1, GuiTheme.TABLE_LINE);
         }
-    }
-
-    private void drawTabs(GuiGraphicsExtractor graphics, BeaconState state, int mouseX, int mouseY) {
-        // Left column: the two controls that govern the beacon.
-        boolean powerHovered = hitTab(mouseX, mouseY, false, POWER_TAB_Y);
-        // Never expanded - power is a switch, not a drawer. Passing "is the beacon on" as the
-        // expanded flag is what drew this tab a full panel wide whenever the beacon was running.
-        drawTab(graphics, false, POWER_TAB_Y, TAB_H, 0.0F, powerHovered);
-        int powerCx = glyphCentre(false);
-        drawPowerGlyph(graphics, powerCx, POWER_TAB_Y + TAB_H / 2 - 2,
-                state.active() ? ACCENT_POWER : GLYPH_OFF);
-        // A lit pip rather than a whole coloured tab: the state stays legible without the control
-        // shouting louder than everything else on the screen.
-        graphics.fill(powerCx - 7, POWER_TAB_Y + TAB_H - 8, powerCx + 7, POWER_TAB_Y + TAB_H - 5,
-                state.active() ? ACCENT_POWER : 0xFF8A8A8A);
-
-        float leftP = progress(leftAnimStart, leftDrawer != Drawer.NONE);
-        drawTab(graphics, false, STATS_TAB_Y, lerp(TAB_H, STATS_PANEL_H, leftP), leftP, hitTab(mouseX, mouseY, false, STATS_TAB_Y));
-        drawTabBars(graphics, glyphCentre(false), STATS_TAB_Y + TAB_H / 2,
-                leftDrawer == Drawer.STATS ? ACCENT_STATS : GLYPH_OFF);
-
-        // Right column: the two containers you load.
-        float rightP = progress(rightAnimStart, rightDrawer != Drawer.NONE);
-        float augP = rightDrawer == Drawer.AUGMENTS ? rightP : 0.0F;
-        drawTab(graphics, true, AUGMENT_TAB_Y, lerp(TAB_H, PANEL_H, augP), augP, hitTab(mouseX, mouseY, true, AUGMENT_TAB_Y));
-        drawTabGem(graphics, glyphCentre(true), AUGMENT_TAB_Y + TAB_H / 2,
-                rightDrawer == Drawer.AUGMENTS ? ACCENT_AUGMENTS : GLYPH_OFF);
-
-        if (BPConfig.fuelEnabled()) {
-            float fuelP = rightDrawer == Drawer.FUEL ? rightP : 0.0F;
-            int fuelY = fuelTabY();
-            drawTab(graphics, true, fuelY, lerp(TAB_H, PANEL_H, fuelP), fuelP, hitTab(mouseX, mouseY, true, fuelY));
-            drawTabFlame(graphics, glyphCentre(true), fuelY + TAB_H / 2,
-                    rightDrawer == Drawer.FUEL ? ACCENT_FUEL : GLYPH_OFF);
-        }
-    }
-
-    /**
-     * Where the fuel tab currently sits: pushed down by the augment panel above it, and following
-     * that panel's animation rather than jumping once it finishes.
-     */
-    private int fuelTabY() {
-        float augP = rightDrawer == Drawer.AUGMENTS
-                ? progress(rightAnimStart, true) : 0.0F;
-        return FUEL_TAB_Y + Math.round(augP * (AUGMENT_TAB_Y + PANEL_H + PANEL_GAP - FUEL_TAB_Y));
-    }
-
-    /**
-     * 0 shut, 1 fully out. Eased so the panel arrives rather than stops dead.
-     *
-     * <p>Slots are not animated - {@code Slot.x} is final - so they are revealed only once this
-     * reaches 1, which is why the panel has to finish quickly.
-     */
-    private static float progress(long startedAt, boolean opening) {
-        if (startedAt == Long.MIN_VALUE) {
-            return opening ? 1.0F : 0.0F;
-        }
-        float t = Mth.clamp((System.currentTimeMillis() - startedAt) / (float) DRAWER_ANIM_MS,
-                0.0F, 1.0F);
-        float eased = 1.0F - (1.0F - t) * (1.0F - t);
-        return opening ? eased : 1.0F - eased;
-    }
-
-    private static int lerp(int from, int to, float t) {
-        return from + Math.round((to - from) * t);
-    }
-
-    /** Icons keep to the closed tab's centre, so they do not slide about as the panel grows. */
-    private static int glyphCentre(boolean right) {
-        int width = TAB_W;
-        return right ? RIGHT_TAB_X + 2 + width / 2 : LEFT_TAB_X - 2 - width / 2;
-    }
-
-    private static boolean hitTab(int mouseX, int mouseY, boolean right, int y) {
-        int x = right ? RIGHT_TAB_X : LEFT_TAB_X - TAB_W;
-        return within(mouseX, mouseY, x, y, TAB_W, TAB_H);
-    }
-
-    /**
-     * A tab welded to the frame, which grows into its own panel when opened.
-     *
-     * <p>The edge against the frame carries no outline and no bevel, so tab and panel read as one
-     * piece hinged on the window rather than as a square parked next to it. An open tab keeps the
-     * frame's own face colour for the same reason: it is the same surface, pulled out.
-     *
-     * <p>The accent stripe on the outer edge is what tells the four apart at a glance; the icons
-     * alone are small and all the same grey.
-     */
-    private void drawTab(GuiGraphicsExtractor graphics, boolean right, int y, int height,
-                         float openness, boolean hovered) {
-        int width = lerp(TAB_W, PANEL_W, openness);
-        boolean open = openness > 0.99F;
-        int face = open ? 0xFFC6C6C6 : hovered ? 0xFFBDBDBD : 0xFFA8A8A8;
-        // Everything is written for the right-hand column and mirrored for the left, so the two
-        // cannot drift apart.
-        int near = right ? RIGHT_TAB_X : LEFT_TAB_X;
-        int far = right ? near + width : near - width;
-        int outerLo = Math.min(near, far);
-        int outerHi = Math.max(near, far);
-
-        graphics.fill(outerLo, y - 1, outerHi + 1, y, 0xFF1B1B1B);
-        graphics.fill(outerLo, y + height, outerHi + 1, y + height + 1, 0xFF1B1B1B);
-        graphics.fill(right ? far : far - 1, y - 1, right ? far + 1 : far, y + height + 1,
-                0xFF1B1B1B);
-        graphics.fill(outerLo, y, outerHi, y + height, face);
-
-        // Clipped outer corners, so a column of them reads as tabs and not as bricks.
-        int cornerLo = right ? far - 1 : far;
-        graphics.fill(cornerLo, y, cornerLo + 1, y + 1, 0xFF1B1B1B);
-        graphics.fill(cornerLo, y + height - 1, cornerLo + 1, y + height, 0xFF1B1B1B);
-
-        graphics.fill(outerLo, y + 1, outerHi - 1, y + 2, 0x40FFFFFF);
-        graphics.fill(outerLo, y + height - 2, outerHi - 1, y + height - 1, 0x30000000);
-    }
-
-    /**
-     * Ascending bars, drawn on a baseline so they read as a chart and not as three loose blocks.
-     *
-     * <p>Every glyph is a silhouette in one colour with a single darker shadow. The previous ones
-     * mixed a mid grey with a near-white highlight, which at this size just looked muddy.
-     */
-    private static void drawTabBars(GuiGraphicsExtractor graphics, int cx, int cy, int c) {
-        int shadow = shade(c);
-        graphics.fill(cx - 9, cy + 7, cx + 10, cy + 9, shadow);
-        graphics.fill(cx - 8, cy + 1, cx - 3, cy + 7, c);
-        graphics.fill(cx - 2, cy - 3, cx + 3, cy + 7, c);
-        graphics.fill(cx + 4, cy - 7, cx + 9, cy + 7, c);
-    }
-
-    /** A cut gem: wide shoulders, tapered foot, with one facet picked out. */
-    private static void drawTabGem(GuiGraphicsExtractor graphics, int cx, int cy, int c) {
-        int shadow = shade(c);
-        graphics.fill(cx - 6, cy - 7, cx + 6, cy - 4, c);
-        graphics.fill(cx - 8, cy - 4, cx + 8, cy + 1, c);
-        graphics.fill(cx - 5, cy + 1, cx + 5, cy + 4, c);
-        graphics.fill(cx - 2, cy + 4, cx + 2, cy + 7, c);
-        graphics.fill(cx - 5, cy - 4, cx - 2, cy + 1, shadow);
-    }
-
-    /** A flame: narrow tip, full body, with a hollow core so it is not a solid blob. */
-    private static void drawTabFlame(GuiGraphicsExtractor graphics, int cx, int cy, int c) {
-        int shadow = shade(c);
-        graphics.fill(cx - 2, cy - 8, cx + 2, cy - 5, c);
-        graphics.fill(cx - 3, cy - 5, cx + 3, cy - 2, c);
-        graphics.fill(cx - 6, cy - 2, cx + 6, cy + 4, c);
-        graphics.fill(cx - 4, cy + 4, cx + 4, cy + 7, c);
-        graphics.fill(cx - 3, cy, cx + 3, cy + 4, shadow);
-    }
-
-    /** The same hue, darkened - one colour per glyph keeps the four consistent. */
-    private static int shade(int argb) {
-        int r = (argb >> 16 & 0xFF) * 55 / 100;
-        int g = (argb >> 8 & 0xFF) * 55 / 100;
-        int b = (argb & 0xFF) * 55 / 100;
-        return 0xFF000000 | r << 16 | g << 8 | b;
-    }
-
-    /**
-     * The open drawer, drawn to the right of the tabs.
-     *
-     * <p>The slots inside it sit at fixed coordinates; a closed drawer hides them from rendering and
-     * from hit-testing instead of moving them, because {@code Slot.x} is final.
-     */
-    private void drawDrawer(GuiGraphicsExtractor graphics, BeaconState state, BeaconStats stats,
-                            int mouseX, int mouseY) {
-        // The two sides are independent, so each is drawn on its own terms. Contents appear only
-        // once the panel holding them has finished growing, or they would be drawn outside it.
-        if (leftDrawer == Drawer.STATS && progress(leftAnimStart, true) > 0.99F) {
-            drawStatsDrawer(graphics, state, stats);
-        }
-        if (rightDrawer == Drawer.NONE || (rightDrawer == Drawer.FUEL && !BPConfig.fuelEnabled())
-                || progress(rightAnimStart, true) <= 0.99F) {
-            return;
-        }
-        // The panel itself is the open tab, drawn by drawTabs; only its contents belong here.
-        int y = rightDrawer == Drawer.AUGMENTS ? AUGMENT_DRAWER_Y : FUEL_DRAWER_Y;
-        graphics.text(font, Component.translatable(rightDrawer == Drawer.AUGMENTS
-                        ? "portablebeacons.gui.augments" : "portablebeacons.gui.fuel"),
-                DRAWER_X + PANEL_TEXT_INSET, y + 6, TEXT, false);
-
-        if (rightDrawer == Drawer.AUGMENTS) {
-            for (int i = 0; i < PortableBeaconItem.AUGMENT_SLOTS; i++) {
-                int x = AUGMENT_SLOT_X + i * SLOT_SIZE;
-                slotFrame(graphics, x, AUGMENT_SLOT_Y);
-                if (i >= stats.augmentSlots()) {
-                    graphics.fill(x + 1, AUGMENT_SLOT_Y + 1, x + SLOT_SIZE - 1,
-                            AUGMENT_SLOT_Y + SLOT_SIZE - 1, 0x80000000);
-                    drawPadlock(graphics, x + SLOT_SIZE / 2, AUGMENT_SLOT_Y + 8, 0xFF8A8A8A);
-                } else if (slotStack(PortableBeaconItem.augmentSlot(i)).isEmpty()) {
-                    graphics.centeredText(font, "+", x + SLOT_SIZE / 2, AUGMENT_SLOT_Y + 5,
-                            0xFFA0A0A0);
-                }
+        for (int i = 0; i < visibleRows(stats); i++) {
+            int y = rowY(i);
+            boolean locked = i >= stats.effectSlots();
+            boolean hovered = !locked && within(mouseX, mouseY, ROW_X, y, ROW_RIGHT - ROW_X, ROW_H);
+            if (hovered) {
+                graphics.fill(ROW_X + 1, y, ROW_RIGHT - 1, y + ROW_H - 1, GuiTheme.HOVER_WASH);
+                graphics.requestCursor(CursorTypes.POINTING_HAND);
             }
-        } else {
-            slotFrame(graphics, FUEL_SLOT_X, FUEL_SLOT_Y);
-            graphics.fill(GAUGE_X, GAUGE_Y, GAUGE_X + GAUGE_W, GAUGE_Y + GAUGE_H, 0xFF8B8B8B);
-            graphics.outline(GAUGE_X, GAUGE_Y, GAUGE_W, GAUGE_H, 0xFF373737);
-            drawFuel(graphics, state, stats);
-        }
-    }
 
-    /**
-     * The beacon's figures, moved off the main panel.
-     *
-     * <p>They were three lines of small text wedged beside the effect cases, competing with them
-     * for the same row. In a drawer they get labels, room to breathe, and the case row gets the
-     * whole width back.
-     */
-    private void drawStatsDrawer(GuiGraphicsExtractor graphics, BeaconState state, BeaconStats stats) {
-        // Opens leftward, so its text is laid out from the panel's far edge inwards.
-        int x = LEFT_TAB_X - PANEL_W + 8;
-        // Stops short of the tab glyph, which sits at the panel's inner edge.
-        int textW = PANEL_W - PANEL_TEXT_INSET - 8;
-        graphics.text(font, Component.translatable("portablebeacons.gui.stats"),
-                x, STATS_TAB_Y + 6, TEXT, false);
-
-        int y = STATS_TAB_Y + 20;
-        for (Component line : summaryTooltip(state, stats)) {
-            graphics.text(font, font.plainSubstrByWidth(line.getString(), textW),
-                    x, y, TEXT_DIM, false);
-            y += 11;
-        }
-    }
-
-    /**
-     * Raised panel matching the frame. Still needed by the effect picker, which floats over the
-     * screen wherever its case happens to be; the drawers no longer use it, because an open tab
-     * draws its own body.
-     */
-    private static void panel(GuiGraphicsExtractor graphics, int x, int y, int w, int h) {
-        graphics.fill(x, y - 1, x + w + 1, y + h + 1, 0xFF1B1B1B);
-        graphics.fill(x, y, x + w, y + h, 0xFFC6C6C6);
-        graphics.fill(x, y, x + w - 1, y + 1, 0xFFFFFFFF);
-        graphics.fill(x, y, x + 1, y + h - 1, 0xFFFFFFFF);
-        graphics.fill(x, y + h - 1, x + w, y + h, 0xFF555555);
-        graphics.fill(x + w - 1, y, x + w, y + h, 0xFF555555);
-    }
-
-    /** A sunken effect case, matching the recesses the background texture draws elsewhere. */
-    private static void caseRecess(GuiGraphicsExtractor graphics, int x, int y) {
-        graphics.fill(x, y, x + CASE_SIZE, y + CASE_SIZE, 0xFF8B8B8B);
-        graphics.fill(x, y, x + CASE_SIZE, y + 1, 0xFF373737);
-        graphics.fill(x, y, x + 1, y + CASE_SIZE, 0xFF373737);
-        graphics.fill(x, y + CASE_SIZE - 1, x + CASE_SIZE, y + CASE_SIZE, 0xFFFFFFFF);
-        graphics.fill(x + CASE_SIZE - 1, y, x + CASE_SIZE, y + CASE_SIZE, 0xFFFFFFFF);
-    }
-
-    private static void slotFrame(GuiGraphicsExtractor graphics, int x, int y) {
-        graphics.fill(x, y, x + SLOT_SIZE, y + SLOT_SIZE, 0xFF8B8B8B);
-        graphics.fill(x, y, x + SLOT_SIZE, y + 1, 0xFF373737);
-        graphics.fill(x, y, x + 1, y + SLOT_SIZE, 0xFF373737);
-        graphics.fill(x, y + SLOT_SIZE - 1, x + SLOT_SIZE, y + SLOT_SIZE, 0xFFFFFFFF);
-        graphics.fill(x + SLOT_SIZE - 1, y, x + SLOT_SIZE, y + SLOT_SIZE, 0xFFFFFFFF);
-    }
-
-    /** The universal power mark: a broken ring with a stroke through the gap. */
-    private static void drawPowerGlyph(GuiGraphicsExtractor graphics, int cx, int cy, int colour) {
-        graphics.fill(cx - 1, cy - 9, cx + 2, cy - 1, colour);
-        graphics.fill(cx - 7, cy - 5, cx - 4, cy + 4, colour);
-        graphics.fill(cx + 4, cy - 5, cx + 7, cy + 4, colour);
-        graphics.fill(cx - 6, cy + 4, cx + 6, cy + 7, colour);
-        graphics.fill(cx - 7, cy - 6, cx - 3, cy - 3, colour);
-        graphics.fill(cx + 3, cy - 6, cx + 7, cy - 3, colour);
-    }
-
-    private void drawCases(GuiGraphicsExtractor graphics, BeaconState state, BeaconStats stats,
-                           int mouseX, int mouseY) {
-        List<EffectSlotConfig> effects = state.effects();
-        for (int i = 0; i < visibleCases(stats); i++) {
-            int x = CASE_X + i * CASE_SPACING;
-
-            // The recess is drawn here rather than baked into the background texture. The texture
-            // carried exactly three, so a beacon with more effect slots showed its fourth and fifth
-            // cases floating with no frame at all — and the count is not the texture's to know.
-            caseRecess(graphics, x, CASE_Y);
-
-            if (i >= stats.effectSlots()) {
-                // Locked cases stay visible rather than hidden: the player should see what a higher
-                // tier would give them.
-                graphics.fill(x + 2, CASE_Y + 2, x + CASE_SIZE - 2, CASE_Y + CASE_SIZE - 2,
-                        0x60000000);
-                drawPadlock(graphics, x + CASE_SIZE / 2, CASE_Y + 11, 0xFF8A8A8A);
+            if (locked) {
+                // Shown rather than hidden: the player should see what a higher tier would give. A
+                // padlock and nothing else - the sentence saying how to unlock it is the tooltip's,
+                // and spelled out in the row it ran off the window in most languages.
+                // smallLock sits in a 16-pixel square's corner; offset so it lands in the icon's centre.
+                GuiSprites.smallLock(graphics, ROW_X + 2 - 4, y + 1 - 4);
                 continue;
-            }
-            if (i == focusedCase) {
-                graphics.outline(x - 1, CASE_Y - 1, CASE_SIZE + 2, CASE_SIZE + 2, 0xFFFFDD55);
             }
             if (i >= effects.size()) {
-                graphics.centeredText(font, "+", x + CASE_SIZE / 2, CASE_Y + 9, TEXT_DIM);
+                GuiSprites.icon(graphics, GuiSprites.Icon.PLUS, ROW_X + 4, y + 3);
+                drawRowText(graphics, Component.translatable("portablebeacons.gui.empty_slot"),
+                        ROW_RIGHT - 4 - NAME_X, y + 5, GuiTheme.TEXT_MUTED);
                 continue;
             }
-
-            EffectSlotConfig slot = effects.get(i);
-            drawEffectIcon(graphics, slot.effect(), x + 5, CASE_Y + 5);
-            if (!slot.enabled()) {
-                graphics.fill(x + 2, CASE_Y + 2, x + CASE_SIZE - 2, CASE_Y + CASE_SIZE - 2,
-                        0x90303030);
-            }
-            graphics.text(font, roman(slot.amplifier() + 1),
-                    x + CASE_SIZE - 9, CASE_Y + CASE_SIZE - 10, 0xFFFFFFFF, true);
-            // A shared effect looked identical to a private one, which hid the single most
-            // expensive setting on the screen.
-            if (slot.aura().isAura()) {
-                graphics.fill(x + 3, CASE_Y + 3, x + 7, CASE_Y + 7, 0xFF6FA8DC);
-                graphics.outline(x + 3, CASE_Y + 3, 4, 4, 0xFF20364C);
-            }
+            drawEffectRow(graphics, i, effects.get(i), stats, y);
         }
     }
 
-    /**
-     * Unlocked cases plus a single locked preview.
-     *
-     * <p>Drawing the full five turned a tier-IV beacon into two slots and three padlocks, which reads
-     * as a broken screen rather than as progression.
-     */
-    private int visibleCases(BeaconStats stats) {
-        return Math.min(MAX_CASES, stats.effectSlots() + 1);
-    }
-
-    /**
-     * The beacon-wide figures, right-aligned to the content column.
-     *
-     * <p>Right-aligned rather than placed at a fixed x: a longer translation used to run under the
-     * frame. No fuel units either - they are an implementation detail of the datapack format, and a
-     * rate in points per second is not something a player can act on. Time is.
-     */
-    private List<Component> summaryTooltip(BeaconState state, BeaconStats stats) {
-        List<Component> lines = new ArrayList<>(3);
-        lines.add(Component.translatable("portablebeacons.gui.range",
-                String.format(Locale.ROOT, "%.0f", stats.range())));
-        if (BPConfig.fuelEnabled()) {
-            lines.add(Component.translatable("portablebeacons.gui.runtime", totalRuntime())
-                    .withStyle(ChatFormatting.GRAY));
-        }
-        lines.add(Component.translatable("portablebeacons.gui.slots",
-                        state.effects().size(), stats.effectSlots())
-                .withStyle(ChatFormatting.GRAY));
-        return lines;
-    }
-
-    private void drawInfoPanel(GuiGraphicsExtractor graphics, BeaconState state, BeaconStats stats,
-                               int mouseX, int mouseY) {
-        List<EffectSlotConfig> effects = state.effects();
-        if (focusedCase >= effects.size()) {
-            graphics.text(font, Component.translatable("portablebeacons.gui.empty_slot"),
-                    INFO_X + 8, INFO_Y + 10, TEXT_DIM, false);
-            return;
-        }
-        EffectSlotConfig slot = effects.get(focusedCase);
+    private void drawEffectRow(GuiGraphicsExtractor graphics, int row, EffectSlotConfig slot, BeaconStats stats,
+                               int y) {
         Optional<BeaconEffectDef> maybeDef = effectLookup().get(slot.effect());
         if (maybeDef.isEmpty()) {
             return;
         }
         BeaconEffectDef def = maybeDef.get();
+        drawEffectIcon(graphics, slot.effect(), ROW_X + 2, y + 1);
+        if (!slot.enabled()) {
+            graphics.fill(ROW_X + 2, y + 1, ROW_X + 18, y + 17, GuiTheme.OFF_WASH);
+        }
+        drawRowText(graphics, def.effect().value().getDisplayName(), NAME_W, y + 3,
+                slot.enabled() ? GuiTheme.TEXT : GuiTheme.TEXT_MUTED);
 
-        // The icon repeated beside the name ties the panel to the case it describes; without it,
-        // nothing said which of the cases above these controls belonged to.
-        drawEffectIcon(graphics, slot.effect(), INFO_X + 7, INFO_Y + 6);
-        graphics.text(font, Component.empty()
-                        .append(def.effect().value().getDisplayName())
-                        .append(" ")
-                        .append(roman(slot.amplifier() + 1)),
-                INFO_X + 28, INFO_Y + 8, TEXT, false);
+        // What this effect takes of the beacon's drain, as a bar under its name - Factorio's power
+        // statistics, in one line. Which effect is emptying the beacon is the question the old
+        // screen answered only in a tooltip; here it is seen before anything is hovered.
+        if (slot.enabled()) {
+            int barY = y + 13;
+            graphics.fill(NAME_X, barY, NAME_X + NAME_W, barY + 2, GuiTheme.DRAIN_EMPTY);
+            int share = (int) Math.round(NAME_W * drainShare(row, slot, stats));
+            graphics.fill(NAME_X, barY, NAME_X + share, barY + 2,
+                    isFree(row, stats) ? GuiTheme.DRAIN_FREE : GuiTheme.DRAIN);
+        }
 
-        // This effect's share of the total drain, rather than a raw rate: it answers "which of my
-        // effects is draining the beacon" without asking the player to compare two decimals.
-        // A free slot covers this one: say so rather than printing a share of a total it is not in.
-        boolean[] free = BeaconResolver.freeMask(state.effects(), stats, effectLookup());
-        int index = state.effects().indexOf(slot);
-        boolean covered = index >= 0 && index < free.length && free[index];
+        // The level as a badge - a dark chip with a white numeral, which reads as something to press
+        // the way a bare numeral never did. Muted when it has nowhere to go.
+        boolean amplifiable = canAmplify(def, stats);
+        int chipY = y + (ROW_H - LEVEL_H) / 2 - 1;
+        GuiSprites.field(graphics, LEVEL_X, chipY, LEVEL_W, LEVEL_H);
+        String level = roman(slot.amplifier() + 1);
+        graphics.text(font, level, LEVEL_X + (LEVEL_W - font.width(level)) / 2 + 1, chipY + 2,
+                amplifiable ? GuiTheme.TAB_VALUE : GuiTheme.TAB_MUTED, false);
 
+        // Who it reaches, as a figure: one person for self, blue groups when shared - the costly
+        // setting is the visible one. Washed out when the beacon offers nothing else.
+        int iconY = y + (ROW_H - ICON) / 2 - 1;
+        GuiSprites.icon(graphics, auraIcon(slot.aura()), AURA_X, iconY);
+        if (stats.allowedAuraModes().size() <= 1) {
+            graphics.fill(AURA_X, iconY, AURA_X + ICON, iconY + ICON, GuiTheme.GHOST_WASH);
+        }
+        GuiSprites.toggle(graphics, SWITCH_X, y + (ROW_H - GuiSprites.SWITCH_H) / 2 - 1, slot.enabled(), false);
+    }
+
+    private void drawRowText(GuiGraphicsExtractor graphics, Component text, int width, int textY, int colour) {
+        graphics.text(font, font.plainSubstrByWidth(text.getString(), width), NAME_X, textY, colour, false);
+    }
+
+    /** This effect's share of what the beacon draws, 0 to 1 - the same figure the bill uses. */
+    private double drainShare(int row, EffectSlotConfig slot, BeaconStats stats) {
+        if (isFree(row, stats)) {
+            return 1.0;
+        }
+        double total = BeaconResolver.fuelPerSecond(menu.state(), stats, effectLookup());
         double cost = BeaconResolver.fuelPerSecond(slot, stats, effectLookup()) * stats.fuelMultiplier();
-        double total = BeaconResolver.fuelPerSecond(state, stats, effectLookup());
-        int share = total <= 0.0 ? 0 : (int) Math.round(cost / total * 100.0);
-        // Labelled: the bare word "Self" next to a percentage read as if the two were related.
-        String reach = slot.aura().isAura()
-                ? String.format(Locale.ROOT, "%.0f m", stats.range())
-                : Component.translatable("portablebeacons.aura.self").getString();
-        // Two independent facts, so they are placed independently: share from the left, reach
-        // against the right edge, and the share truncated if the two would meet. Concatenating them
-        // with spaces meant the pair ran past the panel as soon as either string grew - which is
-        // every language whose words are longer than English's.
-        String shareText = covered
-                ? Component.translatable("portablebeacons.gui.share_free").getString()
-                : Component.translatable("portablebeacons.gui.share", share).getString();
-        String reachText = Component.translatable("portablebeacons.gui.reach", reach).getString();
-        int reachX = INFO_X + INFO_W - 6 - font.width(reachText);
-        int shareX = INFO_X + 28;
-        graphics.text(font,
-                font.plainSubstrByWidth(shareText, Math.max(0, reachX - shareX - 6)),
-                shareX, INFO_Y + 19, TEXT_DIM, false);
-        graphics.text(font, reachText, reachX, INFO_Y + 19, TEXT_DIM, false);
-
-        // Explicit rather than "click the case again": re-clicking the case is how you focus it,
-        // and overloading that click with "open the picker" made every attempt to read a second
-        // effect's details pop the selector instead.
-        drawButton(graphics, ROW_X, ROW_CHANGE, ROW_W, BTN_H,
-                Component.translatable("portablebeacons.gui.change_effect"),
-                within(mouseX, mouseY, ROW_X, ROW_CHANGE, ROW_W, BTN_H), true, false);
-
-        drawButton(graphics, buttonX(0), ROW_SETTINGS, BTN_W, BTN_H,
-                Component.literal("< " + roman(slot.amplifier() + 1) + " >"),
-                within(mouseX, mouseY, buttonX(0), ROW_SETTINGS, BTN_W, BTN_H),
-                canAmplify(def, stats), false);
-        drawButton(graphics, buttonX(1), ROW_SETTINGS, BTN_W, BTN_H,
-                Component.translatable(slot.enabled()
-                        ? "portablebeacons.gui.active" : "portablebeacons.gui.inactive"),
-                within(mouseX, mouseY, buttonX(1), ROW_SETTINGS, BTN_W, BTN_H), true, slot.enabled());
-        drawButton(graphics, buttonX(2), ROW_SETTINGS, BTN_W, BTN_H,
-                Component.translatable("portablebeacons.aura." + slot.aura().getSerializedName()),
-                within(mouseX, mouseY, buttonX(2), ROW_SETTINGS, BTN_W, BTN_H),
-                stats.allowedAuraModes().size() > 1, slot.aura().isAura());
+        return total <= 0.0 ? 0.0 : Math.min(1.0, cost / total);
     }
 
-    private static int buttonX(int index) {
-        return ROW_X + index * (BTN_W + BTN_GAP);
+    /** Whether a free slot - Wellspring's - covers this row. */
+    private boolean isFree(int row, BeaconStats stats) {
+        boolean[] free = BeaconResolver.freeMask(menu.state().effects(), stats, effectLookup());
+        return row < free.length && free[row];
     }
 
-    private void drawFuel(GuiGraphicsExtractor graphics, BeaconState state, BeaconStats stats) {
-        int capacity = Math.max(1, stats.fuelCapacity());
-        int filled = (int) ((GAUGE_W - 4) * Math.min(1.0, state.fuel() / (double) capacity));
-        graphics.fill(GAUGE_X + 2, GAUGE_Y + 2, GAUGE_X + 2 + filled, GAUGE_Y + GAUGE_H - 2,
-                0xFF3FA34D);
-
-        String label = totalRuntime();
-        graphics.text(font, label,
-                GAUGE_X + (GAUGE_W - font.width(label)) / 2, GAUGE_Y + 4, 0xFFFFFFFF, true);
+    private static GuiSprites.Icon auraIcon(AuraMode mode) {
+        return switch (mode) {
+            case SELF -> GuiSprites.Icon.AURA_SELF;
+            case TEAM -> GuiSprites.Icon.AURA_TEAM;
+            case ALLIES -> GuiSprites.Icon.AURA_ALLIES;
+            case ALLIES_AND_PETS -> GuiSprites.Icon.AURA_PETS;
+        };
     }
 
     /**
-     * Tells the menu which drawer is open.
-     *
-     * <p>Vanilla guards both slot rendering and hover on {@code Slot#isActive()}, and the {@code
-     * isHovering(Slot, ...)} overload is private, so this is the supported way to hide a slot rather
-     * than overriding the screen.
+     * The unlocked rows plus a single locked preview. Five rows of padlocks under a two-slot beacon
+     * read as a broken screen rather than as progression.
      */
-    private void setLeftDrawer(Drawer next) {
-        if (next != leftDrawer) {
-            click();
-            leftAnimStart = System.currentTimeMillis();
+    private static int visibleRows(BeaconStats stats) {
+        return Math.min(BeaconStats.MAX_EFFECT_SLOTS, stats.effectSlots() + 1);
+    }
+
+    private static int rowY(int index) {
+        return GuiMetrics.CONTENT_TOP + index * ROW_H;
+    }
+
+    /** The row under the mouse, or -1. Window coordinates. */
+    private int rowAt(int x, int y) {
+        if (x < ROW_X || x >= ROW_RIGHT || y < GuiMetrics.CONTENT_TOP) {
+            return -1;
         }
-        leftDrawer = next;
+        int index = (y - GuiMetrics.CONTENT_TOP) / ROW_H;
+        return index < visibleRows(stats()) ? index : -1;
     }
 
-    private void setRightDrawer(Drawer next) {
-        if (next != rightDrawer) {
-            click();
-            rightAnimStart = System.currentTimeMillis();
-            // Hide the slots for the whole animation, in both directions: they cannot move with the
-            // panel, so showing them early leaves items floating outside it.
-            syncSlots(Drawer.NONE);
+    private static Part partAt(int x) {
+        if (x < ROW_X + ROW_H) {
+            return Part.ICON;
         }
-        rightDrawer = next;
-    }
-
-    /**
-     * Reveals the open drawer's slots once its panel has finished growing.
-     *
-     * <p>Called every frame rather than once on click, because the reveal is driven by the
-     * animation finishing, not by the click that started it.
-     */
-    private void updateSlotVisibility() {
-        Drawer wanted = progress(rightAnimStart, rightDrawer != Drawer.NONE) > 0.99F
-                ? rightDrawer
-                : Drawer.NONE;
-        if (wanted != syncedRightDrawer) {
-            syncSlots(wanted);
+        if (x >= SWITCH_X - 2) {
+            return Part.SWITCH;
         }
-    }
-
-    private void syncSlots(Drawer drawer) {
-        syncedRightDrawer = drawer;
-        menu.setVisibleDrawer(switch (drawer) {
-            case AUGMENTS -> PortableBeaconMenu.DRAWER_AUGMENTS;
-            case FUEL -> PortableBeaconMenu.DRAWER_FUEL;
-            case STATS, NONE -> PortableBeaconMenu.DRAWER_NONE;
-        });
-    }
-
-    @Override
-    protected void init() {
-        super.init();
-        syncSlots(rightDrawer);
-    }
-
-    /**
-     * A padlock rather than a question mark: "?" reads as unknown content, when the slot is simply
-     * not unlocked yet. A lock is the universally understood shape for that.
-     */
-    private static void drawPadlock(GuiGraphicsExtractor graphics, int cx, int cy, int colour) {
-        graphics.fill(cx - 2, cy - 5, cx + 2, cy - 4, colour);
-        graphics.fill(cx - 3, cy - 4, cx - 2, cy - 1, colour);
-        graphics.fill(cx + 1, cy - 4, cx + 2, cy - 1, colour);
-        graphics.fill(cx - 4, cy - 1, cx + 3, cy + 4, colour);
-    }
-
-    private ItemStack slotStack(int handlerIndex) {
-        for (var slot : menu.slots) {
-            if (slot instanceof ResourceHandlerSlot handler
-                    && handler.getSlotIndex() == handlerIndex) {
-                return slot.getItem();
-            }
+        if (x >= AURA_X - 2) {
+            return Part.AURA;
         }
-        return ItemStack.EMPTY;
-    }
-
-    // ------------------------------------------------------------------ effect selector
-
-    /**
-     * Anchored to the top-right corner of the case it belongs to, then clamped inside the screen.
-     *
-     * <p>Anchoring ties the popup to what opened it instead of dropping it in the middle of the
-     * panel; clamping is what keeps the rightmost case from opening a list half off the frame.
-     */
-    private void openSelector(int caseIndex) {
-        selectorOpen = true;
-        selectorSlot = caseIndex;
-        scroll = 0;
-        highlighted = 0;
-        search = "";
-
-        int anchorX = CASE_X + caseIndex * CASE_SPACING + CASE_SIZE + SELECTOR_OFFSET;
-        selectorX = Mth.clamp(anchorX, 4, IMAGE_W - SELECTOR_W - 4);
-        selectorY = Mth.clamp(CASE_Y - 2, 4, IMAGE_H - SELECTOR_H - 4);
-        openedAt = System.currentTimeMillis();
-    }
-
-    /** 0 to 1 over {@link #OPEN_ANIM_MS}; the popup unrolls instead of appearing from nowhere. */
-    private float openProgress() {
-        long elapsed = System.currentTimeMillis() - openedAt;
-        return elapsed >= OPEN_ANIM_MS ? 1.0F : elapsed / (float) OPEN_ANIM_MS;
-    }
-
-    private void drawSelector(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        // The pose is a 2D matrix now, so there is no z to lift the popup by. It does not need one:
-        // extraction records draw calls in order and the engine replays them in that order, so
-        // being drawn last is what puts the popup on top.
-        drawSelectorBody(graphics, mouseX, mouseY);
-    }
-
-    private void drawSelectorBody(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        int x = selectorX;
-        int y = selectorY;
-        float progress = openProgress();
-        int height = Math.max(4, Math.round(SELECTOR_H * progress));
-
-        // Vanilla palette, like every other surface here. A dark popup inside a light container
-        // reads as a foreign object, whatever its own merits.
-        panel(graphics, x, y, SELECTOR_W, height);
-        if (progress < 1.0F) {
-            return;
+        if (x >= LEVEL_X) {
+            return Part.LEVEL;
         }
-        drawSearchField(graphics, x, y);
-        // The list is a sunken well, the way vanilla sinks anything scrollable.
-        graphics.fill(x + 4, y + SEARCH_H, x + SELECTOR_W - 4, y + SELECTOR_H - FOOTER_H, 0xFF8B8B8B);
-        graphics.fill(x + 4, y + SEARCH_H, x + SELECTOR_W - 4, y + SEARCH_H + 1, 0xFF373737);
-        graphics.fill(x + 4, y + SEARCH_H, x + 5, y + SELECTOR_H - FOOTER_H, 0xFF373737);
-
-        List<ResourceKey<BeaconEffectDef>> rows = visibleRows();
-        if (rows.isEmpty()) {
-            graphics.centeredText(font,
-                    Component.translatable("portablebeacons.gui.no_results"),
-                    x + SELECTOR_W / 2, y + SEARCH_H + 16, 0xFF5A5A5A);
-            return;
-        }
-
-        highlighted = Mth.clamp(highlighted, 0, rows.size() - 1);
-        int tierLevel = tierLevel();
-        double maxCost = rows.stream()
-                .map(key -> effectLookup().get(key).map(BeaconEffectDef::cost).orElse(0.0))
-                .max(Double::compare).orElse(1.0);
-
-        for (int i = 0; i < VISIBLE_ROWS && i + scroll < rows.size(); i++) {
-            int index = i + scroll;
-            ResourceKey<BeaconEffectDef> key = rows.get(index);
-            Optional<BeaconEffectDef> maybeDef = effectLookup().get(key);
-            if (maybeDef.isEmpty()) {
-                continue;
-            }
-            BeaconEffectDef def = maybeDef.get();
-            int rowY = y + SEARCH_H + i * ROW_H;
-            boolean locked = def.minTier() > tierLevel;
-
-            if (within(mouseX, mouseY, x, rowY, SELECTOR_W, ROW_H)) {
-                // Hover drives the same highlight the arrow keys do, so mouse and keyboard never
-                // disagree about what Enter would pick.
-                highlighted = index;
-            }
-            int listLeft = x + 5;
-            int listRight = x + SELECTOR_W - 5;
-            if (index == highlighted) {
-                graphics.fill(listLeft, rowY, listRight, rowY + ROW_H, 0xFF7B9FD6);
-            } else if (index % 2 == 1) {
-                graphics.fill(listLeft, rowY, listRight, rowY + ROW_H, 0x18000000);
-            }
-
-            drawEffectIcon(graphics, key, listLeft + 2, rowY + 2);
-
-            if (locked) {
-                // A padlock and the numeral, not the sentence: "Requires tier III" ate most of the
-                // row and left the effect's own name truncated to nothing.
-                String tag = roman(def.minTier());
-                int tagX = listRight - font.width(tag) - 4;
-                graphics.text(font, tag, tagX, rowY + 5, 0xFF8B3A3A, false);
-                drawPadlock(graphics, tagX - 8, rowY + 9, 0xFF8B3A3A);
-                drawName(graphics, def, x, rowY, font.width(tag) + 20, 0xFF6E6E6E);
-            } else {
-                drawCostMeter(graphics, listRight - 26, rowY + 6, def.cost() / maxCost);
-                drawName(graphics, def, x, rowY, 34,
-                        index == highlighted ? 0xFFFFFFFF : 0xFF2B2B2B);
-            }
-        }
-
-        drawScrollbar(graphics, x, y, rows.size());
-        String count = Component.translatable("portablebeacons.gui.result_count", rows.size()).getString();
-        graphics.text(font, count, x + 6, y + SELECTOR_H - 10, 0xFF5A5A5A, false);
-    }
-
-    /** Truncated against whatever the right-hand column leaves, never assumed to fit. */
-    private void drawName(GuiGraphicsExtractor graphics, BeaconEffectDef def, int x, int rowY,
-                          int reserved, int colour) {
-        int available = SELECTOR_W - 24 - reserved;
-        String name = font.plainSubstrByWidth(
-                def.effect().value().getDisplayName().getString(), available);
-        graphics.text(font, name, x + 24, rowY + 6, colour, false);
-    }
-
-    /**
-     * Relative cost as four segments instead of a number.
-     *
-     * <p>The player never needs the absolute figure here - only whether this effect is cheaper than
-     * that one - and a comparison is what a meter reads as at a glance.
-     */
-    private void drawCostMeter(GuiGraphicsExtractor graphics, int x, int y, double ratio) {
-        int lit = Mth.clamp((int) Math.ceil(ratio * 4), 1, 4);
-        for (int i = 0; i < 4; i++) {
-            int colour = i < lit ? (lit >= 4 ? 0xFFD86A5A : lit >= 3 ? 0xFFD8B45A : 0xFF6ABF6A)
-                    : 0xFF555555;
-            graphics.fill(x + i * 6, y - i, x + i * 6 + 4, y + 6, colour);
-        }
-    }
-
-    /** A sunken field, matching how vanilla renders anything you type into. */
-    private void drawSearchField(GuiGraphicsExtractor graphics, int x, int y) {
-        int left = x + 4;
-        int right = x + SELECTOR_W - 4;
-        graphics.fill(left, y + 4, right, y + SEARCH_H - 2, 0xFF8B8B8B);
-        graphics.fill(left, y + 4, right, y + 5, 0xFF373737);
-        graphics.fill(left, y + 4, left + 1, y + SEARCH_H - 2, 0xFF373737);
-        graphics.fill(left, y + SEARCH_H - 3, right, y + SEARCH_H - 2, 0xFFFFFFFF);
-
-        boolean empty = search.isEmpty();
-        String shown = empty
-                ? Component.translatable("portablebeacons.gui.search").getString()
-                : search;
-        graphics.text(font, shown, left + 4, y + 7, empty ? 0xFF6E6E6E : 0xFF2B2B2B, false);
-        // No caret over the placeholder: it read as a stray character appended to the hint.
-        if (!empty && (System.currentTimeMillis() / 500) % 2 == 0) {
-            int caret = left + 5 + font.width(search);
-            graphics.fill(caret, y + 6, caret + 1, y + SEARCH_H - 4, 0xFF2B2B2B);
-        }
-    }
-
-    /** Sunken track, raised thumb - the same construction as vanilla's creative-tab scrollbar. */
-    private void drawScrollbar(GuiGraphicsExtractor graphics, int x, int y, int total) {
-        if (total <= VISIBLE_ROWS) {
-            return;
-        }
-        int trackLeft = x + SELECTOR_W - 9;
-        int trackTop = y + SEARCH_H + 1;
-        int trackHeight = VISIBLE_ROWS * ROW_H - 2;
-        int thumbHeight = Math.max(14, trackHeight * VISIBLE_ROWS / total);
-        int travel = trackHeight - thumbHeight;
-        int thumbTop = trackTop + travel * scroll / Math.max(1, total - VISIBLE_ROWS);
-
-        graphics.fill(trackLeft, trackTop, trackLeft + 4, trackTop + trackHeight, 0xFF6E6E6E);
-        graphics.fill(trackLeft, thumbTop, trackLeft + 4, thumbTop + thumbHeight, 0xFFC6C6C6);
-        graphics.fill(trackLeft, thumbTop, trackLeft + 3, thumbTop + 1, 0xFFFFFFFF);
-        graphics.fill(trackLeft, thumbTop + thumbHeight - 1, trackLeft + 4, thumbTop + thumbHeight,
-                0xFF555555);
+        return Part.NAME;
     }
 
     private void drawEffectIcon(GuiGraphicsExtractor graphics, ResourceKey<BeaconEffectDef> key, int x, int y) {
-        effectLookup().get(key).ifPresent(def -> {
-            // Straight from the vanilla effect atlas, so any registered effect - vanilla, another
-            // mod's, or one added by a datapack - shows its own icon with no texture from us.
-            // Effect icons are GUI sprites now rather than an atlas this screen samples itself.
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED,
-                    Gui.getMobEffectSprite(def.effect()), x, y, 16, 16);
-        });
+        // Straight from vanilla's effect sprites, so any registered effect - vanilla, another mod's,
+        // or one added by a datapack - shows its own icon with no texture from us.
+        effectLookup().get(key).ifPresent(def -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED,
+                Gui.getMobEffectSprite(def.effect()), x, y, 16, 16));
+    }
+
+    // ------------------------------------------------------------------ status
+
+    /**
+     * The band's light, in FactoryIO's five states. The info tab's first line says the same thing in
+     * the same colour.
+     */
+    private GuiTheme.Status status() {
+        BeaconState state = menu.state();
+        boolean fuel = BPConfig.fuelEnabled();
+        if (!state.active()) {
+            return GuiTheme.Status.OFF;
+        }
+        if (state.starved()) {
+            // On, but dry: the one state that needs the player. It resumes by itself once fed.
+            return GuiTheme.Status.PROBLEM;
+        }
+        double perSecond = BeaconResolver.fuelPerSecond(state, stats(), effectLookup());
+        if (perSecond <= 0.0) {
+            return GuiTheme.Status.WAITING;
+        }
+        if (fuel && (state.fuel() + reserveUnits()) / perSecond < BeaconTicker.LOW_FUEL_SECONDS) {
+            return GuiTheme.Status.BLOCKED;
+        }
+        return GuiTheme.Status.WORKING;
+    }
+
+    private Component statusText(GuiTheme.Status status) {
+        return switch (status) {
+            case WORKING -> Component.translatable("portablebeacons.gui.active");
+            case WAITING -> Component.translatable("portablebeacons.gui.idle");
+            case BLOCKED -> Component.translatable("portablebeacons.gui.low_fuel", totalRuntime());
+            case PROBLEM -> Component.translatable("portablebeacons.msg.out_of_fuel");
+            case OFF -> Component.translatable("portablebeacons.gui.inactive");
+        };
+    }
+
+    // ------------------------------------------------------------------ tabs
+
+    /** The beacon's figures. On the left and yellow: it informs, it sets nothing. */
+    private final class InfoTab extends SideTab {
+
+        InfoTab() {
+            super("info", Side.LEFT, GuiTheme.TAB_INFO);
+        }
+
+        @Override
+        protected Component title() {
+            return Component.translatable("portablebeacons.gui.stats");
+        }
+
+        @Override
+        protected GuiSprites.Icon icon() {
+            return GuiSprites.Icon.INFO;
+        }
+
+        private List<Component> lines() {
+            BeaconState state = menu.state();
+            BeaconStats stats = stats();
+            List<Component> lines = new ArrayList<>(4);
+            lines.add(statusText(status()));
+            lines.add(Component.translatable("portablebeacons.gui.range",
+                    String.format(Locale.ROOT, "%.0f", stats.range())));
+            if (BPConfig.fuelEnabled()) {
+                lines.add(Component.translatable("portablebeacons.gui.runtime", totalRuntime()));
+                // Wayfarer and Sentinel price moving and standing differently, and one figure would
+                // be wrong for whichever the player is not doing. Shown only when the two differ.
+                if (stats.movingCostMultiplier() != stats.stillCostMultiplier()) {
+                    int units = state.fuel() + reserveUnits();
+                    lines.add(Component.translatable("portablebeacons.gui.runtime_motion",
+                            atCurrentDraw(units, BeaconResolver.fuelPerSecond(state, stats, effectLookup(), true)),
+                            atCurrentDraw(units, BeaconResolver.fuelPerSecond(state, stats, effectLookup(), false))));
+                }
+            }
+            lines.add(Component.translatable("portablebeacons.gui.slots",
+                    state.effects().size(), stats.effectSlots()));
+            return lines;
+        }
+
+        @Override
+        protected int contentWidth() {
+            int widest = 0;
+            for (Component line : lines()) {
+                widest = Math.max(widest, font.width(line));
+            }
+            return widest;
+        }
+
+        @Override
+        protected int contentHeight() {
+            return lines().size() * GuiTheme.LINE;
+        }
+
+        @Override
+        protected void renderContent(GuiGraphicsExtractor graphics, Font font, int x, int y,
+                                     int mouseX, int mouseY) {
+            List<Component> lines = lines();
+            for (int i = 0; i < lines.size(); i++) {
+                int colour = i == 0 ? status().tabColour : GuiTheme.TAB_LABEL;
+                graphics.text(font, lines.get(i), x, y + i * GuiTheme.LINE, colour, true);
+            }
+        }
     }
 
     /**
-     * Draws a button with <em>availability</em> and <em>state</em> as two separate inputs.
-     *
-     * <p>They used to share one flag, so a greyed-out button meant "you cannot press this" on one
-     * control and "this setting is off" on the next. Colour now means state, and only a dimmed,
-     * unhoverable face means unavailable.
+     * The augment slots. On the right and blue: it sets something. The slots themselves belong to
+     * the menu and sit where this tab's content is once fully open.
      */
-    private void drawButton(GuiGraphicsExtractor graphics, int x, int y, int w, int h,
-                            Component label, boolean hovered, boolean available, boolean on) {
-        int background;
-        int textColour = 0xFFFFFFFF;
-        if (!available) {
-            background = 0xFF4C4C4C;
-            textColour = 0xFF9A9A9A;
-        } else if (on) {
-            background = hovered ? 0xFF57A268 : 0xFF3E7A4B;
-        } else {
-            background = hovered ? 0xFF8797AC : 0xFF6E6E6E;
+    private final class AugmentTab extends SideTab {
+
+        static final String ID = "augments";
+
+        AugmentTab() {
+            super(ID, Side.RIGHT, GuiTheme.TAB_AUGMENTS);
         }
-        graphics.fill(x, y, x + w, y + h, background);
-        graphics.outline(x, y, w, h, 0xFF2B2B2B);
-        // Highlight along the top edge so the control reads as raised, i.e. as pressable.
-        if (available) {
-            graphics.fill(x + 1, y + 1, x + w - 1, y + 2, 0x33FFFFFF);
+
+        @Override
+        protected Component title() {
+            return Component.translatable("portablebeacons.gui.augments");
         }
-        // Truncated defensively: a translated label that overflows used to run past the button and
-        // under the frame.
-        String text = font.plainSubstrByWidth(label.getString(), w - 6);
-        graphics.text(font, text, x + (w - font.width(text)) / 2, y + (h - 8) / 2,
-                textColour, false);
+
+        @Override
+        protected GuiSprites.Icon icon() {
+            return GuiSprites.Icon.AUGMENTS;
+        }
+
+        @Override
+        protected int contentWidth() {
+            return PortableBeaconItem.AUGMENT_SLOTS * GuiMetrics.SLOT;
+        }
+
+        @Override
+        protected int contentHeight() {
+            return GuiMetrics.SLOT;
+        }
+
+        @Override
+        protected void renderContentBackground(GuiGraphicsExtractor graphics, int x, int y) {
+            for (int i = 0; i < PortableBeaconItem.AUGMENT_SLOTS; i++) {
+                int itemX = x + 1 + i * GuiMetrics.SLOT;
+                if (i < stats().augmentSlots()) {
+                    GuiSprites.slot(graphics, itemX, y + 1);
+                } else {
+                    GuiSprites.disabledSlot(graphics, itemX, y + 1);
+                }
+            }
+        }
+
+        @Override
+        protected void renderContent(GuiGraphicsExtractor graphics, Font font, int x, int y,
+                                     int mouseX, int mouseY) {
+            for (int i = stats().augmentSlots(); i < PortableBeaconItem.AUGMENT_SLOTS; i++) {
+                if (slotStack(PortableBeaconItem.augmentSlot(i)).isEmpty()) {
+                    GuiSprites.smallLock(graphics, x + 1 + i * GuiMetrics.SLOT, y + 1);
+                }
+            }
+        }
+
+        @Override
+        protected List<Component> contentTooltip(int x, int y, int mouseX, int mouseY) {
+            int index = (mouseX - x) / GuiMetrics.SLOT;
+            if (mouseX >= x && index < PortableBeaconItem.AUGMENT_SLOTS && index >= stats().augmentSlots()
+                    && slotStack(PortableBeaconItem.augmentSlot(index)).isEmpty()) {
+                return List.of(Component.translatable("portablebeacons.tip.augment_locked"));
+            }
+            return List.of();
+        }
+
+        @Override
+        protected void onOpennessChanged(boolean fullyOpen) {
+            menu.setAugmentsVisible(fullyOpen && !selectorOpen);
+        }
+    }
+
+    // ------------------------------------------------------------------ effect picker
+
+    private void openSelector(int row) {
+        selectorOpen = true;
+        selectorSlot = row;
+        scroll = 0;
+        highlighted = 0;
+        search = "";
+        menu.setAugmentsVisible(false);
+    }
+
+    private void closeSelector() {
+        selectorOpen = false;
+    }
+
+    /**
+     * FactoryIO's picker: a modal over the whole window, so nothing of the beacon shows through or
+     * takes a click. Title and count in the band, a dark search field, a grid aligned to the
+     * inventory and drawn whole even when empty, the scrollbar in the last column, help at the
+     * bottom. Escape closes it; typing goes to the search.
+     */
+    private void drawSelector(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        GuiSprites.panel(graphics, 0, 0, imageWidth, imageHeight);
+        List<ResourceKey<BeaconEffectDef>> rows = filteredEffects();
+        graphics.text(font, Component.translatable("portablebeacons.gui.change_effect"),
+                GuiMetrics.MARGIN, GuiMetrics.TITLE_Y, GuiTheme.TEXT, false);
+        String count = Component.translatable("portablebeacons.gui.result_count", rows.size()).getString();
+        graphics.text(font, count, GuiMetrics.CONTENT_RIGHT - font.width(count), GuiMetrics.TITLE_Y,
+                GuiTheme.TEXT_MUTED, false);
+        drawSearchField(graphics);
+
+        int cells = cellCount();
+        if (cells > 0) {
+            highlighted = Mth.clamp(highlighted, 0, cells - 1);
+        }
+        int tierLevel = tierLevel();
+        for (int row = 0; row < GRID_ROWS; row++) {
+            for (int col = 0; col < GRID_COLUMNS; col++) {
+                int index = (scroll + row) * GRID_COLUMNS + col;
+                int itemX = GuiMetrics.column(col) + 1;
+                int itemY = GRID_Y + row * GuiMetrics.SLOT + 1;
+                if (index >= cells) {
+                    GuiSprites.slot(graphics, itemX, itemY);
+                    continue;
+                }
+                if (within(mouseX, mouseY, itemX - 1, itemY - 1, GuiMetrics.SLOT, GuiMetrics.SLOT)) {
+                    // Hover drives the same highlight the arrow keys do, so mouse and keyboard
+                    // never disagree about what Enter would pick.
+                    highlighted = index;
+                    graphics.requestCursor(CursorTypes.POINTING_HAND);
+                }
+                if (index == highlighted) {
+                    GuiSprites.selectedSlot(graphics, itemX, itemY);
+                } else {
+                    GuiSprites.slot(graphics, itemX, itemY);
+                }
+                if (index < removeCells()) {
+                    GuiSprites.icon(graphics, GuiSprites.Icon.CLEAR, itemX + 2, itemY + 2);
+                    continue;
+                }
+                ResourceKey<BeaconEffectDef> key = rows.get(index - removeCells());
+                drawEffectIcon(graphics, key, itemX, itemY);
+                boolean locked = effectLookup().get(key).map(def -> def.minTier() > tierLevel).orElse(true);
+                if (locked) {
+                    // Washed and padlocked, not red: a locked effect is progress, not a problem.
+                    graphics.fill(itemX, itemY, itemX + 16, itemY + 16, GuiTheme.LOCKED_WASH);
+                    GuiSprites.smallLock(graphics, itemX, itemY);
+                }
+            }
+        }
+        if (rows.isEmpty()) {
+            graphics.centeredText(font, Component.translatable("portablebeacons.gui.no_results"),
+                    GuiMetrics.column(GRID_COLUMNS / 2), GRID_Y + 5, GuiTheme.TEXT_MUTED);
+        }
+        drawScrollbar(graphics, cells);
+        graphics.text(font, Component.translatable("portablebeacons.gui.selector_help"),
+                GuiMetrics.MARGIN, FOOTER_Y, GuiTheme.TEXT_MUTED, false);
+    }
+
+    private void drawSearchField(GuiGraphicsExtractor graphics) {
+        GuiSprites.field(graphics, FIELD_X, FIELD_Y, FIELD_W, FIELD_H);
+        boolean empty = search.isEmpty();
+        String shown = empty ? Component.translatable("portablebeacons.gui.search").getString() : search;
+        graphics.text(font, shown, FIELD_X + 4, FIELD_Y + 3,
+                empty ? GuiTheme.TAB_MUTED : GuiTheme.TAB_VALUE, false);
+        // No caret over the placeholder: it read as a stray character appended to the hint.
+        if (!empty && (System.currentTimeMillis() / 500) % 2 == 0) {
+            int caret = FIELD_X + 5 + font.width(search);
+            graphics.fill(caret, FIELD_Y + 2, caret + 1, FIELD_Y + FIELD_H - 2, GuiTheme.TAB_VALUE);
+        }
+    }
+
+    /** A sunken track in the ninth column, drawn even when there is nothing to scroll. */
+    private void drawScrollbar(GuiGraphicsExtractor graphics, int total) {
+        int trackH = GRID_ROWS * GuiMetrics.SLOT;
+        GuiSprites.inset(graphics, SCROLLBAR_X, GRID_Y, SCROLLBAR_W, trackH);
+        int totalRows = Mth.positiveCeilDiv(total, GRID_COLUMNS);
+        if (totalRows <= GRID_ROWS) {
+            return;
+        }
+        int thumbH = Math.max(15, (trackH - 2) * GRID_ROWS / totalRows);
+        int thumbY = GRID_Y + 1 + (trackH - 2 - thumbH) * scroll / Math.max(1, totalRows - GRID_ROWS);
+        GuiSprites.button(graphics, SCROLLBAR_X + 1, thumbY, SCROLLBAR_W - 2, thumbH, GuiSprites.ButtonState.NORMAL);
+    }
+
+    /**
+     * One cell before the effects when the row already holds one: "remove", where anyone looking to
+     * get rid of an effect would look - beside the effects it could be swapped for. Right-clicking
+     * the row's icon does the same, but only the tooltip says so.
+     */
+    private int removeCells() {
+        return selectorSlot < menu.state().effects().size() ? 1 : 0;
+    }
+
+    private int cellCount() {
+        return removeCells() + filteredEffects().size();
+    }
+
+    /** The cell under the mouse, counting the remove cell if there is one, or -1. */
+    private int cellAt(int x, int y) {
+        if (y < GRID_Y || x < GuiMetrics.column(0)) {
+            return -1;
+        }
+        int col = (x - GuiMetrics.column(0)) / GuiMetrics.SLOT;
+        int row = (y - GRID_Y) / GuiMetrics.SLOT;
+        if (col >= GRID_COLUMNS || row >= GRID_ROWS) {
+            return -1;
+        }
+        int index = (scroll + row) * GRID_COLUMNS + col;
+        return index < cellCount() ? index : -1;
     }
 
     // ------------------------------------------------------------------ tooltips
@@ -1014,12 +773,10 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
             return false;
         }
         ItemStack stack = hoveredSlot.getItem();
-        int perItem = BPLookups.fuelValue(
-                Minecraft.getInstance().level.registryAccess(), stack.getItem());
+        int perItem = BPLookups.fuelValue(Minecraft.getInstance().level.registryAccess(), stack.getItem());
         if (perItem <= 0) {
             return false;
         }
-
         List<Component> lines = new ArrayList<>(getTooltipFromContainerItem(stack));
         BeaconStats stats = stats();
         double perSecond = BeaconResolver.fuelPerSecond(menu.state(), stats, effectLookup());
@@ -1030,7 +787,7 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
                     .withStyle(ChatFormatting.GRAY));
         }
         // A denser fuel than the buffer can hold is never consumed, and that would otherwise look
-        // like the beacon ignoring it for no reason.
+        // like the beacon ignoring it for no reason. Red: it will not work without the player.
         if (perItem > stats.fuelCapacity()) {
             lines.add(Component.translatable("portablebeacons.tip.fuel_too_dense")
                     .withStyle(ChatFormatting.RED));
@@ -1039,40 +796,27 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
         return true;
     }
 
-    /**
-     * Explains the four-segment meter on the hovered row.
-     *
-     * <p>The meter compares effects at a glance, but nothing on screen said what it measured - a
-     * row of bars with no legend is a puzzle, not information.
-     */
-    private void renderSelectorTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        int x = mouseX - leftPos;
-        int y = mouseY - topPos;
-        List<ResourceKey<BeaconEffectDef>> rows = visibleRows();
-        for (int i = 0; i < VISIBLE_ROWS && i + scroll < rows.size(); i++) {
-            int rowY = selectorY + SEARCH_H + i * ROW_H;
-            if (!within(x, y, selectorX, rowY, SELECTOR_W, ROW_H)) {
-                continue;
-            }
-            effectLookup().get(rows.get(i + scroll)).ifPresent(def -> {
-                List<Component> lines = new ArrayList<>(3);
-                lines.add(def.effect().value().getDisplayName());
-                if (def.minTier() > tierLevel()) {
-                    lines.add(Component.translatable("portablebeacons.gui.locked_tier",
-                            roman(def.minTier())).withStyle(ChatFormatting.RED));
-                } else {
-                    lines.add(Component.translatable("portablebeacons.tip.cost_meter",
-                                    Component.translatable("portablebeacons.cost." + costBand(def)))
-                            .withStyle(ChatFormatting.GRAY));
-                }
-                graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
-            });
-            return;
+    /** The effect under the mouse: its name, and its relative cost or what unlocks it. */
+    private List<Component> selectorTooltip(int mouseX, int mouseY) {
+        int index = cellAt(mouseX - leftPos, mouseY - topPos);
+        if (index < 0) {
+            return List.of();
         }
+        if (index < removeCells()) {
+            return List.of(Component.translatable("portablebeacons.tip.clear_effect"));
+        }
+        return effectLookup().get(filteredEffects().get(index - removeCells())).<List<Component>>map(def -> List.of(
+                def.effect().value().getDisplayName(),
+                def.minTier() > tierLevel()
+                        ? Component.translatable("portablebeacons.gui.locked_tier", roman(def.minTier()))
+                                .withStyle(ChatFormatting.GRAY)
+                        : Component.translatable("portablebeacons.tip.cost_meter",
+                                        Component.translatable("portablebeacons.cost." + costBand(def)))
+                                .withStyle(ChatFormatting.GRAY))).orElse(List.of());
     }
 
     private String costBand(BeaconEffectDef def) {
-        double max = visibleRows().stream()
+        double max = filteredEffects().stream()
                 .map(key -> effectLookup().get(key).map(BeaconEffectDef::cost).orElse(0.0))
                 .max(Double::compare).orElse(1.0);
         return switch (Mth.clamp((int) Math.ceil(def.cost() / max * 4), 1, 4)) {
@@ -1083,197 +827,178 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
         };
     }
 
-    /** Nothing on this screen is self-explanatory without these. */
-    private List<Component> tooltipAt(int x, int y) {
-        if (hitTab(x, y, false, POWER_TAB_Y)) {
-            return List.of(
-                    Component.translatable(menu.state().active()
+    /** Nothing on this screen is self-explanatory without these. Absolute mouse coordinates. */
+    private List<Component> tooltipAt(int mouseX, int mouseY) {
+        List<Component> tabTip = tabs.tooltipAt(mouseX, mouseY);
+        if (!tabTip.isEmpty()) {
+            return tabTip;
+        }
+        int x = mouseX - leftPos;
+        int y = mouseY - topPos;
+        if (within(x, y, POWER_X, POWER_Y, POWER_W, POWER_H)) {
+            return List.of(Component.translatable(menu.state().active()
                             ? "portablebeacons.gui.active" : "portablebeacons.gui.inactive"),
-                    Component.translatable("portablebeacons.tip.master")
-                            .withStyle(ChatFormatting.GRAY));
+                    Component.translatable("portablebeacons.tip.master").withStyle(ChatFormatting.GRAY));
         }
-        if (hitTab(x, y, false, STATS_TAB_Y)) {
-            return List.of(Component.translatable("portablebeacons.gui.stats"));
+        if (within(x, y, GuiMetrics.LED_X - 1, GuiMetrics.LED_Y - 1, GuiMetrics.LED_SIZE + 2, GuiMetrics.LED_SIZE + 2)) {
+            return List.of(statusText(status()));
         }
-        if (hitTab(x, y, true, AUGMENT_TAB_Y)) {
-            return List.of(Component.translatable("portablebeacons.gui.augments"));
-        }
-        if (BPConfig.fuelEnabled() && hitTab(x, y, true, fuelTabY())) {
-            return List.of(Component.translatable("portablebeacons.gui.fuel"));
-        }
-        if (BPConfig.fuelEnabled() && rightDrawer == Drawer.FUEL
-                && within(x, y, GAUGE_X, GAUGE_Y, GAUGE_W, GAUGE_H)) {
-            BeaconStats stats = stats();
-            double perSecond = BeaconResolver.fuelPerSecond(menu.state(), stats, effectLookup());
-            return List.of(
-                    Component.translatable("portablebeacons.gui.fuel"),
+        if (BPConfig.fuelEnabled()
+                && within(x, y, GuiMetrics.GAUGE_X, GAUGE_Y, GuiMetrics.GAUGE_WIDTH, GAUGE_H)) {
+            double perSecond = BeaconResolver.fuelPerSecond(menu.state(), stats(), effectLookup());
+            return List.of(Component.translatable("portablebeacons.gui.fuel"),
                     Component.translatable("portablebeacons.tip.fuel_stored",
-                            atCurrentDraw(menu.state().fuel(), perSecond))
-                            .withStyle(ChatFormatting.GRAY),
+                            atCurrentDraw(menu.state().fuel(), perSecond)).withStyle(ChatFormatting.GRAY),
                     Component.translatable("portablebeacons.tip.fuel_reserve",
-                            atCurrentDraw(reserveUnits(), perSecond))
-                            .withStyle(ChatFormatting.GRAY));
+                            atCurrentDraw(reserveUnits(), perSecond)).withStyle(ChatFormatting.GRAY));
         }
-        List<Component> caseTip = caseTooltip(x, y);
-        if (!caseTip.isEmpty()) {
-            return caseTip;
-        }
-        if (rightDrawer == Drawer.AUGMENTS) {
-            for (int i = stats().augmentSlots(); i < PortableBeaconItem.AUGMENT_SLOTS; i++) {
-                if (within(x, y, AUGMENT_SLOT_X + i * SLOT_SIZE, AUGMENT_SLOT_Y,
-                        SLOT_SIZE, SLOT_SIZE)) {
-                    return List.of(Component.translatable("portablebeacons.tip.augment_locked"));
-                }
-            }
-        }
-        // Guarded on the panel actually having buttons: they are only drawn for a focused case
-        // holding an effect, and a tooltip over blank panel space was pure noise.
-        if (focusedCase >= menu.state().effects().size()) {
-            return List.of();
-        }
-        if (within(x, y, ROW_X, ROW_CHANGE, ROW_W, BTN_H)) {
-            return List.of(Component.translatable("portablebeacons.tip.change_effect"));
-        }
-        if (within(x, y, buttonX(0), ROW_SETTINGS, BTN_W, BTN_H)) {
-            return List.of(Component.translatable("portablebeacons.tip.level"));
-        }
-        if (within(x, y, buttonX(1), ROW_SETTINGS, BTN_W, BTN_H)) {
-            return List.of(Component.translatable("portablebeacons.tip.effect_toggle"));
-        }
-        if (within(x, y, buttonX(2), ROW_SETTINGS, BTN_W, BTN_H)) {
-            return List.of(Component.translatable("portablebeacons.tip.aura"));
-        }
-        return List.of();
+        int row = rowAt(x, y);
+        return row < 0 ? List.of() : rowTooltip(row, partAt(x));
     }
 
-    private List<Component> caseTooltip(int x, int y) {
-        for (int i = 0; i < visibleCases(stats()); i++) {
-            if (!within(x, y, CASE_X + i * CASE_SPACING, CASE_Y, CASE_SIZE, CASE_SIZE)) {
-                continue;
-            }
-            if (i >= stats().effectSlots()) {
-                return List.of(Component.translatable("portablebeacons.tip.case_locked"));
-            }
-            List<EffectSlotConfig> effects = menu.state().effects();
-            if (i >= effects.size()) {
-                return List.of(Component.translatable("portablebeacons.gui.empty_slot"));
-            }
-            EffectSlotConfig slot = effects.get(i);
-            return effectLookup().get(slot.effect())
-                    .<List<Component>>map(def -> List.of(
-                            def.effect().value().getDisplayName(),
-                            Component.translatable("portablebeacons.tip.case_clear")))
-                    .orElse(List.of());
+    private List<Component> rowTooltip(int row, Part part) {
+        BeaconStats stats = stats();
+        if (row >= stats.effectSlots()) {
+            return List.of(Component.translatable("portablebeacons.tip.case_locked"));
         }
-        return List.of();
+        List<EffectSlotConfig> effects = menu.state().effects();
+        if (row >= effects.size()) {
+            return List.of(Component.translatable("portablebeacons.gui.empty_slot"));
+        }
+        EffectSlotConfig slot = effects.get(row);
+        Optional<BeaconEffectDef> maybeDef = effectLookup().get(slot.effect());
+        if (maybeDef.isEmpty()) {
+            return List.of();
+        }
+        BeaconEffectDef def = maybeDef.get();
+        Component name = Component.empty().append(def.effect().value().getDisplayName())
+                .append(" " + roman(slot.amplifier() + 1));
+        return switch (part) {
+            case ICON -> List.of(name,
+                    Component.translatable("portablebeacons.tip.case_clear").withStyle(ChatFormatting.GRAY));
+            case LEVEL -> List.of(Component.translatable("portablebeacons.tip.level"),
+                    Component.translatable("portablebeacons.tip.level_click").withStyle(ChatFormatting.GRAY));
+            case AURA -> List.of(
+                    Component.translatable("portablebeacons.aura." + slot.aura().getSerializedName()),
+                    Component.translatable("portablebeacons.tip.aura").withStyle(ChatFormatting.GRAY));
+            case SWITCH -> List.of(Component.translatable(slot.enabled()
+                            ? "portablebeacons.gui.active" : "portablebeacons.gui.inactive"),
+                    Component.translatable("portablebeacons.tip.effect_toggle").withStyle(ChatFormatting.GRAY));
+            case NAME, NONE -> List.of(name, drainLine(row, slot, stats), reachLine(slot, stats));
+        };
+    }
+
+    /**
+     * This effect's share of the total drain, rather than a raw rate: it answers "which of my
+     * effects is draining the beacon" without asking the player to compare two decimals. A free slot
+     * covers this one: say so rather than printing a share of a total it is not in.
+     */
+    private Component drainLine(int row, EffectSlotConfig slot, BeaconStats stats) {
+        List<EffectSlotConfig> effects = menu.state().effects();
+        boolean[] free = BeaconResolver.freeMask(effects, stats, effectLookup());
+        if (row < free.length && free[row]) {
+            return Component.translatable("portablebeacons.gui.share_free").withStyle(ChatFormatting.GRAY);
+        }
+        double cost = BeaconResolver.fuelPerSecond(slot, stats, effectLookup()) * stats.fuelMultiplier();
+        double total = BeaconResolver.fuelPerSecond(menu.state(), stats, effectLookup());
+        int share = total <= 0.0 ? 0 : (int) Math.round(cost / total * 100.0);
+        return Component.translatable("portablebeacons.gui.share", share).withStyle(ChatFormatting.GRAY);
+    }
+
+    private static Component reachLine(EffectSlotConfig slot, BeaconStats stats) {
+        Component reach = slot.aura().isAura()
+                ? Component.literal(String.format(Locale.ROOT, "%.0f m", stats.range()))
+                : Component.translatable("portablebeacons.aura.self");
+        return Component.translatable("portablebeacons.gui.reach", reach).withStyle(ChatFormatting.GRAY);
     }
 
     // ------------------------------------------------------------------ interaction
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        double mouseX = event.x();
-        double mouseY = event.y();
-        int button = event.button();
-        int x = (int) mouseX - leftPos;
-        int y = (int) mouseY - topPos;
-
+        int x = (int) event.x() - leftPos;
+        int y = (int) event.y() - topPos;
         if (selectorOpen) {
-            handleSelectorClick(x, y);
+            confirm(cellAt(x, y));
             return true;
         }
-        if (hitTab(x, y, false, POWER_TAB_Y)) {
+        if (tabs.mouseClicked(event.x(), event.y())) {
+            click();
+            return true;
+        }
+        if (within(x, y, POWER_X, POWER_Y, POWER_W, POWER_H)) {
             send(PortableBeaconMenu.ACTION_TOGGLE_ACTIVE, 0, 0);
             return true;
         }
-        if (hitTab(x, y, false, STATS_TAB_Y)) {
-            setLeftDrawer(leftDrawer == Drawer.STATS ? Drawer.NONE : Drawer.STATS);
-            return true;
-        }
-        if (hitTab(x, y, true, AUGMENT_TAB_Y)) {
-            setRightDrawer(rightDrawer == Drawer.AUGMENTS ? Drawer.NONE : Drawer.AUGMENTS);
-            return true;
-        }
-        // Against where the tab is now, not where it rests: the augment panel above pushes it down.
-        if (BPConfig.fuelEnabled() && hitTab(x, y, true, fuelTabY())) {
-            setRightDrawer(rightDrawer == Drawer.FUEL ? Drawer.NONE : Drawer.FUEL);
-            return true;
-        }
-        if (handleCaseClick(x, y, button) || handleInfoClick(x, y)) {
+        int row = rowAt(x, y);
+        if (row >= 0) {
+            handleRowClick(row, partAt(x), event.button() == GLFW.GLFW_MOUSE_BUTTON_RIGHT);
             return true;
         }
         return super.mouseClicked(event, doubleClick);
     }
 
-    private boolean handleCaseClick(int x, int y, int button) {
-        for (int i = 0; i < visibleCases(stats()); i++) {
-            if (!within(x, y, CASE_X + i * CASE_SPACING, CASE_Y, CASE_SIZE, CASE_SIZE)) {
-                continue;
-            }
-            if (i >= stats().effectSlots()) {
-                return true;
-            }
-            focusedCase = i;
-            if (button == 1) {
-                send(PortableBeaconMenu.ACTION_CLEAR_EFFECT, i, 0);
-            } else if (i >= menu.state().effects().size()) {
-                // An empty case has nothing to inspect, so clicking it goes straight to the picker.
-                // A filled one only takes focus, and is changed from the info panel below.
-                openSelector(i);
-            }
-            return true;
-        }
-        return false;
-    }
-
-    private boolean handleInfoClick(int x, int y) {
-        if (focusedCase >= menu.state().effects().size()) {
-            return false;
-        }
-        if (within(x, y, ROW_X, ROW_CHANGE, ROW_W, BTN_H)) {
-            openSelector(focusedCase);
-            return true;
-        }
-        if (within(x, y, buttonX(0), ROW_SETTINGS, BTN_W, BTN_H)) {
-            send(PortableBeaconMenu.ACTION_CYCLE_AMPLIFIER, focusedCase, 0);
-            return true;
-        }
-        if (within(x, y, buttonX(1), ROW_SETTINGS, BTN_W, BTN_H)) {
-            send(PortableBeaconMenu.ACTION_TOGGLE_EFFECT, focusedCase, 0);
-            return true;
-        }
-        if (within(x, y, buttonX(2), ROW_SETTINGS, BTN_W, BTN_H)) {
-            send(PortableBeaconMenu.ACTION_CYCLE_AURA, focusedCase, 0);
-            return true;
-        }
-        return false;
-    }
-
-    private void handleSelectorClick(int x, int y) {
-        if (!within(x, y, selectorX, selectorY, SELECTOR_W, SELECTOR_H)) {
-            selectorOpen = false;
+    /**
+     * Every control lives in its row. Left click does the obvious thing; right click undoes it -
+     * removes the effect from the icon, lowers the level - which is what the tooltips say.
+     */
+    private void handleRowClick(int row, Part part, boolean secondary) {
+        if (row >= stats().effectSlots()) {
             return;
         }
-        List<ResourceKey<BeaconEffectDef>> rows = visibleRows();
-        for (int i = 0; i < VISIBLE_ROWS && i + scroll < rows.size(); i++) {
-            if (within(x, y, selectorX, selectorY + SEARCH_H + i * ROW_H, SELECTOR_W, ROW_H)) {
-                confirm(rows, i + scroll);
-                return;
+        List<EffectSlotConfig> effects = menu.state().effects();
+        if (row >= effects.size()) {
+            // An empty row has one thing to do, so any click on it does it.
+            click();
+            openSelector(row);
+            return;
+        }
+        EffectSlotConfig slot = effects.get(row);
+        switch (part) {
+            case ICON, NAME, NONE -> {
+                if (secondary && part == Part.ICON) {
+                    send(PortableBeaconMenu.ACTION_CLEAR_EFFECT, row, 0);
+                } else if (!secondary) {
+                    click();
+                    openSelector(row);
+                }
             }
+            case LEVEL -> {
+                // Round and round, I to the ceiling and back to I: one button that always does
+                // something, the way a level selector in any game behaves. Right click steps back.
+                int cap = effectLookup().get(slot.effect())
+                        .map(def -> Math.min(def.maxAmplifier(), stats().maxAmplifier())).orElse(0);
+                if (cap > 0) {
+                    int step = secondary ? cap : 1;
+                    send(PortableBeaconMenu.ACTION_SET_AMPLIFIER, row, (slot.amplifier() + step) % (cap + 1));
+                }
+            }
+            case AURA -> send(PortableBeaconMenu.ACTION_CYCLE_AURA, row, 0);
+            case SWITCH -> send(PortableBeaconMenu.ACTION_TOGGLE_EFFECT, row, 0);
         }
     }
 
-    private void confirm(List<ResourceKey<BeaconEffectDef>> rows, int index) {
-        if (index < 0 || index >= rows.size()) {
+    /** A click on a tab is not a click outside the window, which would drop the carried stack. */
+    @Override
+    protected boolean hasClickedOutside(double mouseX, double mouseY, int left, int top) {
+        return !tabs.contains(mouseX, mouseY) && super.hasClickedOutside(mouseX, mouseY, left, top);
+    }
+
+    private void confirm(int index) {
+        if (index < 0 || index >= cellCount()) {
             return;
         }
-        ResourceKey<BeaconEffectDef> key = rows.get(index);
+        if (index < removeCells()) {
+            send(PortableBeaconMenu.ACTION_CLEAR_EFFECT, selectorSlot, 0);
+            closeSelector();
+            return;
+        }
+        ResourceKey<BeaconEffectDef> key = filteredEffects().get(index - removeCells());
         if (effectLookup().get(key).map(def -> def.minTier() > tierLevel()).orElse(true)) {
             return;
         }
         send(PortableBeaconMenu.ACTION_SET_EFFECT, selectorSlot, allKeys().indexOf(key));
-        focusedCase = selectorSlot;
-        selectorOpen = false;
+        closeSelector();
     }
 
     @Override
@@ -1302,7 +1027,7 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
             return super.keyPressed(event);
         }
         switch (event.key()) {
-            case GLFW.GLFW_KEY_ESCAPE -> selectorOpen = false;
+            case GLFW.GLFW_KEY_ESCAPE -> closeSelector();
             case GLFW.GLFW_KEY_BACKSPACE -> {
                 if (!search.isEmpty()) {
                     search = search.substring(0, search.length() - 1);
@@ -1310,34 +1035,37 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
                     highlighted = 0;
                 }
             }
-            case GLFW.GLFW_KEY_DOWN -> moveHighlight(1);
-            case GLFW.GLFW_KEY_UP -> moveHighlight(-1);
-            case GLFW.GLFW_KEY_ENTER, GLFW.GLFW_KEY_KP_ENTER -> confirm(visibleRows(), highlighted);
+            case GLFW.GLFW_KEY_RIGHT -> moveHighlight(1);
+            case GLFW.GLFW_KEY_LEFT -> moveHighlight(-1);
+            case GLFW.GLFW_KEY_DOWN -> moveHighlight(GRID_COLUMNS);
+            case GLFW.GLFW_KEY_UP -> moveHighlight(-GRID_COLUMNS);
+            case GLFW.GLFW_KEY_ENTER, GLFW.GLFW_KEY_KP_ENTER -> confirm(highlighted);
             default -> {
-                // Everything else is swallowed so the inventory key does not close the whole screen
-                // in the middle of typing a search.
+                // Everything else is swallowed so the inventory key - "E" - is typed into the
+                // search instead of closing the whole screen.
             }
         }
         return true;
     }
 
-    /** Keeps the highlighted row on screen, which is what makes arrow keys usable at all. */
+    /** Keeps the highlighted cell's row on screen, which is what makes arrow keys usable at all. */
     private void moveHighlight(int delta) {
-        int size = visibleRows().size();
+        int size = cellCount();
         if (size == 0) {
             return;
         }
-        highlighted = Math.floorMod(highlighted + delta, size);
-        if (highlighted < scroll) {
-            scroll = highlighted;
-        } else if (highlighted >= scroll + VISIBLE_ROWS) {
-            scroll = highlighted - VISIBLE_ROWS + 1;
+        highlighted = Mth.clamp(highlighted + delta, 0, size - 1);
+        int row = highlighted / GRID_COLUMNS;
+        if (row < scroll) {
+            scroll = row;
+        } else if (row >= scroll + GRID_ROWS) {
+            scroll = row - GRID_ROWS + 1;
         }
         scroll = Mth.clamp(scroll, 0, maxScroll());
     }
 
     private int maxScroll() {
-        return Math.max(0, visibleRows().size() - VISIBLE_ROWS);
+        return Math.max(0, Mth.positiveCeilDiv(cellCount(), GRID_COLUMNS) - GRID_ROWS);
     }
 
     // ------------------------------------------------------------------ helpers
@@ -1348,10 +1076,8 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
     }
 
     /**
-     * The click every vanilla button makes.
-     *
-     * <p>Hand-drawn controls get no audio for free, and a button that changes colour but makes no
-     * sound reads as not having registered the press.
+     * The click every vanilla button makes. Hand-drawn controls get no audio for free, and a control
+     * that changes but makes no sound reads as not having registered the press.
      */
     private static void click() {
         Minecraft.getInstance().getSoundManager()
@@ -1377,16 +1103,13 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
     }
 
     /**
-     * The rows the picker shows: this beacon's pool, narrowed by the search box.
+     * The effects the picker shows: this beacon's pool, narrowed by the search box.
      *
-     * <p>A themed beacon listing the standard beacon effects it will never accept would be a list of
-     * dead ends, so the pool filters the picker rather than greying rows out. Locked entries are
-     * kept, though - those are progress, not dead ends.
-     *
-     * <p>Recomputed only when the search text changes. Drawing one frame of the picker asks for
-     * this list several times, and it used to re-sort the registry on every one of them.
+     * <p>A themed beacon listing the standard effects it will never accept would be a grid of dead
+     * ends, so the pool filters the picker rather than greying cells out. Locked entries are kept,
+     * though - those are progress, not dead ends. Recomputed only when the search text changes.
      */
-    private List<ResourceKey<BeaconEffectDef>> visibleRows() {
+    private List<ResourceKey<BeaconEffectDef>> filteredEffects() {
         if (rowsCache != null && search.equals(rowsCacheKey)) {
             return rowsCache;
         }
@@ -1403,16 +1126,18 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
         return rowsCache;
     }
 
+    private double fuelFill() {
+        return Math.min(1.0, menu.state().fuel() / (double) Math.max(1, stats().fuelCapacity()));
+    }
+
     private String totalRuntime() {
         double perSecond = BeaconResolver.fuelPerSecond(menu.state(), stats(), effectLookup());
         return atCurrentDraw(menu.state().fuel() + reserveUnits(), perSecond);
     }
 
     /**
-     * "Idle" rather than a dash when nothing is drawing.
-     *
-     * <p>A lone "-" reads as missing data or a bug; naming the state says the beacon is fine and
-     * simply has nothing running.
+     * "Idle" rather than a dash when nothing is drawing: a lone "-" reads as missing data, naming
+     * the state says the beacon is fine and simply has nothing running.
      */
     private static String atCurrentDraw(int units, double perSecond) {
         return perSecond <= 0.0
@@ -1422,13 +1147,16 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
 
     /** Fuel units still sitting in the fuel slot, not yet drawn into the buffer. */
     private int reserveUnits() {
-        ItemStack fuel = slotStack(PortableBeaconItem.FUEL_SLOT);
-        if (fuel.isEmpty()) {
-            return 0;
+        return BPLookups.reserveUnits(menu.beacon(), Minecraft.getInstance().level.registryAccess());
+    }
+
+    private ItemStack slotStack(int handlerIndex) {
+        for (Slot slot : menu.slots) {
+            if (slot instanceof ResourceHandlerSlot handler && handler.getSlotIndex() == handlerIndex) {
+                return slot.getItem();
+            }
         }
-        int perItem = BPLookups.fuelValue(
-                Minecraft.getInstance().level.registryAccess(), fuel.getItem());
-        return perItem * fuel.getCount();
+        return ItemStack.EMPTY;
     }
 
     private int tierLevel() {
@@ -1453,5 +1181,4 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
             default -> String.valueOf(value);
         };
     }
-
 }

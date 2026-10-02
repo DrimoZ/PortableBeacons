@@ -2,6 +2,7 @@ package dev.drimoz.portablebeacons;
 
 import dev.drimoz.portablebeacons.compat.CuriosCompat;
 import dev.drimoz.portablebeacons.core.AuraMode;
+import dev.drimoz.portablebeacons.core.Durations;
 import dev.drimoz.portablebeacons.core.BeaconEffectDef;
 import dev.drimoz.portablebeacons.core.EffectSlotConfig;
 import dev.drimoz.portablebeacons.core.FuelBudget;
@@ -142,10 +143,17 @@ public final class BeaconTicker {
                 runDry(player, beacon, state);
                 return;
             }
+            warnIfRunningLow(player, beacon, state.fuel(), cost, owed);
             state = state.withFuel(state.fuel() - cost);
         }
 
-        PortableBeaconItem.setState(beacon, state);
+        if (state.starved()) {
+            // Fuel arrived for a beacon left on: it resumes by itself, and says so the way a real
+            // beacon does when its pyramid is completed.
+            player.level().playSound(null, player.blockPosition(),
+                    SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, 0.4F, 1.0F);
+        }
+        PortableBeaconItem.setState(beacon, state.withStarved(false));
         for (EffectSlotConfig slot : toApply) {
             apply(player, slot, stats, effectLookup);
         }
@@ -173,15 +181,42 @@ public final class BeaconTicker {
     /**
      * Switches the beacon off and says so.
      *
-     * <p>Effects stopping with no explanation reads as a bug. This fires once by construction: an
-     * inactive beacon is not ticked again until the player turns it back on.
+     * <p>Effects stopping with no explanation reads as a bug, so it says so - once, on the pass
+     * that runs dry, which the starved flag is what remembers.
+     *
+     * <p>It stays switched on. It used to switch itself off, so a player who refuelled still had
+     * to open the screen and turn it back on, and usually found out by noticing the effects were
+     * gone. Starved, it resumes on the first pass that finds fuel.
      */
     private static void runDry(Player player, ItemStack beacon, BeaconState state) {
-        PortableBeaconItem.setState(beacon, state.withActive(false));
-        ActionBar.send(player,
-                Component.translatable("portablebeacons.msg.out_of_fuel").withStyle(ChatFormatting.RED));
-        player.level().playSound(null, player.blockPosition(),
-                SoundEvents.BEACON_DEACTIVATE, SoundSource.PLAYERS, 0.5F, 1.0F);
+        if (!state.starved()) {
+            ActionBar.send(player,
+                    Component.translatable("portablebeacons.msg.out_of_fuel").withStyle(ChatFormatting.RED));
+            player.level().playSound(null, player.blockPosition(),
+                    SoundEvents.BEACON_DEACTIVATE, SoundSource.PLAYERS, 0.5F, 1.0F);
+        }
+        PortableBeaconItem.setState(beacon, state.withStarved(true));
+    }
+
+    /** A minute's warning: enough to reach the fuel, too little to forget about it. */
+    public static final int LOW_FUEL_SECONDS = 60;
+
+    /**
+     * Warns once, on the pass that takes the beacon under a minute of runtime - buffer and slot
+     * together, since the slot is burned before the beacon runs dry. Running out with no warning was
+     * the other half of the old silence.
+     */
+    private static void warnIfRunningLow(Player player, ItemStack beacon, int fuel, int cost, double owed) {
+        if (owed <= 0.0) {
+            return;
+        }
+        int reserve = BPLookups.reserveUnits(beacon, player.level().registryAccess());
+        double before = (fuel + reserve) / owed;
+        double after = (fuel - cost + reserve) / owed;
+        if (before >= LOW_FUEL_SECONDS && after < LOW_FUEL_SECONDS) {
+            ActionBar.send(player, Component.translatable("portablebeacons.gui.low_fuel",
+                    Durations.format((int) after)).withStyle(ChatFormatting.GOLD));
+        }
     }
 
     /**

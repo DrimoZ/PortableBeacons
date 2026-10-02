@@ -92,15 +92,20 @@ nothing — which is what gives Capacity and the higher tiers a purpose. Pulling
 out of a full beacon loses nothing either: the surplus stays and burns down, and the beacon takes no
 new fuel until it has.
 
+A minute before it runs dry the beacon says so. When it does run dry it stays switched on and
+waits, and resumes by itself the moment there is fuel in its slot. Only one beacon runs at a time:
+switching one on switches your others off.
+
 Turning `require_fuel` off removes fuel from the game rather than leaving it inert: no fuel slot,
 no gauge, no runtime figures.
 
 ### The screen
 
-Effects, their settings and the player's inventory are all the main panel carries. Stats, augments
-and fuel live in side tabs, because they are configured once and then left alone. Effects are
-picked from a searchable list filtered to what the beacon accepts, with arrow-key navigation and a
-four-segment meter comparing fuel costs.
+One row per effect, with everything set in place: click the icon to change the effect, the level to
+raise it, the figure to choose who it reaches, the switch to turn it off - right-click steps back.
+A bar under each name shows its share of the drain. The fuel gauge and slot sit beside the list,
+the master switch and a status light in the title band; the beacon's figures and its augments are
+side tabs. Effects are picked from a searchable grid filtered to what the beacon accepts.
 
 ---
 
@@ -149,8 +154,8 @@ Four datapack registries under `data/<namespace>/portablebeacons/`:
 **[Full datapack guide →](https://github.com/DrimoZ/PortableBeacons/wiki/Datapack-Guide)** — every field
 of all four registries, with worked examples for adding an effect, an augment and a themed tier.
 
-The screen adapts on its own: effects live in a scrollable, searchable picker rather than a
-fixed grid, so declaring forty of them changes nothing about the layout. Effect icons come from
+The screen adapts on its own: effects live in a scrolling, searchable picker rather than on the
+main panel, so declaring forty of them changes nothing about the layout. Effect icons come from
 the vanilla effect atlas, so anything registered — vanilla, another mod's, or datapack-added —
 displays correctly with no texture needed.
 

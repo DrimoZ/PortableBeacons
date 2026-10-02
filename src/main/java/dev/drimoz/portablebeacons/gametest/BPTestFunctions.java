@@ -51,6 +51,12 @@ public final class BPTestFunctions {
                     (Consumer<GameTestHelper>) BPGameTests::aRefusedSlotWriteKeepsWhatWasThere);
             helper.register(id("upgrading_a_beacon_keeps_what_it_carried"),
                     (Consumer<GameTestHelper>) BPGameTests::upgradingABeaconKeepsWhatItCarried);
+            helper.register(id("a_dry_beacon_waits_then_resumes"),
+                    (Consumer<GameTestHelper>) BPGameTests::aDryBeaconWaitsThenResumes);
+            helper.register(id("switching_one_beacon_on_switches_the_others_off"),
+                    (Consumer<GameTestHelper>) BPGameTests::switchingOneBeaconOnSwitchesTheOthersOff);
+            helper.register(id("an_augment_swaps_for_its_own_type"),
+                    (Consumer<GameTestHelper>) BPGameTests::anAugmentSwapsForItsOwnType);
         });
     }
 

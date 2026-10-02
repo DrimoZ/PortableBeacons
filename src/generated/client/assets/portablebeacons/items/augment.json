@@ -4,181 +4,1275 @@
     "cases": [
       {
         "model": {
-          "type": "minecraft:model",
-          "model": "portablebeacons:item/augment_range",
-          "tints": [
+          "type": "minecraft:select",
+          "cases": [
             {
-              "type": "portablebeacons:augment_colour"
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_range_1",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 1
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_range_2",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 2
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_range_3",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 3
             }
-          ]
+          ],
+          "fallback": {
+            "type": "minecraft:model",
+            "model": "portablebeacons:item/augment_range_1",
+            "tints": [
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              },
+              {
+                "type": "portablebeacons:augment_colour"
+              },
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              }
+            ]
+          },
+          "property": "portablebeacons:augment_tier"
         },
         "when": "portablebeacons:range"
       },
       {
         "model": {
-          "type": "minecraft:model",
-          "model": "portablebeacons:item/augment_focus",
-          "tints": [
+          "type": "minecraft:select",
+          "cases": [
             {
-              "type": "portablebeacons:augment_colour"
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_focus_1",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 1
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_focus_2",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 2
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_focus_3",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 3
             }
-          ]
+          ],
+          "fallback": {
+            "type": "minecraft:model",
+            "model": "portablebeacons:item/augment_focus_1",
+            "tints": [
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              },
+              {
+                "type": "portablebeacons:augment_colour"
+              },
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              }
+            ]
+          },
+          "property": "portablebeacons:augment_tier"
         },
         "when": "portablebeacons:focus"
       },
       {
         "model": {
-          "type": "minecraft:model",
-          "model": "portablebeacons:item/augment_amplification",
-          "tints": [
+          "type": "minecraft:select",
+          "cases": [
             {
-              "type": "portablebeacons:augment_colour"
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_amplification_1",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 1
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_amplification_2",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 2
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_amplification_3",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 3
             }
-          ]
+          ],
+          "fallback": {
+            "type": "minecraft:model",
+            "model": "portablebeacons:item/augment_amplification_1",
+            "tints": [
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              },
+              {
+                "type": "portablebeacons:augment_colour"
+              },
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              }
+            ]
+          },
+          "property": "portablebeacons:augment_tier"
         },
         "when": "portablebeacons:amplification"
       },
       {
         "model": {
-          "type": "minecraft:model",
-          "model": "portablebeacons:item/augment_efficiency",
-          "tints": [
+          "type": "minecraft:select",
+          "cases": [
             {
-              "type": "portablebeacons:augment_colour"
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_efficiency_1",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 1
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_efficiency_2",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 2
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_efficiency_3",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 3
             }
-          ]
+          ],
+          "fallback": {
+            "type": "minecraft:model",
+            "model": "portablebeacons:item/augment_efficiency_1",
+            "tints": [
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              },
+              {
+                "type": "portablebeacons:augment_colour"
+              },
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              }
+            ]
+          },
+          "property": "portablebeacons:augment_tier"
         },
         "when": "portablebeacons:efficiency"
       },
       {
         "model": {
-          "type": "minecraft:model",
-          "model": "portablebeacons:item/augment_capacity",
-          "tints": [
+          "type": "minecraft:select",
+          "cases": [
             {
-              "type": "portablebeacons:augment_colour"
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_capacity_1",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 1
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_capacity_2",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 2
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_capacity_3",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 3
             }
-          ]
+          ],
+          "fallback": {
+            "type": "minecraft:model",
+            "model": "portablebeacons:item/augment_capacity_1",
+            "tints": [
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              },
+              {
+                "type": "portablebeacons:augment_colour"
+              },
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              }
+            ]
+          },
+          "property": "portablebeacons:augment_tier"
         },
         "when": "portablebeacons:capacity"
       },
       {
         "model": {
-          "type": "minecraft:model",
-          "model": "portablebeacons:item/augment_attunement",
-          "tints": [
+          "type": "minecraft:select",
+          "cases": [
             {
-              "type": "portablebeacons:augment_colour"
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_attunement_1",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 1
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_attunement_2",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 2
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_attunement_3",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 3
             }
-          ]
+          ],
+          "fallback": {
+            "type": "minecraft:model",
+            "model": "portablebeacons:item/augment_attunement_1",
+            "tints": [
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              },
+              {
+                "type": "portablebeacons:augment_colour"
+              },
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              }
+            ]
+          },
+          "property": "portablebeacons:augment_tier"
         },
         "when": "portablebeacons:attunement"
       },
       {
         "model": {
-          "type": "minecraft:model",
-          "model": "portablebeacons:item/augment_discretion",
-          "tints": [
+          "type": "minecraft:select",
+          "cases": [
             {
-              "type": "portablebeacons:augment_colour"
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_discretion_1",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 1
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_discretion_2",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 2
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_discretion_3",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 3
             }
-          ]
+          ],
+          "fallback": {
+            "type": "minecraft:model",
+            "model": "portablebeacons:item/augment_discretion_1",
+            "tints": [
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              },
+              {
+                "type": "portablebeacons:augment_colour"
+              },
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              }
+            ]
+          },
+          "property": "portablebeacons:augment_tier"
         },
         "when": "portablebeacons:discretion"
       },
       {
         "model": {
-          "type": "minecraft:model",
-          "model": "portablebeacons:item/augment_communion",
-          "tints": [
+          "type": "minecraft:select",
+          "cases": [
             {
-              "type": "portablebeacons:augment_colour"
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_communion_1",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 1
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_communion_2",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 2
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_communion_3",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 3
             }
-          ]
+          ],
+          "fallback": {
+            "type": "minecraft:model",
+            "model": "portablebeacons:item/augment_communion_1",
+            "tints": [
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              },
+              {
+                "type": "portablebeacons:augment_colour"
+              },
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              }
+            ]
+          },
+          "property": "portablebeacons:augment_tier"
         },
         "when": "portablebeacons:communion"
       },
       {
         "model": {
-          "type": "minecraft:model",
-          "model": "portablebeacons:item/augment_wellspring",
-          "tints": [
+          "type": "minecraft:select",
+          "cases": [
             {
-              "type": "portablebeacons:augment_colour"
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_wellspring_1",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 1
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_wellspring_2",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 2
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_wellspring_3",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 3
             }
-          ]
+          ],
+          "fallback": {
+            "type": "minecraft:model",
+            "model": "portablebeacons:item/augment_wellspring_1",
+            "tints": [
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              },
+              {
+                "type": "portablebeacons:augment_colour"
+              },
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              }
+            ]
+          },
+          "property": "portablebeacons:augment_tier"
         },
         "when": "portablebeacons:wellspring"
       },
       {
         "model": {
-          "type": "minecraft:model",
-          "model": "portablebeacons:item/augment_wayfarer",
-          "tints": [
+          "type": "minecraft:select",
+          "cases": [
             {
-              "type": "portablebeacons:augment_colour"
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_wayfarer_1",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 1
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_wayfarer_2",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 2
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_wayfarer_3",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 3
             }
-          ]
+          ],
+          "fallback": {
+            "type": "minecraft:model",
+            "model": "portablebeacons:item/augment_wayfarer_1",
+            "tints": [
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              },
+              {
+                "type": "portablebeacons:augment_colour"
+              },
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              }
+            ]
+          },
+          "property": "portablebeacons:augment_tier"
         },
         "when": "portablebeacons:wayfarer"
       },
       {
         "model": {
-          "type": "minecraft:model",
-          "model": "portablebeacons:item/augment_sentinel",
-          "tints": [
+          "type": "minecraft:select",
+          "cases": [
             {
-              "type": "portablebeacons:augment_colour"
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_sentinel_1",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 1
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_sentinel_2",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 2
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_sentinel_3",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 3
             }
-          ]
+          ],
+          "fallback": {
+            "type": "minecraft:model",
+            "model": "portablebeacons:item/augment_sentinel_1",
+            "tints": [
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              },
+              {
+                "type": "portablebeacons:augment_colour"
+              },
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              }
+            ]
+          },
+          "property": "portablebeacons:augment_tier"
         },
         "when": "portablebeacons:sentinel"
       },
       {
         "model": {
-          "type": "minecraft:model",
-          "model": "portablebeacons:item/augment_vanguard",
-          "tints": [
+          "type": "minecraft:select",
+          "cases": [
             {
-              "type": "portablebeacons:augment_colour"
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_vanguard_1",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 1
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_vanguard_2",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 2
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_vanguard_3",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 3
             }
-          ]
+          ],
+          "fallback": {
+            "type": "minecraft:model",
+            "model": "portablebeacons:item/augment_vanguard_1",
+            "tints": [
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              },
+              {
+                "type": "portablebeacons:augment_colour"
+              },
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              }
+            ]
+          },
+          "property": "portablebeacons:augment_tier"
         },
         "when": "portablebeacons:vanguard"
       },
       {
         "model": {
-          "type": "minecraft:model",
-          "model": "portablebeacons:item/augment_prism",
-          "tints": [
+          "type": "minecraft:select",
+          "cases": [
             {
-              "type": "portablebeacons:augment_colour"
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_prism_1",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 1
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_prism_2",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 2
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_prism_3",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 3
             }
-          ]
+          ],
+          "fallback": {
+            "type": "minecraft:model",
+            "model": "portablebeacons:item/augment_prism_1",
+            "tints": [
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              },
+              {
+                "type": "portablebeacons:augment_colour"
+              },
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              }
+            ]
+          },
+          "property": "portablebeacons:augment_tier"
         },
         "when": "portablebeacons:prism"
       },
       {
         "model": {
-          "type": "minecraft:model",
-          "model": "portablebeacons:item/augment_recluse",
-          "tints": [
+          "type": "minecraft:select",
+          "cases": [
             {
-              "type": "portablebeacons:augment_colour"
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_recluse_1",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 1
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_recluse_2",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 2
+            },
+            {
+              "model": {
+                "type": "minecraft:model",
+                "model": "portablebeacons:item/augment_recluse_3",
+                "tints": [
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  },
+                  {
+                    "type": "portablebeacons:augment_colour"
+                  },
+                  {
+                    "type": "minecraft:constant",
+                    "value": -1
+                  }
+                ]
+              },
+              "when": 3
             }
-          ]
+          ],
+          "fallback": {
+            "type": "minecraft:model",
+            "model": "portablebeacons:item/augment_recluse_1",
+            "tints": [
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              },
+              {
+                "type": "portablebeacons:augment_colour"
+              },
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              }
+            ]
+          },
+          "property": "portablebeacons:augment_tier"
         },
         "when": "portablebeacons:recluse"
       }
     ],
     "fallback": {
-      "type": "minecraft:model",
-      "model": "portablebeacons:item/augment",
-      "tints": [
+      "type": "minecraft:select",
+      "cases": [
         {
-          "type": "portablebeacons:augment_colour"
+          "model": {
+            "type": "minecraft:model",
+            "model": "portablebeacons:item/augment_1",
+            "tints": [
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              },
+              {
+                "type": "portablebeacons:augment_colour"
+              }
+            ]
+          },
+          "when": 1
+        },
+        {
+          "model": {
+            "type": "minecraft:model",
+            "model": "portablebeacons:item/augment_2",
+            "tints": [
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              },
+              {
+                "type": "portablebeacons:augment_colour"
+              }
+            ]
+          },
+          "when": 2
+        },
+        {
+          "model": {
+            "type": "minecraft:model",
+            "model": "portablebeacons:item/augment_3",
+            "tints": [
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              },
+              {
+                "type": "portablebeacons:augment_colour"
+              }
+            ]
+          },
+          "when": 3
         }
-      ]
+      ],
+      "fallback": {
+        "type": "minecraft:model",
+        "model": "portablebeacons:item/augment_1",
+        "tints": [
+          {
+            "type": "minecraft:constant",
+            "value": -1
+          },
+          {
+            "type": "portablebeacons:augment_colour"
+          }
+        ]
+      },
+      "property": "portablebeacons:augment_tier"
     },
     "property": "portablebeacons:augment_type"
   }
