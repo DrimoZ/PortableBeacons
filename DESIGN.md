@@ -63,13 +63,17 @@ Risque n°1 du mod. Trois garde-fous cumulés :
 
 ## 5. La GUI
 
-> **Note (état actuel)** — la disposition décrite ci-dessous a évolué à l'usage. L'écran fait
-> 194×256, aligné sur la largeur de l'inventaire. **Stats, augments et carburant vivent dans des
-> tiroirs latéraux** ouverts par des onglets soudés au cadre, avec un onglet power séparé : ils se
-> configurent une fois puis se laissent tranquilles, et les garder en permanence à l'écran
-> encombrait le panneau qu'on lit vraiment. Le panneau principal ne porte donc plus que les cases
-> d'effet, leurs réglages et l'inventaire. Le reste de cette section — le raisonnement sur les
-> cases, le sélecteur et le panneau d'info — reste valable.
+> **Note (état actuel)** — la disposition décrite ci-dessous a été remplacée. L'écran suit
+> désormais la charte de FactoryIO (`GuiMetrics`, `GuiTheme`, `GuiSprites`) : 176 de large, tout
+> aligné sur les colonnes de l'inventaire. Le bandeau porte le titre, l'interrupteur général et le
+> voyant d'état. La colonne 0 porte la jauge et le slot de carburant. Le reste est **un tableau,
+> une ligne par effet**, où tout se règle sur place : icône (changer / retirer), badge de niveau
+> (monter / descendre), silhouette (qui reçoit l'effet), interrupteur, et sous le nom une barre de
+> la part de consommation. Il n'y a plus de case « sélectionnée » dont les réglages vivaient
+> ailleurs : c'était un état que le joueur devait garder en tête. Les chiffres du pack sont un
+> onglet jaune à gauche, les augments un onglet bleu à droite. Le sélecteur est une grille modale
+> qui recouvre tout l'écran, avec une case « retirer » en tête. Les schémas ci-dessous sont gardés
+> pour l'historique du raisonnement.
 
 Ouverture : clic-droit depuis n'importe quel slot d'inventaire, **ou** touche configurable
 (cf. §5.2). Écran complet avec un vrai `AbstractContainerMenu` (slots réels).

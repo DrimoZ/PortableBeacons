@@ -1,6 +1,5 @@
 {
   "max_tier": 1,
-  "model_data": 12,
   "color": 16747546,
   "operations": [
     { "type": "add_range", "values": [12.0] },

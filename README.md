@@ -78,6 +78,10 @@ beacon never offered. Carrying one instead of a tier IV is a trade, not a downgr
 They needed no new mechanics: a tier entry declares which effects it accepts, so a themed beacon is
 a data file plus an item — and a datapack can add more the same way.
 
+The **Creative Beacon** (creative tab only) has every ceiling at its maximum and burns nothing — a
+tier file with `"fuel_multiplier": 0`. Any tier can set that field to make its effects cheaper or
+dearer.
+
 ### Fuel
 
 Each effect costs fuel per second, scaled by its level and by how widely it is shared. Copper,
@@ -92,22 +96,34 @@ nothing — which is what gives Capacity and the higher tiers a purpose. Pulling
 out of a full beacon loses nothing either: the surplus stays and burns down, and the beacon takes no
 new fuel until it has.
 
+Fuel is not the only way in. Standing in a lit beacon's range recharges every beacon you carry, on
+or off (`beacon_recharge_per_second`, 20 by default), so a base with a beacon doubles as a charging
+station. And any energy mod's charger fills a beacon through the forge energy capability, at
+`energy_per_fuel_unit` FE per unit (40 by default: an iron ingot's worth is 12,000 FE).
+
+A minute before it runs dry the beacon says so. When it does run dry it stays switched on and
+waits, and resumes by itself the moment there is fuel in its slot. Only one beacon runs at a time:
+switching one on switches your others off.
+
 Turning `require_fuel` off removes fuel from the game rather than leaving it inert: no fuel slot,
 no gauge, no runtime figures.
 
 ### The screen
 
-Effects, their settings and the player's inventory are all the main panel carries. Stats, augments
-and fuel live in side tabs, because they are configured once and then left alone. Effects are
-picked from a searchable list filtered to what the beacon accepts, with arrow-key navigation and a
-four-segment meter comparing fuel costs.
+One row per effect, with everything set in place: click the icon to change the effect, the level to
+raise it, the figure to choose who it reaches, the switch to turn it off - right-click steps back.
+A bar under each name shows its share of the drain. The fuel gauge and slot sit beside the list,
+the master switch and a status light in the title band; the beacon's figures and its augments are
+side tabs. Effects are picked from a searchable grid filtered to what the beacon accepts.
 
 ---
 
 ## Configuration
 
-Four server-side options: whether fuel exists, whether the aura reaches players off your team,
-whether a real beacon makes an effect free, and whether reconfiguring needs a beacon nearby.
+Server-side options: whether fuel exists, whether the aura reaches players off your team, whether
+a real beacon makes an effect free, whether reconfiguring needs a beacon nearby, how fast a real
+beacon recharges a portable one, what forge energy is worth, a global fuel cost multiplier, a cap on
+how far shared effects reach, and the dimensions where portable beacons are switched off.
 
 **[Config reference →](https://github.com/DrimoZ/PortableBeacons/wiki/Configuration)**
 
@@ -142,15 +158,40 @@ Four datapack registries under `data/<namespace>/portablebeacons/`:
   "effect": "minecraft:fire_resistance",
   "cost": 2.0,
   "max_amplifier": 0,
-  "min_tier": 2
+  "min_tier": 2,
+  "pools": [ "standard" ]
+}
+```
+
+`"pools"` is what makes that one file: the four standard tiers list `"#standard"` in their
+`effect_pool`, so any effect in the `standard` pool is offered by all four with no tier file
+touched. A pack can invent its own pools the same way. An augment added by a datapack can borrow
+any shipped glyph for its icon with `"glyph"` - one of the augments' own (`"range"`, `"focus"`,
+…) or a generic shape: `star`, `bolt`, `heart`, `gem`, `shield`, `leaf`.
+
+Ceilings a datapack can reach: effect levels up to X, 8 effect slots and 8 augment slots per tier,
+three tiers per augment.
+A tier's `fuel_multiplier` (default 1) scales what its effects cost before augments.
+
+Two operations act on a single effect, named by `"effect"`, which is how a pack builds a
+specialised augment rather than another all-round one:
+
+```json
+// data/mypack/portablebeacons/augment/sprinter.json - Speed one level higher, and cheaper
+{
+  "max_tier": 1, "color": 5636095, "glyph": "bolt",
+  "operations": [
+    { "type": "add_effect_amplifier", "effect": "portablebeacons:speed", "values": [1] },
+    { "type": "mul_effect_cost", "effect": "portablebeacons:speed", "values": [0.6] }
+  ]
 }
 ```
 
 **[Full datapack guide →](https://github.com/DrimoZ/PortableBeacons/wiki/Datapack-Guide)** — every field
 of all four registries, with worked examples for adding an effect, an augment and a themed tier.
 
-The screen adapts on its own: effects live in a scrollable, searchable picker rather than a
-fixed grid, so declaring forty of them changes nothing about the layout. Effect icons come from
+The screen adapts on its own: effects live in a scrolling, searchable picker rather than on the
+main panel, so declaring forty of them changes nothing about the layout. Effect icons come from
 the vanilla effect atlas, so anything registered — vanilla, another mod's, or datapack-added —
 displays correctly with no texture needed.
 

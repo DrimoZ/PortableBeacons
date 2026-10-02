@@ -1,7 +1,6 @@
 {
   "max_tier": 3,
   "color": 5635925,
-  "model_data": 4,
   "operations": [
     { "type": "mul_fuel", "values": [0.75, 0.6, 0.45] }
   ]

@@ -1,1 +1,1 @@
-{ "effect": "minecraft:strength", "cost": 2.0, "max_amplifier": 2, "min_tier": 3 }
+{ "effect": "minecraft:strength", "cost": 2.0, "max_amplifier": 4, "min_tier": 3, "pools": [ "standard" ] }

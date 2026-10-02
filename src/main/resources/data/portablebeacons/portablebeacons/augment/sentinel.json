@@ -1,6 +1,5 @@
 {
   "max_tier": 2,
-  "model_data": 11,
   "color": 10053171,
   "operations": [
     { "type": "mul_cost_still", "values": [0.5, 0.35] },

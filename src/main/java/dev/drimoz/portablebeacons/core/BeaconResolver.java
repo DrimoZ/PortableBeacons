@@ -5,7 +5,9 @@ import net.minecraft.resources.ResourceKey;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -36,13 +38,15 @@ public final class BeaconResolver {
         double range = tier.baseRange();
         double capacityMultiplier = 1.0;
         int maxAmplifier = tier.maxAmplifier();
-        double fuelMultiplier = 1.0;
+        double fuelMultiplier = tier.fuelMultiplier();
         double auraCostMultiplier = 1.0;
         int freeEffectSlots = 0;
         double movingCostMultiplier = 1.0;
         double stillCostMultiplier = 1.0;
         int auraTierBonus = 0;
         int concealment = 0;
+        Map<ResourceKey<BeaconEffectDef>, Integer> effectBonus = new HashMap<>();
+        Map<ResourceKey<BeaconEffectDef>, Double> effectCost = new HashMap<>();
 
         for (AugmentInstance instance : dedupeByType(augments)) {
             Optional<AugmentDef> maybeDef = augmentLookup.get(instance.type());
@@ -68,6 +72,11 @@ public final class BeaconResolver {
                     // Highest wins rather than summing: this value names a behaviour, so adding
                     // two of them would be meaningless.
                     case HIDE_EFFECTS -> concealment = Math.max(concealment, (int) value);
+                    // Targeted: the codec guarantees an effect is named, so these never act on nothing.
+                    case ADD_EFFECT_AMPLIFIER -> op.effect().ifPresent(key ->
+                            effectBonus.merge(key, (int) value, Integer::sum));
+                    case MUL_EFFECT_COST -> op.effect().ifPresent(key ->
+                            effectCost.merge(key, Math.max(0.0, value), (a, b) -> a * b));
                 }
             }
         }
@@ -85,7 +94,7 @@ public final class BeaconResolver {
                 augmentSlots,
                 Math.max(0.0, range),
                 (int) Math.round(tier.fuelCapacity() * capacityMultiplier),
-                Math.clamp(maxAmplifier, 0, 3),
+                Math.clamp(maxAmplifier, 0, BeaconStats.MAX_AMPLIFIER),
                 Math.max(0.0, fuelMultiplier),
                 Math.max(0.0, auraCostMultiplier),
                 Math.max(0, freeEffectSlots),
@@ -93,7 +102,61 @@ public final class BeaconResolver {
                 Math.max(0.0, stillCostMultiplier),
                 auraModes,
                 concealment >= 1,
-                concealment >= 2);
+                concealment >= 2,
+                effectBonus,
+                effectCost);
+    }
+
+    /**
+     * Whether the augment at {@code index} raises a ceiling this beacon is already at: an effect slot
+     * past the most a beacon can have, a level no effect it offers can reach, a sharing mode past the
+     * widest. Prism on the creative beacon does nothing but cost - which the slot otherwise never says.
+     *
+     * <p>Judged by resolving with and without it rather than by reading the numbers, so a cap from
+     * any source - the absolute ceilings, the effects' own {@code max_amplifier}, a tier's pool -
+     * counts, and one added later counts without this changing.
+     *
+     * @param effects every effect the registry holds; the tier's pool is applied here
+     */
+    public static boolean raisesACeilingInVain(BeaconTierDef tier, List<AugmentInstance> augments, int index,
+                                               Lookup<AugmentDef> augmentLookup,
+                                               Map<ResourceKey<BeaconEffectDef>, BeaconEffectDef> effects) {
+        Optional<AugmentDef> def = augmentLookup.get(augments.get(index).type());
+        if (def.isEmpty()) {
+            return false;
+        }
+        List<AugmentInstance> without = new ArrayList<>(augments);
+        without.remove(index);
+        BeaconStats with = resolve(tier, augments, augmentLookup);
+        BeaconStats wo = resolve(tier, without, augmentLookup);
+        int tierLevel = Math.clamp(augments.get(index).tier(), 1, def.get().maxTier());
+
+        for (AugmentDef.Operation op : def.get().operations()) {
+            if (op.valueFor(tierLevel) <= 0) {
+                continue;
+            }
+            boolean inVain = switch (op.type()) {
+                case ADD_EFFECT_SLOT -> with.effectSlots() == wo.effectSlots();
+                case UNLOCK_AURA -> with.allowedAuraModes().equals(wo.allowedAuraModes());
+                case ADD_AMPLIFIER -> effects.entrySet().stream()
+                        .filter(e -> tier.allows(e.getKey(), e.getValue()))
+                        .allMatch(e -> reachable(e.getValue(), with, e.getKey())
+                                == reachable(e.getValue(), wo, e.getKey()));
+                case ADD_EFFECT_AMPLIFIER -> op.effect()
+                        .map(key -> effects.get(key) == null || !tier.allows(key, effects.get(key))
+                                || reachable(effects.get(key), with, key) == reachable(effects.get(key), wo, key))
+                        .orElse(true);
+                default -> false;
+            };
+            if (inVain) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static int reachable(BeaconEffectDef def, BeaconStats stats, ResourceKey<BeaconEffectDef> key) {
+        return Math.min(def.maxAmplifier(), stats.maxAmplifierFor(key));
     }
 
     /**
@@ -195,6 +258,29 @@ public final class BeaconResolver {
         return free;
     }
 
+    /**
+     * What one effect takes of the bill, 0 to 1, among the effects actually charged for.
+     *
+     * <p>Its own sum rather than the bill: the bill carries the moving or still multiplier, which
+     * scales every effect alike, so dividing by it made three effects read 28, 21 and 14 percent -
+     * shares of a total that was not theirs. A free slot's effect is outside the sum and has no share.
+     */
+    public static double share(List<EffectSlotConfig> slots, int index,
+                               BeaconStats stats,
+                               Lookup<BeaconEffectDef> effectLookup) {
+        boolean[] free = freeMask(slots, stats, effectLookup);
+        if (index < 0 || index >= slots.size() || free[index]) {
+            return 0.0;
+        }
+        double total = 0.0;
+        for (int i = 0; i < slots.size(); i++) {
+            if (!free[i]) {
+                total += fuelPerSecond(slots.get(i), stats, effectLookup);
+            }
+        }
+        return total <= 0.0 ? 0.0 : fuelPerSecond(slots.get(index), stats, effectLookup) / total;
+    }
+
     /** Per-effect cost, excluding the beacon-wide {@link BeaconStats#fuelMultiplier()}. */
     public static double fuelPerSecond(EffectSlotConfig slot,
                                        BeaconStats stats,
@@ -211,7 +297,8 @@ public final class BeaconResolver {
         double shared = slot.aura().isAura()
                 ? 1.0 + (slot.aura().costMultiplier() - 1.0) * stats.auraCostMultiplier()
                 : 1.0;
-        double base = maybeDef.get().costPerSecond(slot.amplifier(), AuraMode.SELF) * shared;
+        double base = maybeDef.get().costPerSecond(slot.amplifier(), AuraMode.SELF) * shared
+                * stats.costMultiplierFor(slot.effect());
         return slot.aura().isAura() ? base * rangeFactor(stats.range()) : base;
     }
 
@@ -241,10 +328,10 @@ public final class BeaconResolver {
             Optional<BeaconEffectDef> maybeDef = effectLookup.get(slot.effect());
             if (maybeDef.isEmpty()
                     || maybeDef.get().minTier() > tier.level()
-                    || !tier.allows(slot.effect())) {
+                    || !tier.allows(slot.effect(), maybeDef.get())) {
                 continue;
             }
-            int amplifierCap = Math.min(maybeDef.get().maxAmplifier(), stats.maxAmplifier());
+            int amplifierCap = Math.min(maybeDef.get().maxAmplifier(), stats.maxAmplifierFor(slot.effect()));
             AuraMode aura = stats.allows(slot.aura()) ? slot.aura() : AuraMode.SELF;
             kept.add(slot.withAmplifier(Math.clamp(slot.amplifier(), 0, amplifierCap))
                     .withAura(aura));

@@ -2,91 +2,386 @@
   "parent": "minecraft:item/generated",
   "overrides": [
     {
-      "model": "portablebeacons:item/augment_range",
+      "model": "portablebeacons:item/augment_1",
       "predicate": {
-        "portablebeacons:augment_type": 1.0
+        "portablebeacons:augment_look": 1.0
       }
     },
     {
-      "model": "portablebeacons:item/augment_focus",
+      "model": "portablebeacons:item/augment_2",
       "predicate": {
-        "portablebeacons:augment_type": 2.0
+        "portablebeacons:augment_look": 2.0
       }
     },
     {
-      "model": "portablebeacons:item/augment_amplification",
+      "model": "portablebeacons:item/augment_3",
       "predicate": {
-        "portablebeacons:augment_type": 3.0
+        "portablebeacons:augment_look": 3.0
       }
     },
     {
-      "model": "portablebeacons:item/augment_efficiency",
+      "model": "portablebeacons:item/augment_range_1",
       "predicate": {
-        "portablebeacons:augment_type": 4.0
+        "portablebeacons:augment_look": 5.0
       }
     },
     {
-      "model": "portablebeacons:item/augment_capacity",
+      "model": "portablebeacons:item/augment_range_2",
       "predicate": {
-        "portablebeacons:augment_type": 5.0
+        "portablebeacons:augment_look": 6.0
       }
     },
     {
-      "model": "portablebeacons:item/augment_attunement",
+      "model": "portablebeacons:item/augment_range_3",
       "predicate": {
-        "portablebeacons:augment_type": 6.0
+        "portablebeacons:augment_look": 7.0
       }
     },
     {
-      "model": "portablebeacons:item/augment_discretion",
+      "model": "portablebeacons:item/augment_focus_1",
       "predicate": {
-        "portablebeacons:augment_type": 7.0
+        "portablebeacons:augment_look": 9.0
       }
     },
     {
-      "model": "portablebeacons:item/augment_communion",
+      "model": "portablebeacons:item/augment_focus_2",
       "predicate": {
-        "portablebeacons:augment_type": 8.0
+        "portablebeacons:augment_look": 10.0
       }
     },
     {
-      "model": "portablebeacons:item/augment_wellspring",
+      "model": "portablebeacons:item/augment_focus_3",
       "predicate": {
-        "portablebeacons:augment_type": 9.0
+        "portablebeacons:augment_look": 11.0
       }
     },
     {
-      "model": "portablebeacons:item/augment_wayfarer",
+      "model": "portablebeacons:item/augment_amplification_1",
       "predicate": {
-        "portablebeacons:augment_type": 10.0
+        "portablebeacons:augment_look": 13.0
       }
     },
     {
-      "model": "portablebeacons:item/augment_sentinel",
+      "model": "portablebeacons:item/augment_amplification_2",
       "predicate": {
-        "portablebeacons:augment_type": 11.0
+        "portablebeacons:augment_look": 14.0
       }
     },
     {
-      "model": "portablebeacons:item/augment_vanguard",
+      "model": "portablebeacons:item/augment_amplification_3",
       "predicate": {
-        "portablebeacons:augment_type": 12.0
+        "portablebeacons:augment_look": 15.0
       }
     },
     {
-      "model": "portablebeacons:item/augment_prism",
+      "model": "portablebeacons:item/augment_efficiency_1",
       "predicate": {
-        "portablebeacons:augment_type": 13.0
+        "portablebeacons:augment_look": 17.0
       }
     },
     {
-      "model": "portablebeacons:item/augment_recluse",
+      "model": "portablebeacons:item/augment_efficiency_2",
       "predicate": {
-        "portablebeacons:augment_type": 14.0
+        "portablebeacons:augment_look": 18.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_efficiency_3",
+      "predicate": {
+        "portablebeacons:augment_look": 19.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_capacity_1",
+      "predicate": {
+        "portablebeacons:augment_look": 21.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_capacity_2",
+      "predicate": {
+        "portablebeacons:augment_look": 22.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_capacity_3",
+      "predicate": {
+        "portablebeacons:augment_look": 23.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_attunement_1",
+      "predicate": {
+        "portablebeacons:augment_look": 25.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_attunement_2",
+      "predicate": {
+        "portablebeacons:augment_look": 26.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_attunement_3",
+      "predicate": {
+        "portablebeacons:augment_look": 27.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_discretion_1",
+      "predicate": {
+        "portablebeacons:augment_look": 29.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_discretion_2",
+      "predicate": {
+        "portablebeacons:augment_look": 30.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_discretion_3",
+      "predicate": {
+        "portablebeacons:augment_look": 31.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_communion_1",
+      "predicate": {
+        "portablebeacons:augment_look": 33.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_communion_2",
+      "predicate": {
+        "portablebeacons:augment_look": 34.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_communion_3",
+      "predicate": {
+        "portablebeacons:augment_look": 35.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_wellspring_1",
+      "predicate": {
+        "portablebeacons:augment_look": 37.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_wellspring_2",
+      "predicate": {
+        "portablebeacons:augment_look": 38.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_wellspring_3",
+      "predicate": {
+        "portablebeacons:augment_look": 39.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_wayfarer_1",
+      "predicate": {
+        "portablebeacons:augment_look": 41.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_wayfarer_2",
+      "predicate": {
+        "portablebeacons:augment_look": 42.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_wayfarer_3",
+      "predicate": {
+        "portablebeacons:augment_look": 43.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_sentinel_1",
+      "predicate": {
+        "portablebeacons:augment_look": 45.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_sentinel_2",
+      "predicate": {
+        "portablebeacons:augment_look": 46.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_sentinel_3",
+      "predicate": {
+        "portablebeacons:augment_look": 47.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_vanguard_1",
+      "predicate": {
+        "portablebeacons:augment_look": 49.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_vanguard_2",
+      "predicate": {
+        "portablebeacons:augment_look": 50.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_vanguard_3",
+      "predicate": {
+        "portablebeacons:augment_look": 51.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_prism_1",
+      "predicate": {
+        "portablebeacons:augment_look": 53.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_prism_2",
+      "predicate": {
+        "portablebeacons:augment_look": 54.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_prism_3",
+      "predicate": {
+        "portablebeacons:augment_look": 55.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_recluse_1",
+      "predicate": {
+        "portablebeacons:augment_look": 57.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_recluse_2",
+      "predicate": {
+        "portablebeacons:augment_look": 58.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_recluse_3",
+      "predicate": {
+        "portablebeacons:augment_look": 59.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_star_1",
+      "predicate": {
+        "portablebeacons:augment_look": 61.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_star_2",
+      "predicate": {
+        "portablebeacons:augment_look": 62.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_star_3",
+      "predicate": {
+        "portablebeacons:augment_look": 63.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_bolt_1",
+      "predicate": {
+        "portablebeacons:augment_look": 65.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_bolt_2",
+      "predicate": {
+        "portablebeacons:augment_look": 66.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_bolt_3",
+      "predicate": {
+        "portablebeacons:augment_look": 67.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_heart_1",
+      "predicate": {
+        "portablebeacons:augment_look": 69.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_heart_2",
+      "predicate": {
+        "portablebeacons:augment_look": 70.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_heart_3",
+      "predicate": {
+        "portablebeacons:augment_look": 71.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_gem_1",
+      "predicate": {
+        "portablebeacons:augment_look": 73.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_gem_2",
+      "predicate": {
+        "portablebeacons:augment_look": 74.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_gem_3",
+      "predicate": {
+        "portablebeacons:augment_look": 75.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_shield_1",
+      "predicate": {
+        "portablebeacons:augment_look": 77.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_shield_2",
+      "predicate": {
+        "portablebeacons:augment_look": 78.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_shield_3",
+      "predicate": {
+        "portablebeacons:augment_look": 79.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_leaf_1",
+      "predicate": {
+        "portablebeacons:augment_look": 81.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_leaf_2",
+      "predicate": {
+        "portablebeacons:augment_look": 82.0
+      }
+    },
+    {
+      "model": "portablebeacons:item/augment_leaf_3",
+      "predicate": {
+        "portablebeacons:augment_look": 83.0
       }
     }
   ],
   "textures": {
-    "layer0": "portablebeacons:item/augment"
+    "layer0": "portablebeacons:item/augment_casing_1",
+    "layer1": "portablebeacons:item/augment_screen"
   }
 }

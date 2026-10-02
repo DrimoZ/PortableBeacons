@@ -5,7 +5,75 @@ Versions follow `{mod version}+{minecraft version}`.
 
 ## Unreleased
 
+### Added
+- **Recharging at a real beacon.** Standing in a lit beacon's range tops up every portable beacon you
+  carry, switched on or not - a base with a beacon is now a charging station.
+  `beacon_recharge_per_second` sets the rate; 0 turns it off.
+- **Forge energy.** Any energy mod's charger fills a beacon through the energy capability, at
+  `energy_per_fuel_unit` FE per fuel unit (40 by default); 0 turns it off. Whole units only, and a
+  beacon never gives energy back.
+- **Effect pools.** An effect can declare `"pools": [...]`, and a tier's `effect_pool` can list
+  `"#pool"` beside effect ids. The four standard tiers now list `"#standard"`, so a datapack effect
+  joins all four from its own file instead of being added to every tier.
+- **Glyphs for datapack augments.** An augment can name its icon's glyph with `"glyph"`: any of the
+  shipped augments' glyphs, or one of six generic shapes - star, bolt, heart, gem, shield, leaf.
+  Before, an augment from a datapack could only ever show a bare casing.
+- **Higher ceilings for datapacks.** Effects can reach level X (`max_amplifier` up to 9, was 3), a
+  tier can unlock up to 8 effect slots (was 5) and up to 8 augment slots (was 4). The effect table
+  scrolls past five rows and the augment tab grows a second row only when a tier needs it, so the
+  shipped beacons look exactly as before. Augments keep three tiers: their casing shows the tier as
+  pips, and five do not read at 16 pixels.
+- **Two targeted augment operations.** `add_effect_amplifier` raises one effect's level ceiling and
+  `mul_effect_cost` multiplies one effect's cost, each naming its effect with `"effect"` - so a
+  datapack can build a specialised augment (a sprinter's, a miner's) instead of only all-round ones.
+  A targeted operation without its effect is refused when the file is read.
+- **Three server options.** `fuel_cost_multiplier` scales every cost after augments; `max_aura_range`
+  caps how far a shared effect reaches, Range augments included; `disabled_dimensions` lists the
+  dimensions where portable beacons do nothing and spend nothing - the screen says why.
+- **A creative beacon.** Creative tab only, no recipe: eight effect slots, eight augment slots, level
+  X, every sharing mode, 64 blocks of reach, and it burns nothing. It is an ordinary tier file with
+  the new `fuel_multiplier` field set to 0, so a datapack can make any tier cheaper or dearer.
+
+### Changed
+- **Effects go higher.** Speed, Haste, Jump Boost and Strength reach V, Regeneration and Resistance
+  IV (was III for all six); Resistance stops short of V, which is invulnerability. The beacon's own
+  ceiling still applies, so in survival this is what Amplification and Prism are now for.
+- **An augment that raises a ceiling the beacon is already at says so.** Its slot turns amber and
+  its tooltip warns - Prism on the creative beacon, Amplification on a beacon whose effects cannot
+  go higher. It is still accepted: most such augments do something else as well.
+- **A new screen, on FactoryIO's layout.** The fuel gauge and fuel slot sit in the window's first
+  column instead of a drawer; a status light in the title band says whether the beacon is running,
+  idle, low on fuel, out of fuel or switched off; the beacon's figures are a yellow tab on the left
+  and the augments a blue tab on the right. Each effect is one row with everything set in place:
+  click the icon to change the effect (right-click to remove it), click the level to raise it
+  (right-click to lower it), click the figure to choose who it reaches, flip the switch to turn it
+  off. No more selecting a socket first and finding its controls elsewhere; what an effect drains
+  and how far it reaches are in the row's tooltip. Empty slots show what goes in them.
+- **The effect picker is a grid**, covering the whole window, with a search field and arrow-key
+  navigation, and a "remove" cell first when the row already holds an effect.
+- **The master switch is a slide switch**, beside a status light, instead of a power glyph.
+- **A beacon that runs dry waits instead of switching off.** It warns a minute before, stays on
+  while dry - the status light turns red - and resumes by itself as soon as there is fuel in its
+  slot. It used to switch itself off, so refuelling did nothing until the screen was reopened.
+- **Only one beacon runs at a time, and the screen says so.** Switching one on switches your others
+  off; before, a second beacon stayed "on", glinting, and did nothing.
+- **An augment can replace one of its own type.** Dropping Range III on Range II swaps them; it used
+  to be refused as a duplicate.
+- **The beacon's tooltip counts the fuel slot** in its runtime, as the screen does, and the info tab
+  shows moving and standing runtimes separately when Wayfarer or Sentinel makes them differ.
+- **JEI no longer covers the side tabs.**
+- **New item art.** Augments are drawn as fitted modules - a casing, a screen in the augment's
+  colour, its glyph - and show their tier as one to three lit pips, so Range I and Range III are no
+  longer the same icon. Beacons show their tier by the band's material, iron to netherite, and by pips.
+
 ### Fixed
+- **Clicking an augment onto a different one swaps them.** It used to put the fitted augment on the
+  cursor while leaving it in the slot, and delete the one you were holding.
+- **The drain shares under each effect add up to 100%.** They were divided by a bill that included
+  Wayfarer's or Sentinel's multiplier, so three effects could read 28, 21 and 14%.
+- **Recluse says it restricts sharing.** Its tooltip claimed it unlocked wider sharing modes. Both
+  it and Attunement now give the number - "Sharing rank −2", "+2" - so it shows that one cancels the
+  other.
 - **Upgrading a beacon no longer destroys what it carried.** The tier and themed recipes built their
   result from nothing, so crafting a Beacon II into a III lost its installed augments, its fuel and
   its configured effects. They now carry over; whatever the new beacon cannot use is dropped from

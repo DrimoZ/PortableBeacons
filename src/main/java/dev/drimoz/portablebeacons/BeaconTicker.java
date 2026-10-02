@@ -2,6 +2,7 @@ package dev.drimoz.portablebeacons;
 
 import dev.drimoz.portablebeacons.compat.CuriosCompat;
 import dev.drimoz.portablebeacons.core.AuraMode;
+import dev.drimoz.portablebeacons.core.Durations;
 import dev.drimoz.portablebeacons.core.BeaconEffectDef;
 import dev.drimoz.portablebeacons.core.EffectSlotConfig;
 import dev.drimoz.portablebeacons.core.FuelBudget;
@@ -18,6 +19,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.player.Player;
@@ -62,7 +64,56 @@ public final class BeaconTicker {
         if (player.level().isClientSide() || player.tickCount % INTERVAL != 0) {
             return;
         }
+        rechargeFromBeacons(player);
         tickPlayer(player);
+    }
+
+    /**
+     * Tops up every beacon the player carries, switched on or not, while they stand in a lit
+     * beacon's range - so a base with a beacon is where portable ones are charged.
+     *
+     * <p>"In range" is read from the effects a beacon has put on the player: vanilla beacons apply
+     * ambient instances, out to their real pyramid range, which no block-entity scan here could
+     * know. Conduit Power is ambient too but comes from a conduit, so it does not count. Runs before
+     * the beacon's own pass, so a beacon left on and starved resumes on the same pass.
+     */
+    public static void rechargeFromBeacons(Player player) {
+        int perSecond = BPConfig.INSTANCE.beaconRechargePerSecond.get();
+        if (!BPConfig.fuelEnabled() || perSecond <= 0 || !insideBeaconRange(player)) {
+            return;
+        }
+        int amount = (int) Math.min(Integer.MAX_VALUE, (long) perSecond * INTERVAL / 20);
+        RegistryAccess access = player.level().registryAccess();
+        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+            recharge(player.getInventory().getItem(slot), amount, access);
+        }
+        recharge(CuriosCompat.findBeacon(player), amount, access);
+    }
+
+    private static boolean insideBeaconRange(Player player) {
+        for (MobEffectInstance effect : player.getActiveEffects()) {
+            if (effect.isAmbient() && !effect.is(MobEffects.CONDUIT_POWER)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void recharge(ItemStack stack, int amount, RegistryAccess access) {
+        if (!(stack.getItem() instanceof PortableBeaconItem item)) {
+            return;
+        }
+        BeaconTierDef tier = BPLookups.tier(access, item);
+        if (tier == null) {
+            return;
+        }
+        int capacity = BeaconResolver.resolve(tier, BPLookups.installedAugments(stack), BPLookups.augments(access))
+                .fuelCapacity();
+        BeaconState state = PortableBeaconItem.stateOf(stack);
+        int fuel = FuelBudget.recharge(state.fuel(), capacity, amount);
+        if (fuel != state.fuel()) {
+            PortableBeaconItem.setState(stack, state.withFuel(fuel).withCapacity(capacity));
+        }
     }
 
     /**
@@ -73,6 +124,11 @@ public final class BeaconTicker {
      * control, and a test that fails because the tick counter landed badly teaches nothing.
      */
     public static void tickPlayer(Player player) {
+        // A dimension the server has switched beacons off in: nothing applied and nothing spent,
+        // rather than charging for effects that are then withheld.
+        if (BPConfig.disabledIn(player.level().dimension())) {
+            return;
+        }
         ItemStack beacon = findActiveBeacon(player);
         if (beacon.isEmpty()) {
             return;
@@ -110,8 +166,7 @@ public final class BeaconTicker {
         }
 
         BeaconResolver.Lookup<BeaconEffectDef> effectLookup = BPLookups.effects(access);
-        BeaconStats stats = BeaconResolver.resolve(
-                tier, BPLookups.installedAugments(beacon), BPLookups.augments(access));
+        BeaconStats stats = BPLookups.stats(beacon, access);
 
         BeaconState state = BeaconResolver.sanitize(
                 PortableBeaconItem.stateOf(beacon), stats, effectLookup, tier);
@@ -142,10 +197,17 @@ public final class BeaconTicker {
                 runDry(player, beacon, state);
                 return;
             }
+            warnIfRunningLow(player, beacon, state.fuel(), cost, owed);
             state = state.withFuel(state.fuel() - cost);
         }
 
-        PortableBeaconItem.setState(beacon, state);
+        if (state.starved()) {
+            // Fuel arrived for a beacon left on: it resumes by itself, and says so the way a real
+            // beacon does when its pyramid is completed.
+            player.level().playSound(null, player.blockPosition(),
+                    SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, 0.4F, 1.0F);
+        }
+        PortableBeaconItem.setState(beacon, state.withStarved(false));
         for (EffectSlotConfig slot : toApply) {
             apply(player, slot, stats, effectLookup);
         }
@@ -173,16 +235,42 @@ public final class BeaconTicker {
     /**
      * Switches the beacon off and says so.
      *
-     * <p>Effects stopping with no explanation reads as a bug. This fires once by construction: an
-     * inactive beacon is not ticked again until the player turns it back on.
+     * <p>Effects stopping with no explanation reads as a bug, so it says so - once, on the pass
+     * that runs dry, which the starved flag is what remembers.
+     *
+     * <p>It stays switched on. It used to switch itself off, so a player who refuelled still had
+     * to open the screen and turn it back on, and usually found out by noticing the effects were
+     * gone. Starved, it resumes on the first pass that finds fuel.
      */
     private static void runDry(Player player, ItemStack beacon, BeaconState state) {
-        PortableBeaconItem.setState(beacon, state.withActive(false));
-        player.displayClientMessage(
-                Component.translatable("portablebeacons.msg.out_of_fuel").withStyle(ChatFormatting.RED),
-                true);
-        player.level().playSound(null, player.blockPosition(),
-                SoundEvents.BEACON_DEACTIVATE, SoundSource.PLAYERS, 0.5F, 1.0F);
+        if (!state.starved()) {
+            ActionBar.send(player,
+                    Component.translatable("portablebeacons.msg.out_of_fuel").withStyle(ChatFormatting.RED));
+            player.level().playSound(null, player.blockPosition(),
+                    SoundEvents.BEACON_DEACTIVATE, SoundSource.PLAYERS, 0.5F, 1.0F);
+        }
+        PortableBeaconItem.setState(beacon, state.withStarved(true));
+    }
+
+    /** A minute's warning: enough to reach the fuel, too little to forget about it. */
+    public static final int LOW_FUEL_SECONDS = 60;
+
+    /**
+     * Warns once, on the pass that takes the beacon under a minute of runtime - buffer and slot
+     * together, since the slot is burned before the beacon runs dry. Running out with no warning was
+     * the other half of the old silence.
+     */
+    private static void warnIfRunningLow(Player player, ItemStack beacon, int fuel, int cost, double owed) {
+        if (owed <= 0.0) {
+            return;
+        }
+        int reserve = BPLookups.reserveUnits(beacon, player.level().registryAccess());
+        double before = (fuel + reserve) / owed;
+        double after = (fuel - cost + reserve) / owed;
+        if (before >= LOW_FUEL_SECONDS && after < LOW_FUEL_SECONDS) {
+            ActionBar.send(player, Component.translatable("portablebeacons.gui.low_fuel",
+                    Durations.format((int) after)).withStyle(ChatFormatting.GOLD));
+        }
     }
 
     /**

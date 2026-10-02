@@ -43,5 +43,18 @@ public final class FuelBudget {
         return Math.min(needed, Math.min(fits, available));
     }
 
+    /**
+     * The buffer after a recharge: topped up towards capacity, never past it.
+     *
+     * <p>Never lowered either. A buffer already above capacity - the surplus kept when a Capacity
+     * augment comes out - is left alone rather than "recharged" down to the cap.
+     */
+    public static int recharge(int fuel, int capacity, int amount) {
+        if (amount <= 0 || fuel >= capacity) {
+            return fuel;
+        }
+        return (int) Math.min(capacity, (long) fuel + amount);
+    }
+
     private FuelBudget() {}
 }

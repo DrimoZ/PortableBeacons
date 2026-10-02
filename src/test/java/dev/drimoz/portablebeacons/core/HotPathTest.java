@@ -33,7 +33,7 @@ class HotPathTest {
                     HASTE, new BeaconEffectDef(null, 1.0, 1, 1, 2.0)).get(key));
 
     private static final BeaconResolver.Lookup<AugmentDef> AUGMENTS = key -> Optional.of(
-            new AugmentDef(3, 0, 0, List.of(
+            new AugmentDef(3, 0, List.of(
                     new AugmentDef.Operation(AugmentDef.Type.ADD_RANGE, List.of(4.0, 8.0, 12.0)),
                     new AugmentDef.Operation(AugmentDef.Type.MUL_FUEL, List.of(0.75, 0.6, 0.45)))));
 

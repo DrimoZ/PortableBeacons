@@ -6,6 +6,7 @@
     "portablebeacons:beacon_iv",
     "portablebeacons:cinder_beacon",
     "portablebeacons:void_beacon",
-    "portablebeacons:tidal_beacon"
+    "portablebeacons:tidal_beacon",
+    "portablebeacons:creative_beacon"
   ]
 }

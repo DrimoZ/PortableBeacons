@@ -1,0 +1,4 @@
+{
+  "level": 4, "effect_slots": 8, "augment_slots": 8, "base_range": 64.0,
+  "fuel_capacity": 36000, "max_amplifier": 9, "aura_rank": 3, "fuel_multiplier": 0.0
+}

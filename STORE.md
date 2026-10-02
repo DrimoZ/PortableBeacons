@@ -51,6 +51,8 @@ Upgrading a beacon keeps its augments, its fuel and its effects — nothing you 
 the vanilla beacon never offered — Fire Resistance, Slow Falling, Water Breathing, Conduit Power,
 Dolphin's Grace. Carrying one instead of a Beacon IV is a trade, not a downgrade.
 
+A **Creative Beacon**, in the creative tab only, has every slot and level at its maximum and needs no fuel.
+
 Both ceilings above can be raised by augments, and both are datapack fields.
 
 ### Fourteen augments, four slots
@@ -76,6 +78,12 @@ Copper through netherite, priced by a datapack — per item, or by a convention 
 metal is accepted without a file of its own. The screen shows **remaining runtime**, not a unit
 count: "4 h" answers the question you actually have. Each effect chooses its own level and its own
 audience, and both cost more, so a beacon is a set of small trades rather than one switch.
+
+Or skip the ingots: a lit beacon recharges every portable one you carry while you stand in its
+range, and any energy mod's charger fills one with FE.
+
+You get a minute's warning before it runs dry, and a dry beacon waits instead of switching off: put
+fuel in and it picks up where it left off.
 
 Fuel can be switched off entirely in the config, and when it is, every trace of it disappears from
 the screen rather than sitting there inert.
@@ -124,6 +132,6 @@ freely, but do not lift them into another project.
       the 26.1 build has no EMI plugin, because no 26.x NeoForge build of EMI exists yet.
 - [ ] Changelog: paste the newest section from `CHANGELOG.md`.
 - [ ] Gallery: screenshots are still missing, and this is the one thing that decides whether anyone
-      clicks. At minimum: the beacon screen with a drawer open, the effect picker, and the JEI fuel
+      clicks. At minimum: the beacon screen with both tabs open, the effect picker, and the JEI fuel
       category.
 - [ ] Link the wiki and the issue tracker.

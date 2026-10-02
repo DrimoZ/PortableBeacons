@@ -1,7 +1,6 @@
 {
   "max_tier": 1,
   "color": 16733525,
-  "model_data": 3,
   "operations": [
     { "type": "add_amplifier", "values": [1.0] }
   ]

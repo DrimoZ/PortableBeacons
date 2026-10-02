@@ -1,7 +1,6 @@
 {
   "max_tier": 3,
   "color": 11141290,
-  "model_data": 5,
   "operations": [
     { "type": "mul_capacity", "values": [2.0, 3.0, 4.0] }
   ]

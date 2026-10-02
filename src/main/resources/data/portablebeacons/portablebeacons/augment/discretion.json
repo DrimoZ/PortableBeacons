@@ -1,7 +1,6 @@
 {
   "max_tier": 2,
   "color": 7368816,
-  "model_data": 7,
   "operations": [
     { "type": "hide_effects", "values": [1.0, 2.0] }
   ]

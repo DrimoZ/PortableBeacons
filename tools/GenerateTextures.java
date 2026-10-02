@@ -2,93 +2,234 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
- * Generates the mod's placeholder textures.
+ * Generates the item textures and the mod list logo.
  *
- * <p>Kept as a script rather than committed-only PNGs so the GUI background stays in sync with the
- * slot coordinates in PortableBeaconMenu: change a constant there, change it here, re-run.
+ * <p>The augments are drawn in FactoryIO's module family on purpose - a dark casing, a coloured
+ * screen carrying a white glyph, and tier pips along the foot - so an augment and a module read as
+ * the same kind of thing: a part you fit into something. Three layers rather than one:
+ * <ol>
+ *   <li>the casing, with the tier's pips, untinted - three variants, one per tier;</li>
+ *   <li>the screen, greyscale, tinted from the registry entry - which is what lets a datapack
+ *       augment have its own colour without a texture;</li>
+ *   <li>the glyph, white, untinted - shape carries the meaning, so two augments of similar hue are
+ *       still told apart.</li>
+ * </ol>
+ * The old augments were one tinted tag, so the tier could not be seen at all: Range I and Range III
+ * were the same icon.
+ *
+ * <p>The beacons share one silhouette - glass dome over a beam core, a metal band, an obsidian
+ * foot - and the band is the tier's material, so the ladder reads iron, gold, diamond, netherite.
+ * Pips repeat it for anyone who cannot tell the colours apart.
  *
  * <pre>java tools/GenerateTextures.java</pre>
  */
 public final class GenerateTextures {
 
-    private static final String GUI_DIR = "src/main/resources/assets/portablebeacons/textures/gui";
     private static final String ITEM_DIR = "src/main/resources/assets/portablebeacons/textures/item";
     /** The mod list logo lives at the jar root, not under assets/. */
     private static final String ROOT_DIR = "src/main/resources";
 
-    // Vanilla container palette, so the panel does not clash with the player inventory below it.
-    private static final int FACE = 0xFFC6C6C6;
-    private static final int LIGHT = 0xFFFFFFFF;
-    private static final int DARK = 0xFF555555;
-    private static final int SLOT = 0xFF8B8B8B;
-    private static final int SLOT_SHADE = 0xFF373737;
-    private static final int OUTLINE = 0xFF1B1B1B;
-
-    private static final int WIDTH = 194;
-    private static final int HEIGHT = 256;
-
     public static void main(String[] args) throws IOException {
-        new File(GUI_DIR).mkdirs();
         new File(ITEM_DIR).mkdirs();
-
-        writeGui();
-        writeItems();
+        writeAugments();
+        writeBeacons();
         writeLogo();
         System.out.println("Textures written.");
     }
 
-    private static void writeGui() throws IOException {
-        BufferedImage image = new BufferedImage(512, 512, BufferedImage.TYPE_INT_ARGB);
+    // ------------------------------------------------------------------ augments
 
-        panel(image, 0, 0, WIDTH, HEIGHT);
+    private static final String[] CASING = {
+            "................",
+            "..kkkkkkkkkkkk..",
+            ".kLLLLLLLLLLLLk.",
+            ".kLKKKKKKKKKKDk.",
+            ".kLK........KDk.",
+            ".kLK........KDk.",
+            ".kLK........KDk.",
+            ".kLK........KDk.",
+            ".kLK........KDk.",
+            ".kLK........KDk.",
+            ".kLKKKKKKKKKKDk.",
+            ".kDDDDDDDDDDDDk.",
+            ".kDD11D22D33DDk.",
+            ".kSSSSSSSSSSSSk.",
+            "..kkkkkkkkkkkk..",
+            "................"};
 
-        // No effect cases here: the screen draws them, because how many there are depends on the
-        // beacon and its augments and a baked texture can only ever hold one answer.
-        // Info panel.
-        recess(image, 16, 78, 162, 68);
-        // Player inventory + hotbar.
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 9; col++) {
-                recess(image, 16 + col * 18, 172 + row * 18, 18, 18);
+    /** The screen's interior: x 4..11, y 4..9. */
+    private static final int SCREEN_X = 4;
+    private static final int SCREEN_Y = 4;
+
+    private static void writeAugments() throws IOException {
+        for (int tier = 1; tier <= 3; tier++) {
+            Map<Character, Integer> palette = new LinkedHashMap<>();
+            palette.put('k', 0x1B1B1B);
+            palette.put('L', 0x6A6A6A);
+            palette.put('D', 0x3E3E3E);
+            palette.put('S', 0x2A2A2A);
+            palette.put('K', 0x101010);
+            for (int pip = 1; pip <= 3; pip++) {
+                // Lit pips in FactoryIO's yellow; unlit ones stay as dark sockets, so how many tiers
+                // the augment could have is visible too.
+                palette.put((char) ('0' + pip), pip <= tier ? 0xF7D44A : 0x262626);
+            }
+            write("augment_casing_" + tier, ascii(CASING, palette));
+        }
+
+        // Greyscale, lit from the top: multiplied by the registry colour it gives a mid-tone screen
+        // that white reads on. A full-white screen made pale colours - yellow, cyan - swallow the
+        // glyph entirely.
+        BufferedImage screen = blank();
+        int[] rows = {0xB4B4B4, 0xA0A0A0, 0x969696, 0x8C8C8C, 0x828282, 0x787878};
+        for (int y = 0; y < rows.length; y++) {
+            for (int x = 0; x < 8; x++) {
+                set(screen, SCREEN_X + x, SCREEN_Y + y, rows[y]);
             }
         }
-        for (int col = 0; col < 9; col++) {
-            recess(image, 16 + col * 18, 230, 18, 18);
-        }
+        write("augment_screen", screen);
 
-        ImageIO.write(image, "PNG", new File(GUI_DIR + "/beacon.png"));
+        for (Map.Entry<String, String[]> glyph : GLYPHS.entrySet()) {
+            BufferedImage image = blank();
+            String[] art = glyph.getValue();
+            for (int y = 0; y < art.length; y++) {
+                for (int x = 0; x < art[y].length(); x++) {
+                    if (art[y].charAt(x) == 'w') {
+                        set(image, SCREEN_X + x, SCREEN_Y + y, 0xFFFFFF);
+                    }
+                }
+            }
+            write("augment_glyph_" + glyph.getKey(), image);
+        }
     }
 
-    private static void writeItems() throws IOException {
-        int[] tierColours = {0xFF9AA7B0, 0xFF62C2E0, 0xFF6BE07F, 0xFFE0C24A};
-        String[] names = {"beacon_i", "beacon_ii", "beacon_iii", "beacon_iv"};
-        for (int i = 0; i < names.length; i++) {
-            ImageIO.write(packIcon(tierColours[i], i + 1), "PNG",
-                    new File(ITEM_DIR + "/" + names[i] + ".png"));
-        }
+    /** 8x6 white glyphs, one per built-in augment. */
+    private static final Map<String, String[]> GLYPHS = new LinkedHashMap<>();
 
-        // Themed beacons share the silhouette but take a saturated core and a marked casing, so they
-        // read as siblings of the numbered beacons rather than as a separate family.
-        ImageIO.write(themedPackIcon(0xFFE0603A, 0xFF4A2A26), "PNG",
-                new File(ITEM_DIR + "/cinder_beacon.png"));
-        ImageIO.write(themedPackIcon(0xFFC48CE0, 0xFF2E2740), "PNG",
-                new File(ITEM_DIR + "/void_beacon.png"));
-        ImageIO.write(themedPackIcon(0xFF3FB6D8, 0xFF20404C), "PNG",
-                new File(ITEM_DIR + "/tidal_beacon.png"));
-        // Greyscale on purpose: the augment item is tinted at render time from its registry entry.
-        ImageIO.write(augmentIcon(null), "PNG", new File(ITEM_DIR + "/augment.png"));
+    static {
+        // Double chevron: reaches further.
+        GLYPHS.put("range", new String[]{
+                "ww..ww..", ".ww..ww.", "..ww..ww", ".ww..ww.", "ww..ww..", "........"});
+        // Plus: one more effect slot.
+        GLYPHS.put("focus", new String[]{
+                "...ww...", "...ww...", "wwwwwwww", "wwwwwwww", "...ww...", "...ww..."});
+        // Arrow up: stronger.
+        GLYPHS.put("amplification", new String[]{
+                "...ww...", "..wwww..", ".wwwwww.", "...ww...", "...ww...", "...ww..."});
+        // Arrow down: draws less.
+        GLYPHS.put("efficiency", new String[]{
+                "...ww...", "...ww...", "...ww...", ".wwwwww.", "..wwww..", "...ww..."});
+        // Battery: a bigger buffer.
+        GLYPHS.put("capacity", new String[]{
+                "........", "wwwwwww.", "w.w.w.ww", "w.w.w.ww", "wwwwwww.", "........"});
+        // Linked rings: who the aura reaches.
+        GLYPHS.put("attunement", new String[]{
+                ".ww..ww.", "w..ww..w", "w..ww..w", "w..ww..w", ".ww..ww.", "........"});
+        // A closed eye: the effects stop announcing themselves.
+        GLYPHS.put("discretion", new String[]{
+                "........", "w......w", ".w....w.", "..wwww..", ".w.ww.w.", "........"});
+        // Three people: sharing, made cheap.
+        GLYPHS.put("communion", new String[]{
+                "...ww...", "...ww...", "........", "ww....ww", "ww.ww.ww", "...ww..."});
+        // A drop: one effect from nowhere.
+        GLYPHS.put("wellspring", new String[]{
+                "...ww...", "..wwww..", ".wwwwww.", ".wwwwww.", "..wwww..", "........"});
+        // Speed lines: cheap while travelling.
+        GLYPHS.put("wayfarer", new String[]{
+                "....w...", "ww...w..", "......w.", "ww...w..", "....w...", "........"});
+        // A tower: cheap while holding a position.
+        GLYPHS.put("sentinel", new String[]{
+                "w.w..w.w", "wwwwwwww", ".wwwwww.", ".ww..ww.", ".wwwwww.", ".wwwwww."});
+        // A banner: reach and audience, carried forward.
+        GLYPHS.put("vanguard", new String[]{
+                "wwwww...", "wwwwwww.", "wwwww...", "w.......", "w.......", "w......."});
+        // A prism.
+        GLYPHS.put("prism", new String[]{
+                "...ww...", "..w..w..", "..w..w..", ".w....w.", ".w....w.", "wwwwwwww"});
+        // A padlock: everything kept in.
+        GLYPHS.put("recluse", new String[]{
+                "..wwww..", ".w....w.", ".w....w.", "wwwwwwww", "www..www", "wwwwwwww"});
 
-        // One glyph per built-in augment, selected by a model override. A datapack-added augment
-        // declares no model_data and falls back to the plain gem above.
-        String[] glyphs = {"range", "focus", "amplification", "efficiency", "capacity", "attunement",
-                "discretion",
-                "communion", "wellspring", "wayfarer", "sentinel", "vanguard", "prism", "recluse"};
-        for (String glyph : glyphs) {
-            ImageIO.write(augmentIcon(glyph), "PNG",
-                    new File(ITEM_DIR + "/augment_" + glyph + ".png"));
+        // Generic shapes, owned by no augment: for datapack augments to borrow with "glyph".
+        GLYPHS.put("star", new String[]{
+                "...ww...", "...ww...", "wwwwwwww", ".wwwwww.", ".ww..ww.", "ww....ww"});
+        GLYPHS.put("bolt", new String[]{
+                "....www.", "...www..", "..wwwww.", ".wwwww..", "...ww...", "..ww...."});
+        GLYPHS.put("heart", new String[]{
+                ".ww..ww.", "wwwwwwww", "wwwwwwww", ".wwwwww.", "..wwww..", "...ww..."});
+        GLYPHS.put("gem", new String[]{
+                "..wwww..", ".ww..ww.", "wwwwwwww", ".ww..ww.", "..w..w..", "...ww..."});
+        GLYPHS.put("shield", new String[]{
+                "wwwwwwww", "w..ww..w", "w..ww..w", ".w.ww.w.", "..wwww..", "...ww..."});
+        GLYPHS.put("leaf", new String[]{
+                ".....www", "...wwww.", "..www.w.", ".ww.ww..", ".www....", "w......."});
+    }
+
+    // ------------------------------------------------------------------ beacons
+
+    private static final String[] BEACON = {
+            "......kkkk......",
+            ".....kWWWWk.....",
+            "....kGGccGGk....",
+            "...kGGcCCcGGk...",
+            "...kGcCWWCcGk...",
+            "...kGGcCCcGGk...",
+            "...kGGGccGGGk...",
+            "..kkkkkkkkkkkk..",
+            "..kMMMMMMMMMMk..",
+            "..kmmmmmmmmmmk..",
+            ".kOOOOOOOOOOOOk.",
+            ".kOooooooooooOk.",
+            ".kOoo1o2o3o4oOk.",
+            ".kOooooooooooOk.",
+            "..kkkkkkkkkkkk..",
+            "................"};
+
+    /**
+     * @param band   the tier's material, light then dark
+     * @param core   the beam colour, then its bright centre
+     * @param pips   how many tier pips to light; 0 for a themed beacon, which takes a strip instead
+     * @param accent the themed beacon's strip colour, or 0
+     */
+    private static BufferedImage beacon(int[] band, int[] core, int pips, int accent) {
+        Map<Character, Integer> palette = new LinkedHashMap<>();
+        palette.put('k', 0x15161C);
+        palette.put('W', 0xFFFFFF);
+        palette.put('G', 0xB6DCE6);
+        palette.put('c', core[0]);
+        palette.put('C', core[1]);
+        palette.put('M', band[0]);
+        palette.put('m', band[1]);
+        palette.put('O', 0x3A2E52);
+        palette.put('o', 0x231B33);
+        for (int pip = 1; pip <= 4; pip++) {
+            palette.put((char) ('0' + pip), pips == 0 ? accent : pip <= pips ? 0xF2F2F2 : 0x231B33);
         }
+        BufferedImage image = ascii(BEACON, palette);
+        if (pips == 0) {
+            // A continuous strip rather than four dots: themed beacons sit beside the ladder, not on it.
+            for (int x = 5; x <= 11; x++) {
+                set(image, x, 12, accent);
+            }
+        }
+        return image;
+    }
+
+    private static void writeBeacons() throws IOException {
+        int[] beam = {0x55D0E0, 0xA8F4FA};
+        write("beacon_i", beacon(new int[]{0xD8D8D8, 0x9A9A9A}, beam, 1, 0));
+        write("beacon_ii", beacon(new int[]{0xF7D44A, 0xC08A1E}, beam, 2, 0));
+        write("beacon_iii", beacon(new int[]{0x7FE8E0, 0x2FA8A0}, beam, 3, 0));
+        write("beacon_iv", beacon(new int[]{0x6A5A64, 0x3E3238}, beam, 4, 0));
+
+        write("cinder_beacon", beacon(new int[]{0xE0603A, 0x8E2A18}, new int[]{0xF29B1D, 0xFFE08A}, 0, 0xF29B1D));
+        write("void_beacon", beacon(new int[]{0xC48CE0, 0x7A4A9A}, new int[]{0xB07CD8, 0xEAD2FA}, 0, 0xC48CE0));
+        write("tidal_beacon", beacon(new int[]{0x5AB8A8, 0x2E7A70}, new int[]{0x3FB6D8, 0xB4ECF8}, 0, 0x5AB8A8));
+        write("creative_beacon", beacon(new int[]{0xE070D0, 0x9A3A90}, new int[]{0xF6B8F0, 0xFFEFFC}, 0, 0xFFD54A));
     }
 
     /**
@@ -100,15 +241,14 @@ public final class GenerateTextures {
      * is dark and the outline would disappear into it.
      */
     private static void writeLogo() throws IOException {
-        int scale = 6;
+        int scale = 7;
         int size = 128;
         BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
-
         fill(image, 0, 0, size, size, 0xFF23252E);
         fill(image, 0, 0, size, 2, 0xFF34384A);
         fill(image, 0, size - 2, size, 2, 0xFF15161C);
 
-        BufferedImage icon = packIcon(0xFFE0C24A, 4);
+        BufferedImage icon = beacon(new int[]{0x6A5A64, 0x3E3238}, new int[]{0x55D0E0, 0xA8F4FA}, 4, 0);
         int origin = (size - icon.getWidth() * scale) / 2;
         for (int x = 0; x < icon.getWidth(); x++) {
             for (int y = 0; y < icon.getHeight(); y++) {
@@ -121,270 +261,35 @@ public final class GenerateTextures {
         ImageIO.write(image, "PNG", new File(ROOT_DIR + "/logo.png"));
     }
 
-    /**
-     * At 16x16 the silhouette carries the whole icon, so the shape is blocked out first and only
-     * then shaded, with a hard outline to keep it readable against any inventory background.
-     *
-     * <p>The tier is shown by both colour and a count of pips: colour alone excludes anyone with a
-     * colour vision deficiency, and four shades of "glowing gem" are hard to tell apart regardless.
-     */
-    private static BufferedImage packIcon(int accent, int tier) {
-        BufferedImage image = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
-        int outline = 0xFF15161C;
-        int bodyDark = 0xFF3A3D4C;
-        int bodyLight = 0xFF565A6E;
+    // ------------------------------------------------------------------ plumbing
 
-        // Silhouette: a squat casing with a lid, outlined first.
-        fill(image, 2, 3, 12, 11, outline);
-        fill(image, 5, 1, 6, 2, outline);
-        fill(image, 3, 4, 10, 9, bodyDark);
-        fill(image, 6, 2, 4, 2, bodyLight);
-        fill(image, 3, 4, 10, 1, bodyLight);
-        fill(image, 3, 4, 1, 9, bodyLight);
-
-        // Core: the one saturated area, so the eye lands there first. Bright enough to survive
-        // being drawn at 16px over a grey slot.
-        fill(image, 5, 5, 6, 5, outline);
-        fill(image, 6, 6, 4, 3, accent);
-        fill(image, 6, 6, 2, 1, 0xFFFFFFFF);
-
-        // Tier as a pip count, readable without relying on the accent colour at all.
-        for (int pip = 0; pip < tier; pip++) {
-            fill(image, 4 + pip * 2, 11, 1, 1, 0xFFF2F2F2);
+    private static BufferedImage ascii(String[] rows, Map<Character, Integer> palette) {
+        BufferedImage image = blank();
+        for (int y = 0; y < rows.length; y++) {
+            if (rows[y].length() != 16) {
+                throw new IllegalArgumentException("row " + y + " is " + rows[y].length() + " wide");
+            }
+            for (int x = 0; x < 16; x++) {
+                char ch = rows[y].charAt(x);
+                if (ch == '.') {
+                    continue;
+                }
+                Integer colour = palette.get(ch);
+                if (colour == null) {
+                    throw new IllegalArgumentException("unknown colour '" + ch + "' in row " + y);
+                }
+                set(image, x, y, colour);
+            }
         }
         return image;
     }
 
-    /** Same shape as a numbered beacon, with a themed casing and no tier pips. */
-    private static BufferedImage themedPackIcon(int accent, int body) {
-        BufferedImage image = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
-        int outline = 0xFF15161C;
-        fill(image, 2, 3, 12, 11, outline);
-        fill(image, 5, 1, 6, 2, outline);
-        fill(image, 3, 4, 10, 9, body);
-        fill(image, 6, 2, 4, 2, accent);
-        fill(image, 3, 4, 10, 1, lighten(body));
-        fill(image, 3, 4, 1, 9, lighten(body));
-
-        fill(image, 5, 5, 6, 5, outline);
-        fill(image, 6, 6, 4, 3, accent);
-        fill(image, 6, 6, 2, 1, 0xFFFFFFFF);
-        fill(image, 5, 11, 6, 1, accent);
-        return image;
+    private static BufferedImage blank() {
+        return new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
     }
 
-    private static int lighten(int argb) {
-        int r = Math.min(255, (argb >> 16 & 0xFF) + 28);
-        int g = Math.min(255, (argb >> 8 & 0xFF) + 28);
-        int b = Math.min(255, (argb & 0xFF) + 28);
-        return 0xFF000000 | r << 16 | g << 8 | b;
-    }
-
-    /**
-     * Gem body plus an optional glyph, outlined for contrast and left greyscale so the registry
-     * tint does the colouring. The glyph is the identity here - two augments of similar hue must
-     * still be distinguishable, so shape carries the meaning and colour only reinforces it.
-     */
-    private static BufferedImage augmentIcon(String glyph) {
-        BufferedImage image = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
-        int outline = 0xFF2A2A2A;
-        fill(image, 4, 2, 8, 12, outline);
-        fill(image, 3, 4, 10, 8, outline);
-        fill(image, 5, 3, 6, 10, 0xFFE4E4E4);
-        fill(image, 4, 5, 8, 6, 0xFFE4E4E4);
-        fill(image, 5, 4, 2, 2, 0xFFFFFFFF);
-        fill(image, 9, 9, 2, 2, 0xFFB4B4B4);
-        if (glyph == null) {
-            return image;
-        }
-
-        int ink = 0xFF2F2F2F;
-        switch (glyph) {
-            // Outward arrow: reach.
-            case "range" -> {
-                fill(image, 6, 7, 5, 2, ink);
-                fill(image, 9, 5, 2, 2, ink);
-                fill(image, 9, 9, 2, 2, ink);
-            }
-            // Plus: one more effect slot.
-            case "focus" -> {
-                fill(image, 7, 5, 2, 6, ink);
-                fill(image, 5, 7, 6, 2, ink);
-            }
-            // Chevron up: stronger.
-            case "amplification" -> {
-                fill(image, 7, 4, 2, 2, ink);
-                fill(image, 5, 6, 2, 2, ink);
-                fill(image, 9, 6, 2, 2, ink);
-                fill(image, 7, 8, 2, 3, ink);
-            }
-            // Chevron down: less fuel.
-            case "efficiency" -> {
-                fill(image, 7, 5, 2, 3, ink);
-                fill(image, 5, 8, 2, 2, ink);
-                fill(image, 9, 8, 2, 2, ink);
-                fill(image, 7, 10, 2, 2, ink);
-            }
-            // Battery bars: buffer size.
-            case "capacity" -> {
-                fill(image, 5, 5, 6, 2, ink);
-                fill(image, 5, 8, 6, 2, ink);
-                fill(image, 5, 11, 6, 1, ink);
-            }
-            // Two linked rings: who the aura reaches.
-            case "attunement" -> {
-                fill(image, 5, 6, 3, 1, ink);
-                fill(image, 5, 9, 3, 1, ink);
-                fill(image, 5, 7, 1, 2, ink);
-                fill(image, 8, 7, 1, 2, ink);
-                fill(image, 8, 6, 3, 1, ink);
-                fill(image, 8, 9, 3, 1, ink);
-                fill(image, 10, 7, 1, 2, ink);
-            }
-            // A closed eye: the effects are still there, they simply stop announcing themselves.
-            case "discretion" -> {
-                fill(image, 4, 7, 8, 1, ink);
-                fill(image, 5, 8, 6, 1, ink);
-                fill(image, 6, 9, 4, 1, ink);
-                fill(image, 7, 5, 2, 1, ink);
-                fill(image, 4, 5, 2, 1, ink);
-                fill(image, 10, 5, 2, 1, ink);
-            }
-            // Double chevron up: Amplification's one, doubled - it goes further and costs more.
-            case "overdrive" -> {
-                fill(image, 7, 3, 2, 2, ink);
-                fill(image, 5, 5, 2, 2, ink);
-                fill(image, 9, 5, 2, 2, ink);
-                fill(image, 7, 7, 2, 2, ink);
-                fill(image, 5, 9, 2, 2, ink);
-                fill(image, 9, 9, 2, 2, ink);
-            }
-            // A widening beam: reach bought at the cost of everything behind it.
-            case "projector" -> {
-                fill(image, 4, 7, 2, 2, ink);
-                fill(image, 7, 6, 1, 4, ink);
-                fill(image, 9, 5, 1, 6, ink);
-                fill(image, 11, 4, 1, 8, ink);
-            }
-            // A closed purse: it spends little and holds little.
-            case "miser" -> {
-                fill(image, 5, 6, 6, 1, ink);
-                fill(image, 5, 7, 1, 4, ink);
-                fill(image, 10, 7, 1, 4, ink);
-                fill(image, 6, 11, 4, 1, ink);
-                fill(image, 7, 4, 2, 2, ink);
-            }
-            // A tall tank with the level near the top.
-            case "reservoir" -> {
-                fill(image, 5, 3, 6, 1, ink);
-                fill(image, 5, 4, 1, 8, ink);
-                fill(image, 10, 4, 1, 8, ink);
-                fill(image, 6, 11, 4, 1, ink);
-                fill(image, 6, 6, 4, 4, ink);
-            }
-            // A horn, sounding outward: the aura carried further than the beacon can manage alone.
-            case "herald" -> {
-                fill(image, 4, 6, 2, 4, ink);
-                fill(image, 6, 5, 1, 6, ink);
-                fill(image, 7, 4, 1, 8, ink);
-                fill(image, 10, 6, 1, 1, ink);
-                fill(image, 11, 8, 1, 1, ink);
-                fill(image, 10, 10, 1, 1, ink);
-            }
-            // Three points joined: sharing, made cheap.
-            case "communion" -> {
-                fill(image, 7, 3, 2, 2, ink);
-                fill(image, 4, 9, 2, 2, ink);
-                fill(image, 10, 9, 2, 2, ink);
-                fill(image, 6, 5, 1, 4, ink);
-                fill(image, 9, 5, 1, 4, ink);
-                fill(image, 6, 11, 4, 1, ink);
-            }
-            // A source with ripples spreading below it: one effect that costs nothing.
-            case "wellspring" -> {
-                fill(image, 7, 3, 2, 3, ink);
-                fill(image, 5, 7, 6, 1, ink);
-                fill(image, 4, 9, 8, 1, ink);
-                fill(image, 3, 11, 10, 1, ink);
-            }
-            // A boot in motion: cheap while travelling.
-            case "wayfarer" -> {
-                fill(image, 6, 3, 3, 6, ink);
-                fill(image, 6, 9, 6, 2, ink);
-                fill(image, 3, 5, 2, 1, ink);
-                fill(image, 3, 8, 2, 1, ink);
-            }
-            // A tower: cheap while holding a position.
-            case "sentinel" -> {
-                fill(image, 5, 3, 6, 1, ink);
-                fill(image, 5, 5, 1, 1, ink);
-                fill(image, 7, 5, 2, 1, ink);
-                fill(image, 10, 5, 1, 1, ink);
-                fill(image, 6, 4, 4, 8, ink);
-            }
-            // An arrow breaking out of a ring: reach and audience in one slot.
-            case "vanguard" -> {
-                fill(image, 4, 6, 1, 4, ink);
-                fill(image, 5, 4, 1, 2, ink);
-                fill(image, 5, 10, 1, 2, ink);
-                fill(image, 6, 3, 3, 1, ink);
-                fill(image, 6, 12, 3, 1, ink);
-                fill(image, 6, 7, 6, 2, ink);
-                fill(image, 10, 5, 2, 2, ink);
-                fill(image, 10, 9, 2, 2, ink);
-            }
-            // A wedge splitting one beam into three.
-            case "prism" -> {
-                fill(image, 3, 7, 3, 2, ink);
-                fill(image, 6, 4, 2, 8, ink);
-                fill(image, 9, 4, 3, 1, ink);
-                fill(image, 9, 7, 3, 1, ink);
-                fill(image, 9, 10, 3, 1, ink);
-            }
-            // A shut door: everything kept in, nothing given out.
-            case "recluse" -> {
-                fill(image, 4, 3, 8, 1, ink);
-                fill(image, 4, 4, 1, 9, ink);
-                fill(image, 11, 4, 1, 9, ink);
-                fill(image, 5, 12, 6, 1, ink);
-                fill(image, 9, 7, 1, 2, ink);
-            }
-            default -> { }
-        }
-        return image;
-    }
-
-    /**
-     * Two-step bevel plus an outer keyline.
-     *
-     * <p>A single-pixel border reads as flat and disappears against a bright world; the keyline is
-     * what separates the panel from whatever is behind it.
-     */
-    private static void panel(BufferedImage image, int x, int y, int w, int h) {
-        fill(image, x, y, w, h, OUTLINE);
-        fill(image, x + 1, y + 1, w - 2, h - 2, FACE);
-        fill(image, x + 1, y + 1, w - 2, 1, LIGHT);
-        fill(image, x + 1, y + 1, 1, h - 2, LIGHT);
-        fill(image, x + 1, y + h - 2, w - 2, 1, DARK);
-        fill(image, x + w - 2, y + 1, 1, h - 2, DARK);
-    }
-
-    /** Sunken frame, shaded the opposite way to the panel so it reads as a hole, not a tile. */
-    private static void recess(BufferedImage image, int x, int y, int w, int h) {
-        fill(image, x, y, w, h, SLOT);
-        fill(image, x, y, w, 1, SLOT_SHADE);
-        fill(image, x, y, 1, h, SLOT_SHADE);
-        fill(image, x, y + h - 1, w, 1, LIGHT);
-        fill(image, x + w - 1, y, 1, h, LIGHT);
-        // Corners left un-beveled, the way vanilla slots are, so a row of them reads as one strip.
-        fill(image, x, y + h - 1, 1, 1, SLOT);
-        fill(image, x + w - 1, y, 1, 1, SLOT);
-    }
-
-    /** Hairline rule separating one group of controls from the next. */
-    private static void separator(BufferedImage image, int x, int y, int w) {
-        fill(image, x, y, w, 1, DARK);
-        fill(image, x, y + 1, w, 1, LIGHT);
+    private static void set(BufferedImage image, int x, int y, int rgb) {
+        image.setRGB(x, y, 0xFF000000 | rgb);
     }
 
     private static void fill(BufferedImage image, int x, int y, int w, int h, int argb) {
@@ -395,6 +300,10 @@ public final class GenerateTextures {
                 }
             }
         }
+    }
+
+    private static void write(String name, BufferedImage image) throws IOException {
+        ImageIO.write(image, "PNG", new File(ITEM_DIR + "/" + name + ".png"));
     }
 
     private GenerateTextures() {}

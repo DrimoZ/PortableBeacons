@@ -1,6 +1,5 @@
 {
   "max_tier": 1,
-  "model_data": 9,
   "color": 5636095,
   "operations": [
     { "type": "free_effect_slot", "values": [1.0] },

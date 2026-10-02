@@ -1,7 +1,10 @@
 # Roadmap
 
-**1.0.1 on two Minecraft versions.** 1.21.1 is the maintained line; 26.1 is ported, green and not
-yet released. Both carry the same mechanics.
+**1.1.0 on two Minecraft versions, both carrying the same Unreleased work.** What is under
+*Unreleased* in the [changelog](CHANGELOG.md) - economy fixes, upgrades that keep their augments, a
+new screen on FactoryIO's layout, new item art, recharging at a real beacon and by forge energy,
+higher datapack ceilings, a creative beacon - is on both 1.21.1 and 26.1. Only the plumbing differs
+where the game's API does.
 
 What follows is ordered by what actually moves the mod forward — which is no longer "what is
 missing" but "what do players hit first". The pre-release checklist that used to live here is done;
@@ -19,9 +22,9 @@ the listing copy are ready in [CHANGELOG.md](CHANGELOG.md) and [STORE.md](STORE.
 saved beacons — the item ids, the data component and the item tag all moved. That is worth one line
 at the top of the description, not a footnote.
 
-**Play the 26.1 build.** It compiles, passes 33 unit tests and 8 gametests, and has been opened in a
-client — but the parts no test covers are exactly the parts the port rewrote: the screen, the
-augment glyphs, the tooltips. It should not be published on a green build alone.
+**Play the 1.21.1 build of the Unreleased work.** The 26.1 build has been played; 1.21.1 shares its
+content but not its rendering code - the screen, the augment icons and the energy hookup were
+translated to the older API, and no test judges how they look.
 
 ## Then — the first week
 

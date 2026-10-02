@@ -1,1 +1,1 @@
-{ "effect": "minecraft:regeneration", "cost": 3.0, "max_amplifier": 2, "min_tier": 3 }
+{ "effect": "minecraft:regeneration", "cost": 3.0, "max_amplifier": 3, "min_tier": 3, "pools": [ "standard" ] }

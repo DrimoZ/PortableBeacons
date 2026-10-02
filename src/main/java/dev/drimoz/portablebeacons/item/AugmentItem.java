@@ -5,6 +5,7 @@ import dev.drimoz.portablebeacons.core.AugmentInstance;
 import dev.drimoz.portablebeacons.core.BPRegistryKeys;
 import dev.drimoz.portablebeacons.registry.BPComponents;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -47,7 +48,7 @@ public class AugmentItem extends Item {
                 .flatMap(lookup -> lookup.get(instance.type()))
                 .ifPresent(holder -> {
                     for (AugmentDef.Operation op : holder.value().operations()) {
-                        tooltip.add(describe(op, instance.tier()));
+                        tooltip.add(describe(op, instance.tier(), context.registries()));
                     }
                     tooltip.add(Component.translatable("portablebeacons.tip.augment_rule")
                             .withStyle(ChatFormatting.DARK_GRAY));
@@ -55,13 +56,31 @@ public class AugmentItem extends Item {
     }
 
     /** Reads the effect straight off the registry entry, so a datapack augment describes itself. */
-    private static Component describe(AugmentDef.Operation op, int tier) {
+    private static Component describe(AugmentDef.Operation op, int tier, HolderLookup.Provider registries) {
         double value = op.valueFor(tier);
+        boolean restricts = op.type() == AugmentDef.Type.UNLOCK_AURA && value < 0;
+        if (restricts) {
+            // The sign is in the text: "rank -2" reads better than a "+-2" built from one line.
+            value = -value;
+        }
         String formatted = value == Math.rint(value)
                 ? String.valueOf((int) value)
                 : String.format(java.util.Locale.ROOT, "%.2f", value);
-        return Component.translatable("portablebeacons.op." + op.type().getSerializedName(), formatted)
-                .withStyle(ChatFormatting.GRAY);
+        String key = "portablebeacons.op." + op.type().getSerializedName();
+        if (restricts) {
+            // Recluse lowers the sharing rank, and read as "unlocks wider sharing modes" it claimed
+            // the opposite of what it does.
+            key = "portablebeacons.op.restrict_aura";
+        }
+        if (op.effect().isPresent()) {
+            // A targeted operation names its effect first, by the game's own name for it.
+            Component effect = registries.lookup(BPRegistryKeys.EFFECT)
+                    .flatMap(lookup -> lookup.get(op.effect().get()))
+                    .<Component>map(holder -> holder.value().effect().value().getDisplayName())
+                    .orElse(Component.literal(op.effect().get().location().toString()));
+            return Component.translatable(key, effect, formatted).withStyle(ChatFormatting.GRAY);
+        }
+        return Component.translatable(key, formatted).withStyle(ChatFormatting.GRAY);
     }
 
     @Override

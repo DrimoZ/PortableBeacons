@@ -8,10 +8,12 @@ import dev.drimoz.portablebeacons.core.BeaconEffectDef;
 import dev.drimoz.portablebeacons.core.EffectSlotConfig;
 import dev.drimoz.portablebeacons.core.BeaconState;
 import dev.drimoz.portablebeacons.item.PortableBeaconItem;
+import dev.drimoz.portablebeacons.item.AugmentItem;
 import dev.drimoz.portablebeacons.menu.PortableBeaconMenu;
 import dev.drimoz.portablebeacons.core.AugmentInstance;
 import dev.drimoz.portablebeacons.core.AugmentDef;
 import dev.drimoz.portablebeacons.registry.BPComponents;
+import dev.drimoz.portablebeacons.registry.BPLookups;
 import dev.drimoz.portablebeacons.registry.BPItems;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -27,9 +29,11 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Wolf;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
@@ -79,6 +83,10 @@ public final class BPGameTests {
 
     private static final ResourceKey<AugmentDef> ATTUNEMENT =
             ResourceKey.create(BPRegistryKeys.AUGMENT, BPRegistryKeys.id("attunement"));
+    private static final ResourceKey<AugmentDef> WAYFARER =
+            ResourceKey.create(BPRegistryKeys.AUGMENT, BPRegistryKeys.id("wayfarer"));
+    private static final ResourceKey<AugmentDef> DISCRETION =
+            ResourceKey.create(BPRegistryKeys.AUGMENT, BPRegistryKeys.id("discretion"));
 
     /** Mirrors tier_4.json. A test that silently disagreed with the data would prove nothing. */
     private static final int TIER_IV_AURA_RANK = 1;
@@ -208,9 +216,9 @@ public final class BPGameTests {
             int[] actions = {
                     PortableBeaconMenu.ACTION_SET_EFFECT,
                     PortableBeaconMenu.ACTION_CLEAR_EFFECT,
-                    PortableBeaconMenu.ACTION_CYCLE_AMPLIFIER,
                     PortableBeaconMenu.ACTION_TOGGLE_EFFECT,
                     PortableBeaconMenu.ACTION_CYCLE_AURA,
+                    PortableBeaconMenu.ACTION_SET_AMPLIFIER,
             };
             for (int action : actions) {
                 // Each of these threw before the guard was added. The real assertion is that
@@ -318,9 +326,6 @@ public final class BPGameTests {
         });
     }
 
-    private static final ResourceKey<AugmentDef> WAYFARER =
-            ResourceKey.create(BPRegistryKeys.AUGMENT, BPRegistryKeys.id("wayfarer"));
-
     /**
      * Regression: the tier recipes were plain shaped recipes, so crafting a Beacon II into a III
      * built the result from nothing - installed augments, fuel and configured effects all gone.
@@ -356,6 +361,160 @@ public final class BPGameTests {
         });
     }
 
+    /**
+     * A beacon that runs dry stays on and waits, and resumes by itself once fuel arrives. It used to
+     * switch itself off, so refuelling did nothing until the player found the screen again.
+     */
+    @GameTest(template = PLATFORM, timeoutTicks = TIMEOUT)
+    public static void aDryBeaconWaitsThenResumes(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ServerPlayer carrier = spawnPlayer(helper, cleanup);
+            ItemStack beacon = giveBeacon(carrier, AuraMode.SELF);
+            PortableBeaconItem.setState(beacon, PortableBeaconItem.stateOf(beacon).withFuel(0));
+
+            BeaconTicker.tickPlayer(carrier);
+            BeaconState dry = PortableBeaconItem.stateOf(beacon);
+            helper.assertTrue(dry.active() && dry.starved(), "a dry beacon did not stay on and wait");
+            helper.assertTrue(carrier.getEffect(MobEffects.MOVEMENT_SPEED) == null, "a dry beacon still applied its effect");
+
+            BPLookups.handlerOf(beacon).insertItem(PortableBeaconItem.FUEL_SLOT,
+                    new ItemStack(net.minecraft.world.item.Items.IRON_INGOT), false);
+            BeaconTicker.tickPlayer(carrier);
+
+            helper.assertFalse(PortableBeaconItem.stateOf(beacon).starved(), "fuel arrived and the beacon stayed starved");
+            helper.assertTrue(carrier.getEffect(MobEffects.MOVEMENT_SPEED) != null, "the beacon did not resume once refuelled");
+        });
+    }
+
+    /** Only one beacon runs, so switching one on switches the rest off rather than leaving them glinting. */
+    @GameTest(template = PLATFORM, timeoutTicks = TIMEOUT)
+    public static void switchingOneBeaconOnSwitchesTheOthersOff(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ServerPlayer carrier = spawnPlayer(helper, cleanup);
+            ItemStack first = giveBeacon(carrier, AuraMode.SELF);
+            ItemStack second = new ItemStack(BPItems.BEACON_IV.get());
+            carrier.getInventory().setItem(1, second);
+            PortableBeaconMenu menu = new PortableBeaconMenu(1, carrier.getInventory(), 1);
+
+            menu.applyAction(PortableBeaconMenu.ACTION_TOGGLE_ACTIVE, 0, 0);
+
+            helper.assertTrue(PortableBeaconItem.stateOf(second).active(), "the beacon switched on is not on");
+            helper.assertFalse(PortableBeaconItem.stateOf(first).active(), "the other beacon was left on");
+        });
+    }
+
+    /**
+     * One augment per type still holds across slots, but not against the slot being replaced: a
+     * Wayfarer II dropped on a Wayfarer I is an upgrade, not a duplicate.
+     */
+    @GameTest(template = PLATFORM, timeoutTicks = TIMEOUT)
+    public static void anAugmentSwapsForItsOwnType(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ServerPlayer carrier = spawnPlayer(helper, cleanup);
+            ItemStack beacon = giveBeacon(carrier, AuraMode.SELF);
+            install(beacon, WAYFARER, 1);
+            PortableBeaconMenu menu = new PortableBeaconMenu(1, carrier.getInventory(), 0);
+            ItemStack better = augment(WAYFARER, 2);
+
+            helper.assertTrue(menu.getSlot(0).mayPlace(better), "a higher tier could not replace its own type");
+            helper.assertFalse(menu.getSlot(1).mayPlace(better), "a second augment of one type was accepted");
+        });
+    }
+
+    /**
+     * Regression: clicking an augment onto a different one already fitted put the fitted one on the
+     * cursor and left it in the slot too, deleting the one that was held. The write's extract and
+     * insert went through two separate views of the beacon, so the insert never saw the slot freed.
+     */
+    @GameTest(template = PLATFORM, timeoutTicks = TIMEOUT)
+    public static void clickingAnAugmentOntoAnotherSwapsThem(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ServerPlayer carrier = spawnPlayer(helper, cleanup);
+            ItemStack beacon = giveBeacon(carrier, AuraMode.SELF);
+            install(beacon, WAYFARER, 1);
+            PortableBeaconMenu menu = new PortableBeaconMenu(1, carrier.getInventory(), 0);
+            menu.setCarried(augment(ATTUNEMENT, 1));
+
+            menu.clicked(0, 0, ClickType.PICKUP, carrier);
+
+            List<AugmentInstance> installed = BPLookups.installedAugments(menu.beacon());
+            AugmentInstance carried = AugmentItem.instanceOf(menu.getCarried());
+            helper.assertTrue(installed.size() == 1 && installed.get(0).type().equals(ATTUNEMENT),
+                    "the slot holds " + installed + " after the swap");
+            helper.assertTrue(carried != null && carried.type().equals(WAYFARER),
+                    "the cursor holds " + menu.getCarried() + " after the swap");
+        });
+    }
+
+    /**
+     * The creative beacon burns nothing, and Discretion II hides an effect it already projects:
+     * vanilla's merge takes the new particle and icon flags over the running instance.
+     */
+    @GameTest(template = PLATFORM, timeoutTicks = TIMEOUT)
+    public static void aCreativeBeaconHidesItsEffectsUnderDiscretion(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ServerPlayer carrier = spawnPlayer(helper, cleanup);
+            ItemStack beacon = new ItemStack(BPItems.BEACON_CREATIVE.get());
+            PortableBeaconItem.setState(beacon, new BeaconState(
+                    List.of(new EffectSlotConfig(SPEED, 0, true, AuraMode.SELF)), 0, true, 0));
+            carrier.getInventory().setItem(0, beacon);
+
+            BeaconTicker.tickPlayer(carrier);
+            helper.assertTrue(carrier.getEffect(MobEffects.MOVEMENT_SPEED) != null
+                            && carrier.getEffect(MobEffects.MOVEMENT_SPEED).isVisible(),
+                    "the creative beacon did not project its effect without fuel");
+
+            install(carrier.getInventory().getItem(0), DISCRETION, 2);
+            BeaconTicker.tickPlayer(carrier);
+            var speed = carrier.getEffect(MobEffects.MOVEMENT_SPEED);
+            helper.assertTrue(speed != null && !speed.isVisible() && !speed.showIcon(),
+                    "Discretion II left the effect showing: " + speed);
+        });
+    }
+
+    /**
+     * Standing in a lit beacon's range - read from the ambient effect it applies - charges a
+     * carried beacon, even one switched off. A conduit's ambient effect does not.
+     */
+    @GameTest(template = PLATFORM, timeoutTicks = TIMEOUT)
+    public static void aBeaconsRangeRechargesACarriedBeacon(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ServerPlayer carrier = spawnPlayer(helper, cleanup);
+            ItemStack beacon = giveBeacon(carrier, AuraMode.SELF);
+            PortableBeaconItem.setState(beacon, PortableBeaconItem.stateOf(beacon).withFuel(0).withActive(false));
+
+            carrier.addEffect(new MobEffectInstance(MobEffects.CONDUIT_POWER, 200, 0, true, true));
+            BeaconTicker.rechargeFromBeacons(carrier);
+            helper.assertTrue(PortableBeaconItem.stateOf(beacon).fuel() == 0, "a conduit recharged the beacon");
+
+            carrier.addEffect(new MobEffectInstance(MobEffects.DIG_SPEED, 200, 0, true, true));
+            BeaconTicker.rechargeFromBeacons(carrier);
+            helper.assertTrue(PortableBeaconItem.stateOf(beacon).fuel() > 0,
+                    "standing in a beacon's range did not recharge the carried beacon");
+        });
+    }
+
+    /**
+     * Any mod's charger can fill a beacon through the energy capability - even one fresh from the
+     * crafting table, which has no capacity cached yet. Whole units only.
+     */
+    @GameTest(template = PLATFORM, timeoutTicks = TIMEOUT)
+    public static void energyChargesABeaconInWholeUnits(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ItemStack beacon = new ItemStack(BPItems.BEACON_IV.get());
+            var energy = beacon.getCapability(Capabilities.EnergyStorage.ITEM);
+            helper.assertTrue(energy != null, "a beacon exposes no energy handler");
+
+            int perUnit = dev.drimoz.portablebeacons.BPConfig.energyPerFuelUnit();
+            helper.assertTrue(energy.receiveEnergy(perUnit - 1, false) == 0,
+                    "less than one unit's worth of energy was accepted");
+            helper.assertTrue(energy.receiveEnergy(perUnit * 100, false) == perUnit * 100,
+                    "a fresh beacon refused energy it has room for");
+            helper.assertTrue(PortableBeaconItem.stateOf(beacon).fuel() == 100,
+                    "energy did not become fuel, found " + PortableBeaconItem.stateOf(beacon).fuel());
+        });
+    }
+
     private static int fuelSpentByOnePass(ServerPlayer carrier, ItemStack beacon) {
         int before = PortableBeaconItem.stateOf(beacon).fuel();
         BeaconTicker.tickPlayer(carrier);
@@ -370,11 +529,15 @@ public final class BPGameTests {
         while (!slots.getStackInSlot(slot).isEmpty()) {
             slot++;
         }
-        ItemStack augment = new ItemStack(BPItems.AUGMENT.get());
-        augment.set(BPComponents.AUGMENT.get(), new AugmentInstance(type, tier));
-        slots.setStackInSlot(slot, augment);
+        slots.setStackInSlot(slot, augment(type, tier));
         // Re-set: writing the augment put the container component on the stack after the state was read.
         PortableBeaconItem.setState(beacon, state);
+    }
+
+    private static ItemStack augment(ResourceKey<AugmentDef> type, int tier) {
+        ItemStack augment = new ItemStack(BPItems.AUGMENT.get());
+        augment.set(BPComponents.AUGMENT.get(), new AugmentInstance(type, tier));
+        return augment;
     }
 
     private static ItemStack giveBeacon(ServerPlayer player, AuraMode aura) {

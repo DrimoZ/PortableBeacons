@@ -1,14 +1,18 @@
 package dev.drimoz.portablebeacons.registry;
 
+import dev.drimoz.portablebeacons.BPConfig;
 import dev.drimoz.portablebeacons.core.AugmentDef;
 import dev.drimoz.portablebeacons.core.AugmentInstance;
 import dev.drimoz.portablebeacons.core.BPRegistryKeys;
 import dev.drimoz.portablebeacons.core.BeaconEffectDef;
 import dev.drimoz.portablebeacons.core.FuelDef;
 import dev.drimoz.portablebeacons.core.BeaconResolver;
+import dev.drimoz.portablebeacons.core.BeaconStats;
 import dev.drimoz.portablebeacons.core.BeaconTierDef;
 import dev.drimoz.portablebeacons.item.AugmentItem;
 import dev.drimoz.portablebeacons.item.PortableBeaconItem;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
@@ -59,11 +63,12 @@ public final class BPLookups {
     }
 
     /** Fuel units the given item is worth, or 0 if it is not fuel. */
-    public static int fuelValue(RegistryAccess access, Item item) {
+    public static int fuelValue(HolderLookup.Provider access, Item item) {
         // An item named directly wins over one matched through a tag, so a beacon can price a single
         // metal without having to exclude it from whatever convention tag it belongs to.
         int viaTag = 0;
-        for (FuelDef def : access.registryOrThrow(BPRegistryKeys.FUEL)) {
+        for (FuelDef def : (Iterable<FuelDef>) access.lookupOrThrow(BPRegistryKeys.FUEL).listElements()
+                .map(Holder::value)::iterator) {
             if (!def.matches(item)) {
                 continue;
             }
@@ -75,9 +80,60 @@ public final class BPLookups {
         return viaTag;
     }
 
+    /**
+     * A beacon's stats as the server charges them: its tier, its augments, then the server's rules.
+     *
+     * <p>The one way to get them. The ticker, the screen, the item's tooltip each used to resolve on
+     * their own, which was fine while the answer depended on the datapack alone; once a server
+     * config scales costs and caps reach, any of them skipping the rules would show one price and
+     * charge another.
+     *
+     * @return null for a stack that is not a beacon, or whose tier the datapack does not define
+     */
+    @Nullable
+    public static BeaconStats stats(ItemStack beaconStack, HolderLookup.Provider registries) {
+        if (!(beaconStack.getItem() instanceof PortableBeaconItem item)) {
+            return null;
+        }
+        BeaconTierDef tier = registries.lookup(BPRegistryKeys.TIER)
+                .flatMap(lookup -> lookup.get(item.tier()))
+                .map(Holder::value)
+                .orElse(null);
+        if (tier == null) {
+            return null;
+        }
+        BeaconResolver.Lookup<AugmentDef> augments = key -> registries.lookup(BPRegistryKeys.AUGMENT)
+                .flatMap(lookup -> lookup.get(key))
+                .map(Holder::value);
+        return BeaconResolver.resolve(tier, installedAugments(beaconStack), augments)
+                .withServerRules(BPConfig.fuelCostMultiplier(), BPConfig.maxAuraRange());
+    }
+
+    /**
+     * Fuel units sitting in a beacon's fuel slot, not yet burned into its buffer.
+     *
+     * <p>One place for the three that need it - the ticker's warning, the screen's runtime and the
+     * item's tooltip - because the tooltip used to leave it out and promise a fraction of the time
+     * the screen did.
+     */
+    public static int reserveUnits(ItemStack beaconStack, HolderLookup.Provider access) {
+        IItemHandler handler = handlerOf(beaconStack);
+        if (handler == null || handler.getSlots() <= PortableBeaconItem.FUEL_SLOT) {
+            return 0;
+        }
+        ItemStack fuel = handler.getStackInSlot(PortableBeaconItem.FUEL_SLOT);
+        return fuel.isEmpty() ? 0 : fuelValue(access, fuel.getItem()) * fuel.getCount();
+    }
+
+    /** A beacon's slots - fuel first, then the augments - or null for a stack that has none. */
+    @Nullable
+    public static IItemHandler handlerOf(ItemStack beaconStack) {
+        return beaconStack.getCapability(Capabilities.ItemHandler.ITEM);
+    }
+
     /** The augments currently installed in a beacon, read straight from its container component. */
     public static List<AugmentInstance> installedAugments(ItemStack beaconStack) {
-        IItemHandler handler = beaconStack.getCapability(Capabilities.ItemHandler.ITEM);
+        IItemHandler handler = handlerOf(beaconStack);
         if (handler == null) {
             return List.of();
         }

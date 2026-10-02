@@ -46,6 +46,14 @@ public final class BPItems {
             beacon("tidal_beacon", "tidal", Rarity.RARE);
 
     /**
+     * Everything at the ceiling and nothing burnt: for building and for testing a datapack's effects
+     * without feeding it. Creative tab only - it has no recipe. Its tier is ordinary data, so a
+     * server that wants it costlier only has to override the file.
+     */
+    public static final DeferredItem<PortableBeaconItem> BEACON_CREATIVE =
+            beacon("creative_beacon", "creative", Rarity.EPIC);
+
+    /**
      * One registered augment item for every augment there will ever be — its identity comes from a
      * component pointing into the datapack registry, so a beacon can add new augments without code.
      */
@@ -53,7 +61,8 @@ public final class BPItems {
             ITEMS.registerItem("augment", props -> new AugmentItem(props.stacksTo(1)));
 
     public static List<DeferredItem<PortableBeaconItem>> beacons() {
-        return List.of(BEACON_I, BEACON_II, BEACON_III, BEACON_IV, BEACON_CINDER, BEACON_VOID, BEACON_TIDAL);
+        return List.of(BEACON_I, BEACON_II, BEACON_III, BEACON_IV, BEACON_CINDER, BEACON_VOID, BEACON_TIDAL,
+                BEACON_CREATIVE);
     }
 
     private static DeferredItem<PortableBeaconItem> beacon(String name, String tierPath, Rarity rarity) {

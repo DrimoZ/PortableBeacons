@@ -1,7 +1,6 @@
 {
   "max_tier": 2,
   "color": 16777045,
-  "model_data": 6,
   "operations": [
     { "type": "unlock_aura", "values": [1.0, 2.0] }
   ]
