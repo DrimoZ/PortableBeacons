@@ -99,6 +99,7 @@
   "portablebeacons.tip.fuel_worth": "Biri ~%s · bu yığın ~%s",
   "portablebeacons.tip.fuel_reserve": "Yakıt yuvasında: %s çalışma",
   "portablebeacons.tip.augment_locked": "Bu yuva daha yüksek seviyeli bir çanta ister",
+  "portablebeacons.tip.augment_in_vain": "Kısmen boşa: bu fener zaten en üst düzeyde",
   "portablebeacons.gui.active": "Açık",
   "portablebeacons.gui.inactive": "Kapalı",
   "advancement.portablebeacons.root.title": "Cepte Fener",

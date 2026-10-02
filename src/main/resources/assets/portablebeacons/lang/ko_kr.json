@@ -99,6 +99,7 @@
   "portablebeacons.tip.fuel_worth": "하나에 약 %s · 이 묶음은 약 %s",
   "portablebeacons.tip.fuel_reserve": "연료 칸에: %s 분량",
   "portablebeacons.tip.augment_locked": "이 칸에는 더 높은 등급의 팩이 필요합니다",
+  "portablebeacons.tip.augment_in_vain": "일부 효과 없음: 이 신호기는 이미 최대치입니다",
   "portablebeacons.gui.active": "작동 중",
   "portablebeacons.gui.inactive": "꺼짐",
   "advancement.portablebeacons.root.title": "들고 다니는 신호기",

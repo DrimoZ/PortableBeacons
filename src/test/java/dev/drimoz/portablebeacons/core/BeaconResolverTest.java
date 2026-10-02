@@ -251,6 +251,31 @@ class BeaconResolverTest {
         assertEquals(0.0, BeaconResolver.share(slots, 2, stats, effects), 1e-9);
     }
 
+    /** Prism on a beacon at every ceiling raises nothing; Amplification under an effect's own cap does. */
+    @Test
+    void aCeilingRaisedInVainIsFlagged() {
+        ResourceKey<AugmentDef> prism = augmentKey("prism");
+        ResourceKey<AugmentDef> amplification = augmentKey("amplification");
+        BeaconResolver.Lookup<AugmentDef> augments = lookup(Map.of(
+                prism, new AugmentDef(1, 0, List.of(
+                        new AugmentDef.Operation(AugmentDef.Type.ADD_EFFECT_SLOT, List.of(1.0)),
+                        new AugmentDef.Operation(AugmentDef.Type.ADD_AMPLIFIER, List.of(1.0)))),
+                amplification, new AugmentDef(1, 0, List.of(
+                        new AugmentDef.Operation(AugmentDef.Type.ADD_AMPLIFIER, List.of(1.0))))));
+        Map<ResourceKey<BeaconEffectDef>, BeaconEffectDef> effects = Map.of(
+                effectKey("speed"), new BeaconEffectDef(null, 1.0, 4, 1, 2.0),
+                effectKey("night_vision"), new BeaconEffectDef(null, 1.0, 0, 1, 2.0));
+        BeaconTierDef creative = new BeaconTierDef(4, BeaconStats.MAX_EFFECT_SLOTS, 8, 64.0, 1, 9, 3, List.of());
+
+        assertTrue(BeaconResolver.raisesACeilingInVain(creative,
+                List.of(new AugmentInstance(prism, 1)), 0, augments, effects));
+        assertFalse(BeaconResolver.raisesACeilingInVain(TIER_4,
+                List.of(new AugmentInstance(amplification, 1)), 0, augments, effects));
+        assertTrue(BeaconResolver.raisesACeilingInVain(TIER_4,
+                List.of(new AugmentInstance(amplification, 1)), 0, augments,
+                Map.of(effectKey("night_vision"), new BeaconEffectDef(null, 1.0, 0, 1, 2.0))));
+    }
+
     @Test
     void inactivePackCostsNothing() {
         BeaconState state = new BeaconState(

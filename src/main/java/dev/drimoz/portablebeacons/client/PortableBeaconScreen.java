@@ -6,6 +6,7 @@ import dev.drimoz.portablebeacons.client.gui.GuiSprites;
 import dev.drimoz.portablebeacons.client.gui.GuiTheme;
 import dev.drimoz.portablebeacons.client.gui.SideTab;
 import dev.drimoz.portablebeacons.client.gui.SideTabs;
+import dev.drimoz.portablebeacons.core.AugmentInstance;
 import dev.drimoz.portablebeacons.core.AuraMode;
 import dev.drimoz.portablebeacons.core.BPRegistryKeys;
 import dev.drimoz.portablebeacons.core.BeaconEffectDef;
@@ -17,6 +18,7 @@ import dev.drimoz.portablebeacons.core.Durations;
 import dev.drimoz.portablebeacons.core.EffectSlotConfig;
 import dev.drimoz.portablebeacons.core.FuelDef;
 import dev.drimoz.portablebeacons.gui.GuiMetrics;
+import dev.drimoz.portablebeacons.item.AugmentItem;
 import dev.drimoz.portablebeacons.item.PortableBeaconItem;
 import dev.drimoz.portablebeacons.menu.PortableBeaconMenu;
 import dev.drimoz.portablebeacons.net.BeaconActionPayload;
@@ -48,8 +50,10 @@ import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -273,7 +277,8 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
         if (selectorOpen || !tooltipAt(mouseX, mouseY).isEmpty()) {
             return;
         }
-        if (!renderFuelSlotTooltip(graphics, mouseX, mouseY)) {
+        if (!renderFuelSlotTooltip(graphics, mouseX, mouseY)
+                && !renderAugmentSlotTooltip(graphics, mouseX, mouseY)) {
             super.extractTooltip(graphics, mouseX, mouseY);
         }
     }
@@ -643,6 +648,10 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
             for (int i = 0; i < shown(); i++) {
                 if (i < stats().augmentSlots()) {
                     GuiSprites.slot(graphics, cellX(x, i), cellY(y, i));
+                    if (inVain(i)) {
+                        graphics.fill(cellX(x, i) + 1, cellY(y, i) + 1, cellX(x, i) + 17, cellY(y, i) + 17,
+                                GuiTheme.IN_VAIN_WASH);
+                    }
                 } else {
                     GuiSprites.disabledSlot(graphics, cellX(x, i), cellY(y, i));
                 }
@@ -838,6 +847,48 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
         }
         graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
         return true;
+    }
+
+    /** An augment's own tooltip, plus a warning when part of it does nothing on this beacon. */
+    private boolean renderAugmentSlotTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        if (!(hoveredSlot instanceof ResourceHandlerSlot handler)
+                || handler.getSlotIndex() == PortableBeaconItem.FUEL_SLOT
+                || !hoveredSlot.hasItem()
+                || !inVain(handler.getSlotIndex() - 1)) {
+            return false;
+        }
+        List<Component> lines = new ArrayList<>(getTooltipFromContainerItem(hoveredSlot.getItem()));
+        lines.add(Component.translatable("portablebeacons.tip.augment_in_vain").withStyle(ChatFormatting.YELLOW));
+        graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
+        return true;
+    }
+
+    /**
+     * Whether the augment in augment slot {@code n} raises a ceiling this beacon is already at.
+     * Per frame, like everything else here: eight resolves of a handful of numbers.
+     */
+    private boolean inVain(int n) {
+        BeaconTierDef tier = menu.tierDef();
+        ItemStack stack = slotStack(PortableBeaconItem.augmentSlot(n));
+        if (tier == null || AugmentItem.instanceOf(stack) == null) {
+            return false;
+        }
+        List<AugmentInstance> installed = new ArrayList<>();
+        int index = -1;
+        for (int i = 0; i < PortableBeaconItem.AUGMENT_SLOTS; i++) {
+            AugmentInstance instance = AugmentItem.instanceOf(slotStack(PortableBeaconItem.augmentSlot(i)));
+            if (instance != null) {
+                if (i == n) {
+                    index = installed.size();
+                }
+                installed.add(instance);
+            }
+        }
+        var access = Minecraft.getInstance().level.registryAccess();
+        Map<ResourceKey<BeaconEffectDef>, BeaconEffectDef> effects = new HashMap<>();
+        access.lookupOrThrow(BPRegistryKeys.EFFECT).listElements()
+                .forEach(holder -> effects.put(holder.key(), holder.value()));
+        return BeaconResolver.raisesACeilingInVain(tier, installed, index, BPLookups.augments(access), effects);
     }
 
     /** The effect under the mouse: its name, and its relative cost or what unlocks it. */

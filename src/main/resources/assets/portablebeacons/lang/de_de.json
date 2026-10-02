@@ -99,6 +99,7 @@
   "portablebeacons.tip.fuel_worth": "Eines liefert ~%s · dieser Stapel ~%s",
   "portablebeacons.tip.fuel_reserve": "Im Brennstoffplatz: %s Laufzeit",
   "portablebeacons.tip.augment_locked": "Dieser Platz benötigt ein Leuchtfeuer höherer Stufe",
+  "portablebeacons.tip.augment_in_vain": "Teilweise wirkungslos: dieses Leuchtfeuer ist dort schon am Maximum",
   "portablebeacons.gui.active": "Aktiv",
   "portablebeacons.gui.inactive": "Aus",
   "advancement.portablebeacons.root.title": "Leuchtfeuer zum Mitnehmen",

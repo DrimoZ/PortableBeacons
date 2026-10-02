@@ -99,6 +99,7 @@
   "portablebeacons.tip.fuel_worth": "Eén levert ~%s · deze stapel ~%s",
   "portablebeacons.tip.fuel_reserve": "In het brandstofvak: %s looptijd",
   "portablebeacons.tip.augment_locked": "Dit vak vereist een rugzak van een hoger niveau",
+  "portablebeacons.tip.augment_in_vain": "Deels nutteloos: dit baken zit daar al op het maximum",
   "portablebeacons.gui.active": "Actief",
   "portablebeacons.gui.inactive": "Uit",
   "advancement.portablebeacons.root.title": "Vuurbaken voor onderweg",

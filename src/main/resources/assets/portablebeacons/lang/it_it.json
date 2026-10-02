@@ -99,6 +99,7 @@
   "portablebeacons.tip.fuel_worth": "Uno rende ~%s · questa pila ~%s",
   "portablebeacons.tip.fuel_reserve": "Nello spazio carburante: %s di autonomia",
   "portablebeacons.tip.augment_locked": "Questo spazio richiede uno zaino di livello superiore",
+  "portablebeacons.tip.augment_in_vain": "In parte inutile: questo faro è già al massimo lì",
   "portablebeacons.gui.active": "Attivo",
   "portablebeacons.gui.inactive": "Spento",
   "advancement.portablebeacons.root.title": "Faro da viaggio",

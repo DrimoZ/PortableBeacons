@@ -108,6 +108,58 @@ public final class BeaconResolver {
     }
 
     /**
+     * Whether the augment at {@code index} raises a ceiling this beacon is already at: an effect slot
+     * past the most a beacon can have, a level no effect it offers can reach, a sharing mode past the
+     * widest. Prism on the creative beacon does nothing but cost - which the slot otherwise never says.
+     *
+     * <p>Judged by resolving with and without it rather than by reading the numbers, so a cap from
+     * any source - the absolute ceilings, the effects' own {@code max_amplifier}, a tier's pool -
+     * counts, and one added later counts without this changing.
+     *
+     * @param effects every effect the registry holds; the tier's pool is applied here
+     */
+    public static boolean raisesACeilingInVain(BeaconTierDef tier, List<AugmentInstance> augments, int index,
+                                               Lookup<AugmentDef> augmentLookup,
+                                               Map<ResourceKey<BeaconEffectDef>, BeaconEffectDef> effects) {
+        Optional<AugmentDef> def = augmentLookup.get(augments.get(index).type());
+        if (def.isEmpty()) {
+            return false;
+        }
+        List<AugmentInstance> without = new ArrayList<>(augments);
+        without.remove(index);
+        BeaconStats with = resolve(tier, augments, augmentLookup);
+        BeaconStats wo = resolve(tier, without, augmentLookup);
+        int tierLevel = Math.clamp(augments.get(index).tier(), 1, def.get().maxTier());
+
+        for (AugmentDef.Operation op : def.get().operations()) {
+            if (op.valueFor(tierLevel) <= 0) {
+                continue;
+            }
+            boolean inVain = switch (op.type()) {
+                case ADD_EFFECT_SLOT -> with.effectSlots() == wo.effectSlots();
+                case UNLOCK_AURA -> with.allowedAuraModes().equals(wo.allowedAuraModes());
+                case ADD_AMPLIFIER -> effects.entrySet().stream()
+                        .filter(e -> tier.allows(e.getKey(), e.getValue()))
+                        .allMatch(e -> reachable(e.getValue(), with, e.getKey())
+                                == reachable(e.getValue(), wo, e.getKey()));
+                case ADD_EFFECT_AMPLIFIER -> op.effect()
+                        .map(key -> effects.get(key) == null || !tier.allows(key, effects.get(key))
+                                || reachable(effects.get(key), with, key) == reachable(effects.get(key), wo, key))
+                        .orElse(true);
+                default -> false;
+            };
+            if (inVain) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static int reachable(BeaconEffectDef def, BeaconStats stats, ResourceKey<BeaconEffectDef> key) {
+        return Math.min(def.maxAmplifier(), stats.maxAmplifierFor(key));
+    }
+
+    /**
      * Enforces "one augment per type" in the resolver too, not only in the slot's placement rule.
      * The GUI rejects duplicates, but a stack built by a command or a broken datapack must not be
      * able to stack two Range augments.

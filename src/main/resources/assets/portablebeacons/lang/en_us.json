@@ -99,6 +99,7 @@
   "portablebeacons.tip.fuel_worth": "One runs the beacon ~%s · this stack ~%s",
   "portablebeacons.tip.fuel_reserve": "In the fuel slot: %s of runtime",
   "portablebeacons.tip.augment_locked": "This slot needs a higher beacon tier",
+  "portablebeacons.tip.augment_in_vain": "Partly wasted: this beacon is already at its maximum there",
   "portablebeacons.gui.active": "Active",
   "portablebeacons.gui.inactive": "Inactive",
   "advancement.portablebeacons.root.title": "Beacon to Go",

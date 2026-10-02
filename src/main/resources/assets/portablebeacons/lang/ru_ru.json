@@ -99,6 +99,7 @@
   "portablebeacons.tip.fuel_worth": "Одна штука даёт ~%s · вся стопка ~%s",
   "portablebeacons.tip.fuel_reserve": "В ячейке топлива: %s работы",
   "portablebeacons.tip.augment_locked": "Этой ячейке нужен ранец выше уровнем",
+  "portablebeacons.tip.augment_in_vain": "Частично бесполезно: маяк уже на максимуме",
   "portablebeacons.gui.active": "Включён",
   "portablebeacons.gui.inactive": "Выключен",
   "advancement.portablebeacons.root.title": "Маяк с собой",

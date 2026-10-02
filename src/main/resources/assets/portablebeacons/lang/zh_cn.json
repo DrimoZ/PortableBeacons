@@ -99,6 +99,7 @@
   "portablebeacons.tip.fuel_worth": "一个约 %s · 这一组约 %s",
   "portablebeacons.tip.fuel_reserve": "燃料槽内：可用 %s",
   "portablebeacons.tip.augment_locked": "此槽位需要更高等级的背包",
+  "portablebeacons.tip.augment_in_vain": "部分无效：此信标已达上限",
   "portablebeacons.gui.active": "运行中",
   "portablebeacons.gui.inactive": "已关闭",
   "advancement.portablebeacons.root.title": "随身信标",

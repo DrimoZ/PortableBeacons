@@ -54,6 +54,8 @@ public final class GuiTheme {
     public static final int GHOST_WASH = 0xA0C6C6C6;
     /** Over something switched off: still there, not running. */
     public static final int OFF_WASH = 0x90303030;
+    /** Under an augment that raises a ceiling the beacon is already at: amber, a caution, not an error. */
+    public static final int IN_VAIN_WASH = 0x80E0A020;
     /** Over a locked socket or slot. */
     public static final int LOCKED_WASH = 0xB0202020;
 

@@ -99,6 +99,7 @@
   "portablebeacons.tip.fuel_worth": "Uno da ~%s · esta pila ~%s",
   "portablebeacons.tip.fuel_reserve": "En la ranura: %s de autonomía",
   "portablebeacons.tip.augment_locked": "Esta ranura necesita una mochila de nivel superior",
+  "portablebeacons.tip.augment_in_vain": "En parte inútil: este faro ya está al máximo en eso",
   "portablebeacons.gui.active": "Activa",
   "portablebeacons.gui.inactive": "Apagada",
   "advancement.portablebeacons.root.title": "Faro para llevar",

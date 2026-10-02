@@ -99,6 +99,7 @@
   "portablebeacons.tip.fuel_worth": "一個約 %s · 這一組約 %s",
   "portablebeacons.tip.fuel_reserve": "燃料欄內：可用 %s",
   "portablebeacons.tip.augment_locked": "此欄位需要更高等級的背包",
+  "portablebeacons.tip.augment_in_vain": "部分無效：此烽火台已達上限",
   "portablebeacons.gui.active": "運作中",
   "portablebeacons.gui.inactive": "已關閉",
   "advancement.portablebeacons.root.title": "隨身烽火台",

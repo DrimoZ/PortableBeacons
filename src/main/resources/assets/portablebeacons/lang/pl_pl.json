@@ -99,6 +99,7 @@
   "portablebeacons.tip.fuel_worth": "Jedno daje ~%s · cały stos ~%s",
   "portablebeacons.tip.fuel_reserve": "W miejscu na paliwo: %s pracy",
   "portablebeacons.tip.augment_locked": "To miejsce wymaga plecaka wyższego poziomu",
+  "portablebeacons.tip.augment_in_vain": "Częściowo bezużyteczne: to światło ma tu już maksimum",
   "portablebeacons.gui.active": "Włączony",
   "portablebeacons.gui.inactive": "Wyłączony",
   "advancement.portablebeacons.root.title": "Sygnalizator na wynos",

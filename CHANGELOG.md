@@ -35,6 +35,12 @@ Versions follow `{mod version}+{minecraft version}`.
   the new `fuel_multiplier` field set to 0, so a datapack can make any tier cheaper or dearer.
 
 ### Changed
+- **Effects go higher.** Speed, Haste, Jump Boost and Strength reach V, Regeneration and Resistance
+  IV (was III for all six); Resistance stops short of V, which is invulnerability. The beacon's own
+  ceiling still applies, so in survival this is what Amplification and Prism are now for.
+- **An augment that raises a ceiling the beacon is already at says so.** Its slot turns amber and
+  its tooltip warns - Prism on the creative beacon, Amplification on a beacon whose effects cannot
+  go higher. It is still accepted: most such augments do something else as well.
 - **A new screen, on FactoryIO's layout.** The fuel gauge and fuel slot sit in the window's first
   column instead of a drawer; a status light in the title band says whether the beacon is running,
   idle, low on fuel, out of fuel or switched off; the beacon's figures are a yellow tab on the left

@@ -99,6 +99,7 @@
   "portablebeacons.tip.fuel_worth": "Одна штука дає ~%s · уся стопка ~%s",
   "portablebeacons.tip.fuel_reserve": "У комірці палива: %s роботи",
   "portablebeacons.tip.augment_locked": "Цій комірці потрібен ранець вищого рівня",
+  "portablebeacons.tip.augment_in_vain": "Частково марно: маяк уже на максимумі",
   "portablebeacons.gui.active": "Увімкнено",
   "portablebeacons.gui.inactive": "Вимкнено",
   "advancement.portablebeacons.root.title": "Маяк із собою",

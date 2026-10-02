@@ -99,6 +99,7 @@
   "portablebeacons.tip.fuel_worth": "Um rende ~%s · esta pilha ~%s",
   "portablebeacons.tip.fuel_reserve": "No espaço de combustível: %s de autonomia",
   "portablebeacons.tip.augment_locked": "Este espaço precisa de uma mochila de nível maior",
+  "portablebeacons.tip.augment_in_vain": "Em parte inútil: este sinalizador já está no máximo nisso",
   "portablebeacons.gui.active": "Ativa",
   "portablebeacons.gui.inactive": "Desligada",
   "advancement.portablebeacons.root.title": "Sinalizador portátil",

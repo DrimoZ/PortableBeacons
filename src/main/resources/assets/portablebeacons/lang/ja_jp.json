@@ -99,6 +99,7 @@
   "portablebeacons.tip.fuel_worth": "1 個で約 %s · このスタックで約 %s",
   "portablebeacons.tip.fuel_reserve": "燃料スロット内: %s 分の稼働",
   "portablebeacons.tip.augment_locked": "このスロットには上位ティアのパックが必要です",
+  "portablebeacons.tip.augment_in_vain": "一部が無駄：このビーコンはすでに上限です",
   "portablebeacons.gui.active": "稼働中",
   "portablebeacons.gui.inactive": "停止中",
   "advancement.portablebeacons.root.title": "持ち歩くビーコン",
