@@ -1,6 +1,7 @@
 # Roadmap
 
-**2.0.0 on three Minecraft versions: 1.21.1, 26.1 and 26.2, with the same content.** Only the
+**2.0.0 on three Minecraft versions: 1.21.1, 26.1 and 26.2, with the same content.** Released on
+CurseForge on 2 October 2026 and played on all three. Only the
 plumbing differs where the game's API does. `main` follows the newest version, 26.2.
 
 What follows is ordered by what actually moves the mod forward — which is no longer "what is
@@ -14,11 +15,6 @@ its history is in the git log and the [changelog](CHANGELOG.md).
 **Bump Curios on 26.2 once it stops using `logoFile`.** Curios 16.0.0+26.2 still does, and the 26.2
 client opens on a "1 warning" screen for it - ours is fixed, theirs is not. Nothing to do but
 change `curios_version` when a fixed 26.2 build appears.
-
-**Release 2.0.0.** The jars, the description, the images and the per-file settings are listed in
-[STORE.md](STORE.md)'s release checklist; the changelog section is `## 2.0.0`.
-
-**Publish the rewritten wiki** with the release, not before: it describes 2.0.0.
 
 **Decide on 1.20.1.** Feasible, at roughly twice the cost of the 1.21.1 backport - no data
 components, an older capability and networking system, no GUI sprites - and most 1.20.1 packs run
