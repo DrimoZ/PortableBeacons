@@ -59,6 +59,8 @@ public final class BPTestFunctions {
                     (Consumer<GameTestHelper>) BPGameTests::anAugmentSwapsForItsOwnType);
             helper.register(id("clicking_an_augment_onto_another_swaps_them"),
                     (Consumer<GameTestHelper>) BPGameTests::clickingAnAugmentOntoAnotherSwapsThem);
+            helper.register(id("a_creative_beacon_hides_its_effects_under_discretion"),
+                    (Consumer<GameTestHelper>) BPGameTests::aCreativeBeaconHidesItsEffectsUnderDiscretion);
             helper.register(id("a_beacons_range_recharges_a_carried_beacon"),
                     (Consumer<GameTestHelper>) BPGameTests::aBeaconsRangeRechargesACarriedBeacon);
             helper.register(id("energy_charges_a_beacon_in_whole_units"),

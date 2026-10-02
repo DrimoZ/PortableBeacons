@@ -69,11 +69,16 @@ public class AugmentItem extends Item {
     /** Reads the effect straight off the registry entry, so a datapack augment describes itself. */
     private static Component describe(AugmentDef.Operation op, int tier, HolderLookup.Provider registries) {
         double value = op.valueFor(tier);
+        boolean restricts = op.type() == AugmentDef.Type.UNLOCK_AURA && value < 0;
+        if (restricts) {
+            // The sign is in the text: "rank -2" reads better than a "+-2" built from one line.
+            value = -value;
+        }
         String formatted = value == Math.rint(value)
                 ? String.valueOf((int) value)
                 : String.format(java.util.Locale.ROOT, "%.2f", value);
         String key = "portablebeacons.op." + op.type().getSerializedName();
-        if (op.type() == AugmentDef.Type.UNLOCK_AURA && value < 0) {
+        if (restricts) {
             // Recluse lowers the sharing rank, and read as "unlocks wider sharing modes" it claimed
             // the opposite of what it does.
             key = "portablebeacons.op.restrict_aura";

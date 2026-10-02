@@ -85,6 +85,8 @@ public final class BPGameTests {
             ResourceKey.create(BPRegistryKeys.AUGMENT, BPRegistryKeys.id("attunement"));
     private static final ResourceKey<AugmentDef> WAYFARER =
             ResourceKey.create(BPRegistryKeys.AUGMENT, BPRegistryKeys.id("wayfarer"));
+    private static final ResourceKey<AugmentDef> DISCRETION =
+            ResourceKey.create(BPRegistryKeys.AUGMENT, BPRegistryKeys.id("discretion"));
 
     /** Mirrors tier_4.json. A test that silently disagreed with the data would prove nothing. */
     private static final int TIER_IV_AURA_RANK = 1;
@@ -403,6 +405,31 @@ public final class BPGameTests {
                     "the slot holds " + installed + " after the swap");
             helper.assertTrue(carried != null && carried.type().equals(WAYFARER),
                     "the cursor holds " + menu.getCarried() + " after the swap");
+        });
+    }
+
+    /**
+     * The creative beacon burns nothing, and Discretion II hides an effect it already projects:
+     * vanilla's merge takes the new particle and icon flags over the running instance.
+     */
+    public static void aCreativeBeaconHidesItsEffectsUnderDiscretion(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ServerPlayer carrier = spawnPlayer(helper, cleanup);
+            ItemStack beacon = new ItemStack(BPItems.BEACON_CREATIVE.get());
+            PortableBeaconItem.setState(beacon, new BeaconState(
+                    List.of(new EffectSlotConfig(SPEED, 0, true, AuraMode.SELF)), 0, true, 0));
+            carrier.getInventory().setItem(0, beacon);
+
+            BeaconTicker.tickPlayer(carrier);
+            helper.assertTrue(carrier.getEffect(MobEffects.SPEED) != null
+                            && carrier.getEffect(MobEffects.SPEED).isVisible(),
+                    "the creative beacon did not project its effect without fuel");
+
+            install(carrier.getInventory().getItem(0), DISCRETION, 2);
+            BeaconTicker.tickPlayer(carrier);
+            var speed = carrier.getEffect(MobEffects.SPEED);
+            helper.assertTrue(speed != null && !speed.isVisible() && !speed.showIcon(),
+                    "Discretion II left the effect showing: " + speed);
         });
     }
 

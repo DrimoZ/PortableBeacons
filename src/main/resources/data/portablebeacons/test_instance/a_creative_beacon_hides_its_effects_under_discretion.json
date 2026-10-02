@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "portablebeacons:a_creative_beacon_hides_its_effects_under_discretion",
+  "environment": "minecraft:default",
+  "structure": "portablebeacons:platform",
+  "max_ticks": 200
+}

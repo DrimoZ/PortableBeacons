@@ -65,7 +65,9 @@ Versions follow `{mod version}+{minecraft version}`.
   cursor while leaving it in the slot, and delete the one you were holding.
 - **The drain shares under each effect add up to 100%.** They were divided by a bill that included
   Wayfarer's or Sentinel's multiplier, so three effects could read 28, 21 and 14%.
-- **Recluse says it restricts sharing.** Its tooltip claimed it unlocked wider sharing modes.
+- **Recluse says it restricts sharing.** Its tooltip claimed it unlocked wider sharing modes. Both
+  it and Attunement now give the number - "Sharing rank −2", "+2" - so it shows that one cancels the
+  other.
 - **Upgrading a beacon no longer destroys what it carried.** The tier and themed recipes built their
   result from nothing, so crafting a Beacon II into a III lost its installed augments, its fuel and
   its configured effects. They now carry over; whatever the new beacon cannot use is dropped from
