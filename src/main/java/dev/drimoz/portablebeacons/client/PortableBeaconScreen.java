@@ -106,7 +106,8 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
     /** The row's controls, right to left: switch, audience, level badge. */
     private static final int SWITCH_X = ROW_RIGHT - 3 - GuiSprites.SWITCH_W;
     private static final int AURA_X = SWITCH_X - 5 - ICON;
-    private static final int LEVEL_W = 16;
+    /** Wide enough for VIII, the widest numeral a level reaches. */
+    private static final int LEVEL_W = 20;
     private static final int LEVEL_H = 12;
     private static final int LEVEL_X = AURA_X - 5 - LEVEL_W;
     private static final int NAME_W = LEVEL_X - 4 - NAME_X;
@@ -130,6 +131,8 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
 
     private final SideTabs tabs;
 
+    /** First effect row shown, when a beacon has more than fit. */
+    private int rowScroll;
     private boolean selectorOpen;
     /** The effect row the picker will fill. */
     private int selectorSlot;
@@ -311,11 +314,14 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
         int top = GuiMetrics.CONTENT_TOP;
         int bottom = PortableBeaconMenu.CONTENT_BOTTOM;
         GuiSprites.table(graphics, ROW_X, top, ROW_RIGHT - ROW_X, bottom - top);
-        for (int i = 1; i < BeaconStats.MAX_EFFECT_SLOTS; i++) {
-            int line = rowY(i) - 1;
+        int total = visibleRows(stats);
+        rowScroll = Mth.clamp(rowScroll, 0, Math.max(0, total - PortableBeaconMenu.VISIBLE_EFFECT_ROWS));
+        for (int i = 1; i < PortableBeaconMenu.VISIBLE_EFFECT_ROWS; i++) {
+            int line = top + i * ROW_H - 1;
             graphics.fill(ROW_X + 1, line, ROW_RIGHT - 1, line + 1, GuiTheme.TABLE_LINE);
         }
-        for (int i = 0; i < visibleRows(stats); i++) {
+        drawRowScroll(graphics, total, top, bottom);
+        for (int i = rowScroll; i < Math.min(total, rowScroll + PortableBeaconMenu.VISIBLE_EFFECT_ROWS); i++) {
             int y = rowY(i);
             boolean locked = i >= stats.effectSlots();
             boolean hovered = !locked && within(mouseX, mouseY, ROW_X, y, ROW_RIGHT - ROW_X, ROW_H);
@@ -423,8 +429,24 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
         return Math.min(BeaconStats.MAX_EFFECT_SLOTS, stats.effectSlots() + 1);
     }
 
-    private static int rowY(int index) {
-        return GuiMetrics.CONTENT_TOP + index * ROW_H;
+    /** Where a row is drawn, after scrolling. */
+    private int rowY(int index) {
+        return GuiMetrics.CONTENT_TOP + (index - rowScroll) * ROW_H;
+    }
+
+    /**
+     * A thin bar on the table's inner edge, only when there are more rows than fit - the cue that
+     * the wheel does something here. Two pixels: anything wider would take room from the switches.
+     */
+    private void drawRowScroll(GuiGraphicsExtractor graphics, int total, int top, int bottom) {
+        int visible = PortableBeaconMenu.VISIBLE_EFFECT_ROWS;
+        if (total <= visible) {
+            return;
+        }
+        int track = bottom - top - 2;
+        int thumb = Math.max(6, track * visible / total);
+        int thumbY = top + 1 + (track - thumb) * rowScroll / (total - visible);
+        graphics.fill(ROW_RIGHT - 3, thumbY, ROW_RIGHT - 1, thumbY + thumb, GuiTheme.TABLE_LINE);
     }
 
     /** The row under the mouse, or -1. Window coordinates. */
@@ -432,7 +454,11 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
         if (x < ROW_X || x >= ROW_RIGHT || y < GuiMetrics.CONTENT_TOP) {
             return -1;
         }
-        int index = (y - GuiMetrics.CONTENT_TOP) / ROW_H;
+        int local = (y - GuiMetrics.CONTENT_TOP) / ROW_H;
+        if (local >= PortableBeaconMenu.VISIBLE_EFFECT_ROWS) {
+            return -1;
+        }
+        int index = rowScroll + local;
         return index < visibleRows(stats()) ? index : -1;
     }
 
@@ -586,22 +612,33 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
 
         @Override
         protected int contentWidth() {
-            return PortableBeaconItem.AUGMENT_SLOTS * GuiMetrics.SLOT;
+            return PortableBeaconMenu.AUGMENTS_PER_ROW * GuiMetrics.SLOT;
         }
 
         @Override
         protected int contentHeight() {
-            return GuiMetrics.SLOT;
+            return menu.augmentRows() * GuiMetrics.SLOT;
+        }
+
+        private int shown() {
+            return Math.min(PortableBeaconItem.AUGMENT_SLOTS, menu.augmentRows() * PortableBeaconMenu.AUGMENTS_PER_ROW);
+        }
+
+        private static int cellX(int x, int i) {
+            return x + 1 + (i % PortableBeaconMenu.AUGMENTS_PER_ROW) * GuiMetrics.SLOT;
+        }
+
+        private static int cellY(int y, int i) {
+            return y + 1 + (i / PortableBeaconMenu.AUGMENTS_PER_ROW) * GuiMetrics.SLOT;
         }
 
         @Override
         protected void renderContentBackground(GuiGraphicsExtractor graphics, int x, int y) {
-            for (int i = 0; i < PortableBeaconItem.AUGMENT_SLOTS; i++) {
-                int itemX = x + 1 + i * GuiMetrics.SLOT;
+            for (int i = 0; i < shown(); i++) {
                 if (i < stats().augmentSlots()) {
-                    GuiSprites.slot(graphics, itemX, y + 1);
+                    GuiSprites.slot(graphics, cellX(x, i), cellY(y, i));
                 } else {
-                    GuiSprites.disabledSlot(graphics, itemX, y + 1);
+                    GuiSprites.disabledSlot(graphics, cellX(x, i), cellY(y, i));
                 }
             }
         }
@@ -609,17 +646,18 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
         @Override
         protected void renderContent(GuiGraphicsExtractor graphics, Font font, int x, int y,
                                      int mouseX, int mouseY) {
-            for (int i = stats().augmentSlots(); i < PortableBeaconItem.AUGMENT_SLOTS; i++) {
+            for (int i = stats().augmentSlots(); i < shown(); i++) {
                 if (slotStack(PortableBeaconItem.augmentSlot(i)).isEmpty()) {
-                    GuiSprites.smallLock(graphics, x + 1 + i * GuiMetrics.SLOT, y + 1);
+                    GuiSprites.smallLock(graphics, cellX(x, i), cellY(y, i));
                 }
             }
         }
 
         @Override
         protected List<Component> contentTooltip(int x, int y, int mouseX, int mouseY) {
-            int index = (mouseX - x) / GuiMetrics.SLOT;
-            if (mouseX >= x && index < PortableBeaconItem.AUGMENT_SLOTS && index >= stats().augmentSlots()
+            int index = (mouseY - y) / GuiMetrics.SLOT * PortableBeaconMenu.AUGMENTS_PER_ROW
+                    + (mouseX - x) / GuiMetrics.SLOT;
+            if (mouseX >= x && mouseY >= y && index < shown() && index >= stats().augmentSlots()
                     && slotStack(PortableBeaconItem.augmentSlot(index)).isEmpty()) {
                 return List.of(Component.translatable("portablebeacons.tip.augment_locked"));
             }
@@ -1007,6 +1045,12 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
             scroll = Mth.clamp(scroll - (int) Math.signum(deltaY), 0, maxScroll());
             return true;
         }
+        if (rowAt((int) mouseX - leftPos, (int) mouseY - topPos) >= 0) {
+            int total = visibleRows(stats());
+            rowScroll = Mth.clamp(rowScroll - (int) Math.signum(deltaY), 0,
+                    Math.max(0, total - PortableBeaconMenu.VISIBLE_EFFECT_ROWS));
+            return true;
+        }
         return super.mouseScrolled(mouseX, mouseY, deltaX, deltaY);
     }
 
@@ -1172,13 +1216,9 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
         return x >= left && x < left + width && y >= top && y < top + height;
     }
 
+    /** Levels as the game writes them, I to X; past that, digits - nothing reaches it today. */
     static String roman(int value) {
-        return switch (value) {
-            case 1 -> "I";
-            case 2 -> "II";
-            case 3 -> "III";
-            case 4 -> "IV";
-            default -> String.valueOf(value);
-        };
+        String[] numerals = {"I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"};
+        return value >= 1 && value <= numerals.length ? numerals[value - 1] : String.valueOf(value);
     }
 }

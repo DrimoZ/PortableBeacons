@@ -47,7 +47,7 @@ public class PortableBeaconItem extends Item {
      * are <em>usable</em>, and a datapack may move it freely without touching anyone's contents.
      */
     public static final int FUEL_SLOT = 0;
-    public static final int AUGMENT_SLOTS = 4;
+    public static final int AUGMENT_SLOTS = BeaconStats.MAX_AUGMENT_SLOTS;
     public static final int CONTAINER_SIZE = AUGMENT_SLOTS + 1;
 
     /** Container index of the nth augment slot, counting from zero. */

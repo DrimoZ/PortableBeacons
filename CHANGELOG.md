@@ -18,6 +18,11 @@ Versions follow `{mod version}+{minecraft version}`.
 - **Glyphs for datapack augments.** An augment can name its icon's glyph with `"glyph"`: any of the
   shipped augments' glyphs, or one of six generic shapes - star, bolt, heart, gem, shield, leaf.
   Before, an augment from a datapack could only ever show a bare casing.
+- **Higher ceilings for datapacks.** Effects can reach level X (`max_amplifier` up to 9, was 3), a
+  tier can unlock up to 8 effect slots (was 5) and up to 8 augment slots (was 4). The effect table
+  scrolls past five rows and the augment tab grows a second row only when a tier needs it, so the
+  shipped beacons look exactly as before. Augments keep three tiers: their casing shows the tier as
+  pips, and five do not read at 16 pixels.
 
 ### Changed
 - **A new screen, on FactoryIO's layout.** The fuel gauge and fuel slot sit in the window's first

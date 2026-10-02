@@ -26,7 +26,7 @@ public record EffectSlotConfig(
     public static final Codec<EffectSlotConfig> CODEC = RecordCodecBuilder.create(i -> i.group(
             ResourceKey.codec(BPRegistryKeys.EFFECT).fieldOf("effect")
                     .forGetter(EffectSlotConfig::effect),
-            Codec.intRange(0, 3).optionalFieldOf("amplifier", 0)
+            Codec.intRange(0, BeaconStats.MAX_AMPLIFIER).optionalFieldOf("amplifier", 0)
                     .forGetter(EffectSlotConfig::amplifier),
             Codec.BOOL.optionalFieldOf("enabled", true).forGetter(EffectSlotConfig::enabled),
             AuraMode.CODEC.optionalFieldOf("aura", AuraMode.SELF).forGetter(EffectSlotConfig::aura)

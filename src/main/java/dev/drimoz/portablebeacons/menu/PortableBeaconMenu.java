@@ -23,6 +23,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -60,8 +61,14 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
      * Bottom of the beacon's own content - sockets, details and the fuel column - and so where the
      * player inventory starts. Shared with the screen, which draws to the same line.
      */
-    /** One effect row per possible effect slot, each one inventory slot tall, under the band. */
-    public static final int CONTENT_BOTTOM = GuiMetrics.CONTENT_TOP + BeaconStats.MAX_EFFECT_SLOTS * GuiMetrics.SLOT;
+    /**
+     * Effect rows shown at once. A beacon may have more - up to {@link BeaconStats#MAX_EFFECT_SLOTS}
+     * - and the table scrolls; five keeps the window the size it was.
+     */
+    public static final int VISIBLE_EFFECT_ROWS = 5;
+
+    /** The effect rows, each one inventory slot tall, under the band. */
+    public static final int CONTENT_BOTTOM = GuiMetrics.CONTENT_TOP + VISIBLE_EFFECT_ROWS * GuiMetrics.SLOT;
 
     /**
      * The fuel slot sits in column 0 under the gauge, FactoryIO's burner layout: the fuel is what
@@ -77,8 +84,35 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
      */
     public static final int AUGMENT_SLOT_Y = GuiMetrics.FIRST_TAB_CONTENT_Y + 1;
 
+    /** Augment slots per row of the tab; past four the slots wrap onto a second row. */
+    public static final int AUGMENTS_PER_ROW = 4;
+
     public static int augmentSlotX(int n) {
-        return GuiMetrics.RIGHT_TAB_CONTENT_X + 1 + n * GuiMetrics.SLOT;
+        return GuiMetrics.RIGHT_TAB_CONTENT_X + 1 + (n % AUGMENTS_PER_ROW) * GuiMetrics.SLOT;
+    }
+
+    public static int augmentSlotY(int n) {
+        return AUGMENT_SLOT_Y + (n / AUGMENTS_PER_ROW) * GuiMetrics.SLOT;
+    }
+
+    /**
+     * Rows of augment slots worth showing: enough for what the beacon unlocks, and for any augment
+     * still sitting in a slot it no longer does. The shipped tiers fit one row; a datapack tier with
+     * more slots gets a second, and nobody else pays for it with a row of hatched boxes.
+     */
+    public int augmentRows() {
+        int needed = Math.max(1, stats().augmentSlots());
+        ResourceHandler<ItemResource> handler = BPLookups.handlerOf(beacon());
+        if (handler != null) {
+            for (int i = 0; i < PortableBeaconItem.AUGMENT_SLOTS; i++) {
+                int index = PortableBeaconItem.augmentSlot(i);
+                if (index < handler.size() && handler.getAmountAsInt(index) > 0) {
+                    needed = Math.max(needed, i + 1);
+                }
+            }
+        }
+        return Math.min(Mth.positiveCeilDiv(PortableBeaconItem.AUGMENT_SLOTS, AUGMENTS_PER_ROW),
+                Mth.positiveCeilDiv(needed, AUGMENTS_PER_ROW));
     }
 
     /**
@@ -120,7 +154,7 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
 
         ResourceHandler<ItemResource> handler = new LiveBeaconHandler();
         for (int i = 0; i < PortableBeaconItem.AUGMENT_SLOTS; i++) {
-            addSlot(new AugmentSlot(handler, PortableBeaconItem.augmentSlot(i), augmentSlotX(i), AUGMENT_SLOT_Y));
+            addSlot(new AugmentSlot(handler, PortableBeaconItem.augmentSlot(i), augmentSlotX(i), augmentSlotY(i)));
         }
         // No fuel slot at all when fuel is switched off, rather than a slot that refuses
         // everything. Both sides read the same synced config, so the slot counts agree.
@@ -265,7 +299,7 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
             case ACTION_CYCLE_AURA -> state().withEffects(
                     mutate(effects, slotIndex, slot -> slot.withAura(nextAura(slot.aura(), stats))));
             case ACTION_SET_AMPLIFIER -> state().withEffects(
-                    mutate(effects, slotIndex, slot -> slot.withAmplifier(Math.min(value, 3))));
+                    mutate(effects, slotIndex, slot -> slot.withAmplifier(Math.min(value, BeaconStats.MAX_AMPLIFIER))));
             default -> null;
         };
 
@@ -502,7 +536,8 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
 
         @Override
         public boolean isActive() {
-            return augmentsVisible;
+            // A slot in a row the tab is not showing is hidden like a shut tab's: no render, no hover.
+            return augmentsVisible && (getSlotIndex() - 1) / AUGMENTS_PER_ROW < augmentRows();
         }
 
         @Override

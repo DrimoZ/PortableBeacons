@@ -163,6 +163,9 @@ touched. A pack can invent its own pools the same way. An augment added by a dat
 any shipped glyph for its icon with `"glyph"` - one of the augments' own (`"range"`, `"focus"`,
 …) or a generic shape: `star`, `bolt`, `heart`, `gem`, `shield`, `leaf`.
 
+Ceilings a datapack can reach: effect levels up to X, 8 effect slots and 8 augment slots per tier,
+three tiers per augment.
+
 **[Full datapack guide →](https://github.com/DrimoZ/PortableBeacons/wiki/Datapack-Guide)** — every field
 of all four registries, with worked examples for adding an effect, an augment and a themed tier.
 

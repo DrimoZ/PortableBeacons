@@ -85,7 +85,7 @@ public final class BeaconResolver {
                 augmentSlots,
                 Math.max(0.0, range),
                 (int) Math.round(tier.fuelCapacity() * capacityMultiplier),
-                Math.clamp(maxAmplifier, 0, 3),
+                Math.clamp(maxAmplifier, 0, BeaconStats.MAX_AMPLIFIER),
                 Math.max(0.0, fuelMultiplier),
                 Math.max(0.0, auraCostMultiplier),
                 Math.max(0, freeEffectSlots),

@@ -48,6 +48,20 @@ class BeaconResolverTest {
             COMMUNION, COMMUNION_DEF,
             WELLSPRING, WELLSPRING_DEF));
 
+    /** The ceiling is level X now, not IV: a datapack raising it is not clamped back by the resolver. */
+    @Test
+    void theLevelCeilingIsLevelTen() {
+        ResourceKey<AugmentDef> big = augmentKey("big");
+        AugmentDef bigDef = new AugmentDef(1, 0, List.of(
+                new AugmentDef.Operation(AugmentDef.Type.ADD_AMPLIFIER, List.of(20.0))));
+
+        BeaconStats stats = BeaconResolver.resolve(TIER_4, List.of(new AugmentInstance(big, 1)),
+                lookup(Map.of(big, bigDef)));
+
+        assertEquals(BeaconStats.MAX_AMPLIFIER, stats.maxAmplifier());
+        assertEquals(9, stats.maxAmplifier());
+    }
+
     @Test
     void augmentsStackAcrossTypes() {
         BeaconStats stats = BeaconResolver.resolve(TIER_4,
