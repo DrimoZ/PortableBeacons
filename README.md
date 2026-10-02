@@ -92,6 +92,11 @@ nothing — which is what gives Capacity and the higher tiers a purpose. Pulling
 out of a full beacon loses nothing either: the surplus stays and burns down, and the beacon takes no
 new fuel until it has.
 
+Fuel is not the only way in. Standing in a lit beacon's range recharges every beacon you carry, on
+or off (`beacon_recharge_per_second`, 20 by default), so a base with a beacon doubles as a charging
+station. And any energy mod's charger fills a beacon through the forge energy capability, at
+`energy_per_fuel_unit` FE per unit (40 by default: an iron ingot's worth is 12,000 FE).
+
 A minute before it runs dry the beacon says so. When it does run dry it stays switched on and
 waits, and resumes by itself the moment there is fuel in its slot. Only one beacon runs at a time:
 switching one on switches your others off.

@@ -1,6 +1,8 @@
 package dev.drimoz.portablebeacons.registry;
 
+import dev.drimoz.portablebeacons.BPConfig;
 import dev.drimoz.portablebeacons.PortableBeacons;
+import dev.drimoz.portablebeacons.item.BeaconEnergyHandler;
 import dev.drimoz.portablebeacons.item.PortableBeaconItem;
 import net.minecraft.core.component.DataComponents;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -27,6 +29,14 @@ public final class BPCapabilities {
                     Capabilities.Item.ITEM,
                     (stack, access) -> new ItemAccessItemHandler(
                             access, DataComponents.CONTAINER, PortableBeaconItem.CONTAINER_SIZE),
+                    beacon.get());
+            // Energy as a second way in, for any mod's charger. Asked for every time rather than
+            // decided at registration, so the server config - which loads later - is what decides.
+            event.registerItem(
+                    Capabilities.Energy.ITEM,
+                    (stack, access) -> BPConfig.energyPerFuelUnit() > 0
+                            ? new BeaconEnergyHandler(access, BPConfig.energyPerFuelUnit())
+                            : null,
                     beacon.get());
         }
     }

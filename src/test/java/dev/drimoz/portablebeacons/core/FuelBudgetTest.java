@@ -58,6 +58,23 @@ class FuelBudgetTest {
     }
 
     @Test
+    void aRechargeTopsUpToCapacityAndNoFurther() {
+        assertEquals(140, FuelBudget.recharge(100, 1000, 40));
+        assertEquals(1000, FuelBudget.recharge(980, 1000, 40));
+    }
+
+    @Test
+    void aRechargeNeverCutsASurplusDown() {
+        // Above capacity after a Capacity augment came out: kept, not "recharged" to the cap.
+        assertEquals(4000, FuelBudget.recharge(4000, 1000, 40));
+    }
+
+    @Test
+    void aZeroRechargeChangesNothing() {
+        assertEquals(100, FuelBudget.recharge(100, 1000, 0));
+    }
+
+    @Test
     void stopsAtWhatTheBufferCanHold() {
         // Two fit, three are needed: burn the two, keep the units, let the beacon run dry honestly.
         assertEquals(2, FuelBudget.itemsToBurn(0, 1000, 300, 600, 64));

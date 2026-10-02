@@ -19,6 +19,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.player.Player;
@@ -64,7 +65,56 @@ public final class BeaconTicker {
         if (player.level().isClientSide() || player.tickCount % INTERVAL != 0) {
             return;
         }
+        rechargeFromBeacons(player);
         tickPlayer(player);
+    }
+
+    /**
+     * Tops up every beacon the player carries, switched on or not, while they stand in a lit
+     * beacon's range - so a base with a beacon is where portable ones are charged.
+     *
+     * <p>"In range" is read from the effects a beacon has put on the player: vanilla beacons apply
+     * ambient instances, out to their real pyramid range, which no block-entity scan here could
+     * know. Conduit Power is ambient too but comes from a conduit, so it does not count. Runs before
+     * the beacon's own pass, so a beacon left on and starved resumes on the same pass.
+     */
+    public static void rechargeFromBeacons(Player player) {
+        int perSecond = BPConfig.INSTANCE.beaconRechargePerSecond.get();
+        if (!BPConfig.fuelEnabled() || perSecond <= 0 || !insideBeaconRange(player)) {
+            return;
+        }
+        int amount = (int) Math.min(Integer.MAX_VALUE, (long) perSecond * INTERVAL / 20);
+        RegistryAccess access = player.level().registryAccess();
+        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+            recharge(player.getInventory().getItem(slot), amount, access);
+        }
+        recharge(CuriosCompat.findBeacon(player), amount, access);
+    }
+
+    private static boolean insideBeaconRange(Player player) {
+        for (MobEffectInstance effect : player.getActiveEffects()) {
+            if (effect.isAmbient() && !effect.is(MobEffects.CONDUIT_POWER)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void recharge(ItemStack stack, int amount, RegistryAccess access) {
+        if (!(stack.getItem() instanceof PortableBeaconItem item)) {
+            return;
+        }
+        BeaconTierDef tier = BPLookups.tier(access, item);
+        if (tier == null) {
+            return;
+        }
+        int capacity = BeaconResolver.resolve(tier, BPLookups.installedAugments(stack), BPLookups.augments(access))
+                .fuelCapacity();
+        BeaconState state = PortableBeaconItem.stateOf(stack);
+        int fuel = FuelBudget.recharge(state.fuel(), capacity, amount);
+        if (fuel != state.fuel()) {
+            PortableBeaconItem.setState(stack, state.withFuel(fuel).withCapacity(capacity));
+        }
     }
 
     /**

@@ -5,6 +5,14 @@ Versions follow `{mod version}+{minecraft version}`.
 
 ## Unreleased
 
+### Added
+- **Recharging at a real beacon.** Standing in a lit beacon's range tops up every portable beacon you
+  carry, switched on or not - a base with a beacon is now a charging station.
+  `beacon_recharge_per_second` sets the rate; 0 turns it off.
+- **Forge energy.** Any energy mod's charger fills a beacon through the energy capability, at
+  `energy_per_fuel_unit` FE per fuel unit (40 by default); 0 turns it off. Whole units only, and a
+  beacon never gives energy back.
+
 ### Changed
 - **A new screen, on FactoryIO's layout.** The fuel gauge and fuel slot sit in the window's first
   column instead of a drawer; a status light in the title band says whether the beacon is running,

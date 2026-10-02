@@ -77,6 +77,9 @@ metal is accepted without a file of its own. The screen shows **remaining runtim
 count: "4 h" answers the question you actually have. Each effect chooses its own level and its own
 audience, and both cost more, so a beacon is a set of small trades rather than one switch.
 
+Or skip the ingots: a lit beacon recharges every portable one you carry while you stand in its
+range, and any energy mod's charger fills one with FE.
+
 You get a minute's warning before it runs dry, and a dry beacon waits instead of switching off: put
 fuel in and it picks up where it left off.
 

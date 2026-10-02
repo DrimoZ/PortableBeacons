@@ -381,6 +381,51 @@ public final class BPGameTests {
         });
     }
 
+    /**
+     * Standing in a lit beacon's range - read from the ambient effect it applies - charges a
+     * carried beacon, even one switched off. A conduit's ambient effect does not.
+     */
+    public static void aBeaconsRangeRechargesACarriedBeacon(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ServerPlayer carrier = spawnPlayer(helper, cleanup);
+            ItemStack beacon = giveBeacon(carrier, AuraMode.SELF);
+            PortableBeaconItem.setState(beacon, PortableBeaconItem.stateOf(beacon).withFuel(0).withActive(false));
+
+            carrier.addEffect(new MobEffectInstance(MobEffects.CONDUIT_POWER, 200, 0, true, true));
+            BeaconTicker.rechargeFromBeacons(carrier);
+            helper.assertTrue(PortableBeaconItem.stateOf(beacon).fuel() == 0, "a conduit recharged the beacon");
+
+            carrier.addEffect(new MobEffectInstance(MobEffects.HASTE, 200, 0, true, true));
+            BeaconTicker.rechargeFromBeacons(carrier);
+            helper.assertTrue(PortableBeaconItem.stateOf(beacon).fuel() > 0,
+                    "standing in a beacon's range did not recharge the carried beacon");
+        });
+    }
+
+    /**
+     * Any mod's charger can fill a beacon through the energy capability - even one fresh from the
+     * crafting table, which has no capacity cached yet. Whole units only.
+     */
+    public static void energyChargesABeaconInWholeUnits(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ItemStack beacon = new ItemStack(BPItems.BEACON_IV.get());
+            var energy = net.neoforged.neoforge.transfer.access.ItemAccess.forStack(beacon)
+                    .getCapability(net.neoforged.neoforge.capabilities.Capabilities.Energy.ITEM);
+            helper.assertTrue(energy != null, "a beacon exposes no energy handler");
+
+            int perUnit = dev.drimoz.portablebeacons.BPConfig.energyPerFuelUnit();
+            try (Transaction transaction = Transaction.openRoot()) {
+                helper.assertTrue(energy.insert(perUnit - 1, transaction) == 0,
+                        "less than one unit's worth of energy was accepted");
+                helper.assertTrue(energy.insert(perUnit * 100, transaction) == perUnit * 100,
+                        "a fresh beacon refused energy it has room for");
+                transaction.commit();
+            }
+            helper.assertTrue(PortableBeaconItem.stateOf(beacon).fuel() == 100,
+                    "energy did not become fuel, found " + PortableBeaconItem.stateOf(beacon).fuel());
+        });
+    }
+
     private static int fuelSpentByOnePass(ServerPlayer carrier, ItemStack beacon) {
         int before = PortableBeaconItem.stateOf(beacon).fuel();
         BeaconTicker.tickPlayer(carrier);
