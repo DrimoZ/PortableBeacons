@@ -3,7 +3,16 @@
 All notable changes to this project are documented here, newest first.
 Versions follow `{mod version}+{minecraft version}`.
 
-## Unreleased
+## 2.0.0
+
+One release for **1.21.1, 26.1 and 26.2** at once, with the same content on all three. The first
+file for 26.2 (NeoForge 26.2.0.88, JEI 30.39.0.232, Curios 16.0.0+26.2); what that port cost is in
+[PORTING.md](PORTING.md).
+
+A major version because a datapack written for 1.1.0 may need one change: an augment's icon is no
+longer picked by `model_data`, which is now ignored, but by `"glyph"` (see *Added*). Without it, a
+datapack augment shows a blank screen in its own colour. Worlds and beacons from 1.1.0 load as they
+are: the slots, the fuel and the configured effects are stored the same way.
 
 ### Added
 - **Recharging at a real beacon.** Standing in a lit beacon's range tops up every portable beacon you
