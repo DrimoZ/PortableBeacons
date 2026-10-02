@@ -167,14 +167,22 @@ test {
  * the 26.1 ones, and EMI's 1.21.1 mixins failed to apply and stopped the client loading at all.
  * The cost is that a jar dropped into run/mods by hand is removed on the next run.
  */
+// Only the jars that are mods. JEI for 26.2 publishes its internals - common, gui, lib, a config
+// API, their annotations - as dependencies of its own, and each one copied into mods/ raised "not a
+// valid mod file" on every launch. Dropping transitive dependencies wholesale was not the answer
+// either: mezz_config's NeoForge jar among them is a mod JEI needs.
+var devModJars = configurations.devMods.filter { jar ->
+    new java.util.zip.ZipFile(jar).withCloseable { it.getEntry('META-INF/neoforge.mods.toml') != null }
+}
+
 var copyDevMods = tasks.register('copyDevMods', Sync) {
-    from configurations.devMods
+    from devModJars
     into file('run/mods')
 }
 
 // The second client has its own directory, so it needs its own copy.
 var copyDevMods2 = tasks.register('copyDevMods2', Sync) {
-    from configurations.devMods
+    from devModJars
     into file('run-client2/mods')
 }
 

@@ -9,7 +9,8 @@ version = "${mod_version}"
 displayName = "${mod_name}"
 authors = "${mod_authors}"
 displayURL = "https://github.com/DrimoZ/PortableBeacons"
-logoFile = "logo.png"
+# A square icon: logoFile is deprecated as of 26.2, split into iconFile (square) and bannerFile.
+iconFile = "logo.png"
 logoBlur = false
 description = '''${mod_description}'''
 
