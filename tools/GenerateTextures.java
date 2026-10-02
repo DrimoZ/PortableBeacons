@@ -6,7 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Generates the item textures and the mod list logo.
+ * Generates the item textures. The logo is {@code GenerateLogo.java}'s, built from these.
  *
  * <p>The augments are drawn in FactoryIO's module family on purpose - a dark casing, a coloured
  * screen carrying a white glyph, and tier pips along the foot - so an augment and a module read as
@@ -30,14 +30,11 @@ import java.util.Map;
 public final class GenerateTextures {
 
     private static final String ITEM_DIR = "src/main/resources/assets/portablebeacons/textures/item";
-    /** The mod list logo lives at the jar root, not under assets/. */
-    private static final String ROOT_DIR = "src/main/resources";
 
     public static void main(String[] args) throws IOException {
         new File(ITEM_DIR).mkdirs();
         writeAugments();
         writeBeacons();
-        writeLogo();
         System.out.println("Textures written.");
     }
 
@@ -230,35 +227,6 @@ public final class GenerateTextures {
         write("void_beacon", beacon(new int[]{0xC48CE0, 0x7A4A9A}, new int[]{0xB07CD8, 0xEAD2FA}, 0, 0xC48CE0));
         write("tidal_beacon", beacon(new int[]{0x5AB8A8, 0x2E7A70}, new int[]{0x3FB6D8, 0xB4ECF8}, 0, 0x5AB8A8));
         write("creative_beacon", beacon(new int[]{0xE070D0, 0x9A3A90}, new int[]{0xF6B8F0, 0xFFEFFC}, 0, 0xFFD54A));
-    }
-
-    /**
-     * The mod list logo: the tier IV icon, scaled up whole pixels onto a dark plate.
-     *
-     * <p>Nearest-neighbour by construction rather than by a scaling hint, and paired with
-     * {@code logoBlur = false} in the mods.toml, because the interpolated version of a 16px icon
-     * is mush. The plate exists because the icon is drawn for a grey slot; the mod list background
-     * is dark and the outline would disappear into it.
-     */
-    private static void writeLogo() throws IOException {
-        int scale = 7;
-        int size = 128;
-        BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
-        fill(image, 0, 0, size, size, 0xFF23252E);
-        fill(image, 0, 0, size, 2, 0xFF34384A);
-        fill(image, 0, size - 2, size, 2, 0xFF15161C);
-
-        BufferedImage icon = beacon(new int[]{0x6A5A64, 0x3E3238}, new int[]{0x55D0E0, 0xA8F4FA}, 4, 0);
-        int origin = (size - icon.getWidth() * scale) / 2;
-        for (int x = 0; x < icon.getWidth(); x++) {
-            for (int y = 0; y < icon.getHeight(); y++) {
-                int argb = icon.getRGB(x, y);
-                if ((argb >>> 24) != 0) {
-                    fill(image, origin + x * scale, origin + y * scale, scale, scale, argb);
-                }
-            }
-        }
-        ImageIO.write(image, "PNG", new File(ROOT_DIR + "/logo.png"));
     }
 
     // ------------------------------------------------------------------ plumbing
