@@ -51,6 +51,8 @@ Upgrading a beacon keeps its augments, its fuel and its effects — nothing you 
 the vanilla beacon never offered — Fire Resistance, Slow Falling, Water Breathing, Conduit Power,
 Dolphin's Grace. Carrying one instead of a Beacon IV is a trade, not a downgrade.
 
+A **Creative Beacon**, in the creative tab only, has every slot and level at its maximum and needs no fuel.
+
 Both ceilings above can be raised by augments, and both are datapack fields.
 
 ### Fourteen augments, four slots

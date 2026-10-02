@@ -401,9 +401,7 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
         if (isFree(row, stats)) {
             return 1.0;
         }
-        double total = BeaconResolver.fuelPerSecond(menu.state(), stats, effectLookup());
-        double cost = BeaconResolver.fuelPerSecond(slot, stats, effectLookup()) * stats.fuelMultiplier();
-        return total <= 0.0 ? 0.0 : Math.min(1.0, cost / total);
+        return BeaconResolver.share(menu.state().effects(), row, stats, effectLookup());
     }
 
     /** Whether a free slot - Wellspring's - covers this row. */
@@ -506,7 +504,10 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
         }
         double perSecond = BeaconResolver.fuelPerSecond(state, stats(), effectLookup());
         if (perSecond <= 0.0) {
-            return GuiTheme.Status.WAITING;
+            // A beacon that burns nothing - the creative one - is working whenever it projects.
+            return burnsNothing() && state.effects().stream().anyMatch(EffectSlotConfig::enabled)
+                    ? GuiTheme.Status.WORKING
+                    : GuiTheme.Status.WAITING;
         }
         if (fuel && (state.fuel() + reserveUnits()) / perSecond < BeaconTicker.LOW_FUEL_SECONDS) {
             return GuiTheme.Status.BLOCKED;
@@ -552,7 +553,7 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
             lines.add(statusText(status()));
             lines.add(Component.translatable("portablebeacons.gui.range",
                     String.format(Locale.ROOT, "%.0f", stats.range())));
-            if (BPConfig.fuelEnabled()) {
+            if (BPConfig.fuelEnabled() && !burnsNothing()) {
                 lines.add(Component.translatable("portablebeacons.gui.runtime", totalRuntime()));
                 // Wayfarer and Sentinel price moving and standing differently, and one figure would
                 // be wrong for whichever the player is not doing. Shown only when the two differ.
@@ -942,9 +943,7 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
         if (row < free.length && free[row]) {
             return Component.translatable("portablebeacons.gui.share_free").withStyle(ChatFormatting.GRAY);
         }
-        double cost = BeaconResolver.fuelPerSecond(slot, stats, effectLookup()) * stats.fuelMultiplier();
-        double total = BeaconResolver.fuelPerSecond(menu.state(), stats, effectLookup());
-        int share = total <= 0.0 ? 0 : (int) Math.round(cost / total * 100.0);
+        int share = (int) Math.round(BeaconResolver.share(effects, row, stats, effectLookup()) * 100.0);
         return Component.translatable("portablebeacons.gui.share", share).withStyle(ChatFormatting.GRAY);
     }
 
@@ -1177,6 +1176,10 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
 
     private double fuelFill() {
         return Math.min(1.0, menu.state().fuel() / (double) Math.max(1, stats().fuelCapacity()));
+    }
+
+    private boolean burnsNothing() {
+        return stats().fuelMultiplier() <= 0.0;
     }
 
     private String totalRuntime() {

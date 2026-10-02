@@ -232,6 +232,25 @@ class BeaconResolverTest {
         assertEquals(1.0 * 1.6, BeaconResolver.fuelPerSecond(cheapFirst, stats, effects), 1e-9);
     }
 
+    /** The screen's per-effect shares: a free slot has none, the rest add up to the whole. */
+    @Test
+    void sharesOfTheChargedEffectsAddUpToOne() {
+        BeaconStats stats = BeaconResolver.resolve(TIER_4,
+                List.of(new AugmentInstance(WELLSPRING, 1)), AUGMENTS);
+        BeaconResolver.Lookup<BeaconEffectDef> effects = lookup(Map.of(
+                effectKey("speed"), new BeaconEffectDef(null, 1.0, 0, 1, 2.0),
+                effectKey("haste"), new BeaconEffectDef(null, 3.0, 0, 1, 2.0),
+                effectKey("jump"), new BeaconEffectDef(null, 5.0, 0, 1, 2.0)));
+        List<EffectSlotConfig> slots = List.of(
+                new EffectSlotConfig(effectKey("speed"), 0, true, AuraMode.SELF),
+                new EffectSlotConfig(effectKey("haste"), 0, true, AuraMode.SELF),
+                new EffectSlotConfig(effectKey("jump"), 0, true, AuraMode.SELF));
+
+        assertEquals(0.25, BeaconResolver.share(slots, 0, stats, effects), 1e-9);
+        assertEquals(0.75, BeaconResolver.share(slots, 1, stats, effects), 1e-9);
+        assertEquals(0.0, BeaconResolver.share(slots, 2, stats, effects), 1e-9);
+    }
+
     @Test
     void inactivePackCostsNothing() {
         BeaconState state = new BeaconState(

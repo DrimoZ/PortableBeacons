@@ -73,6 +73,11 @@ public class AugmentItem extends Item {
                 ? String.valueOf((int) value)
                 : String.format(java.util.Locale.ROOT, "%.2f", value);
         String key = "portablebeacons.op." + op.type().getSerializedName();
+        if (op.type() == AugmentDef.Type.UNLOCK_AURA && value < 0) {
+            // Recluse lowers the sharing rank, and read as "unlocks wider sharing modes" it claimed
+            // the opposite of what it does.
+            key = "portablebeacons.op.restrict_aura";
+        }
         if (op.effect().isPresent()) {
             // A targeted operation names its effect first, by the game's own name for it.
             Component effect = registries.lookup(BPRegistryKeys.EFFECT)

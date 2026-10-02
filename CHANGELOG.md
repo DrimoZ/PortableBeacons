@@ -30,6 +30,9 @@ Versions follow `{mod version}+{minecraft version}`.
 - **Three server options.** `fuel_cost_multiplier` scales every cost after augments; `max_aura_range`
   caps how far a shared effect reaches, Range augments included; `disabled_dimensions` lists the
   dimensions where portable beacons do nothing and spend nothing - the screen says why.
+- **A creative beacon.** Creative tab only, no recipe: eight effect slots, eight augment slots, level
+  X, every sharing mode, 64 blocks of reach, and it burns nothing. It is an ordinary tier file with
+  the new `fuel_multiplier` field set to 0, so a datapack can make any tier cheaper or dearer.
 
 ### Changed
 - **A new screen, on FactoryIO's layout.** The fuel gauge and fuel slot sit in the window's first
@@ -58,6 +61,11 @@ Versions follow `{mod version}+{minecraft version}`.
   longer the same icon. Beacons show their tier by the band's material, iron to netherite, and by pips.
 
 ### Fixed
+- **Clicking an augment onto a different one swaps them.** It used to put the fitted augment on the
+  cursor while leaving it in the slot, and delete the one you were holding.
+- **The drain shares under each effect add up to 100%.** They were divided by a bill that included
+  Wayfarer's or Sentinel's multiplier, so three effects could read 28, 21 and 14%.
+- **Recluse says it restricts sharing.** Its tooltip claimed it unlocked wider sharing modes.
 - **Upgrading a beacon no longer destroys what it carried.** The tier and themed recipes built their
   result from nothing, so crafting a Beacon II into a III lost its installed augments, its fuel and
   its configured effects. They now carry over; whatever the new beacon cannot use is dropped from

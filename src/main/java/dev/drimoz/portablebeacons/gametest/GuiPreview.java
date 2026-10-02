@@ -14,6 +14,7 @@ import dev.drimoz.portablebeacons.registry.BPItems;
 import dev.drimoz.portablebeacons.registry.BPLookups;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.logging.LogUtils;
+import net.minecraft.server.packs.PackResources;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.TitleScreen;
@@ -300,7 +301,7 @@ public final class GuiPreview {
     private static void writePreviewPack(Path pack) throws IOException {
         Path augment = pack.resolve("data/previewpack/portablebeacons/augment/sprinter.json");
         Files.createDirectories(augment.getParent());
-        Files.writeString(pack.resolve("pack.mcmeta"),
+        Files.writeString(pack.resolve(PackResources.PACK_META),
                 "{ \"pack\": { \"description\": \"GUI preview\", \"min_format\": 101, \"max_format\": 101 } }");
         Files.writeString(augment, """
                 { "max_tier": 1, "color": 5636095, "glyph": "bolt",

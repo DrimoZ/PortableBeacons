@@ -78,6 +78,10 @@ beacon never offered. Carrying one instead of a tier IV is a trade, not a downgr
 They needed no new mechanics: a tier entry declares which effects it accepts, so a themed beacon is
 a data file plus an item — and a datapack can add more the same way.
 
+The **Creative Beacon** (creative tab only) has every ceiling at its maximum and burns nothing — a
+tier file with `"fuel_multiplier": 0`. Any tier can set that field to make its effects cheaper or
+dearer.
+
 ### Fuel
 
 Each effect costs fuel per second, scaled by its level and by how widely it is shared. Copper,
@@ -167,6 +171,7 @@ any shipped glyph for its icon with `"glyph"` - one of the augments' own (`"rang
 
 Ceilings a datapack can reach: effect levels up to X, 8 effect slots and 8 augment slots per tier,
 three tiers per augment.
+A tier's `fuel_multiplier` (default 1) scales what its effects cost before augments.
 
 Two operations act on a single effect, named by `"effect"`, which is how a pack builds a
 specialised augment rather than another all-round one:

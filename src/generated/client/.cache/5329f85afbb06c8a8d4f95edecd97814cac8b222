@@ -1,10 +1,11 @@
-// 26.1.2	2026-10-02T08:05:44.3225707	Model Definitions - portablebeacons
+// 26.1.2	2026-10-02T08:57:28.3596031	Model Definitions - portablebeacons
 1386122182bb6366a6c85a95e0866eacfcf6988c assets/portablebeacons/items/augment.json
 f2d62b9a19c03206f1d93b646691b7bf6f894cbe assets/portablebeacons/items/beacon_i.json
 c2aa56b37e6ce57b9794c059d6cf2933c58db44f assets/portablebeacons/items/beacon_ii.json
 e0db50b63e55fbf2639a6e177ededde2d9483e81 assets/portablebeacons/items/beacon_iii.json
 6e71ebf8fe2897e6766440c3c18b7a94f1ed20d5 assets/portablebeacons/items/beacon_iv.json
 98b81e8d368d99cc201bafb8002e4858aaca02b7 assets/portablebeacons/items/cinder_beacon.json
+5af34686791e72c4a4f484d926be81c06d5a965f assets/portablebeacons/items/creative_beacon.json
 59f47110559851afb979264cb3cbef645a291c30 assets/portablebeacons/items/tidal_beacon.json
 d4a822539702ba199b5efefb5acb4deacc7cfe6d assets/portablebeacons/items/void_beacon.json
 62b86aa7defb7d58bd8aed8266e5117decb24761 assets/portablebeacons/models/item/augment_1.json
@@ -75,5 +76,6 @@ cdc92edefc6c73e54f4e32b45114b89db9c6a27f assets/portablebeacons/models/item/beac
 d30e4ec33ceca36919d4fc69c1a48765dcc0bd98 assets/portablebeacons/models/item/beacon_iii.json
 ad7fbe9e9d5b1dd9196320b087d830d8598a30eb assets/portablebeacons/models/item/beacon_iv.json
 8e8adc0fda2075c28d6de1a3759230b0933b765c assets/portablebeacons/models/item/cinder_beacon.json
+95f98fcc4e677056816c5c957b4780d0b3730880 assets/portablebeacons/models/item/creative_beacon.json
 9023fb49c791c93ff21c2b78e91c9658737df1ea assets/portablebeacons/models/item/tidal_beacon.json
 85f3fb59769c69cbf2c9ae968ee34b3fb79cec4a assets/portablebeacons/models/item/void_beacon.json

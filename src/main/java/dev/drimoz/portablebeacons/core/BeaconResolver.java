@@ -38,7 +38,7 @@ public final class BeaconResolver {
         double range = tier.baseRange();
         double capacityMultiplier = 1.0;
         int maxAmplifier = tier.maxAmplifier();
-        double fuelMultiplier = 1.0;
+        double fuelMultiplier = tier.fuelMultiplier();
         double auraCostMultiplier = 1.0;
         int freeEffectSlots = 0;
         double movingCostMultiplier = 1.0;
@@ -204,6 +204,29 @@ public final class BeaconResolver {
             free[byCost[n]] = true;
         }
         return free;
+    }
+
+    /**
+     * What one effect takes of the bill, 0 to 1, among the effects actually charged for.
+     *
+     * <p>Its own sum rather than the bill: the bill carries the moving or still multiplier, which
+     * scales every effect alike, so dividing by it made three effects read 28, 21 and 14 percent -
+     * shares of a total that was not theirs. A free slot's effect is outside the sum and has no share.
+     */
+    public static double share(List<EffectSlotConfig> slots, int index,
+                               BeaconStats stats,
+                               Lookup<BeaconEffectDef> effectLookup) {
+        boolean[] free = freeMask(slots, stats, effectLookup);
+        if (index < 0 || index >= slots.size() || free[index]) {
+            return 0.0;
+        }
+        double total = 0.0;
+        for (int i = 0; i < slots.size(); i++) {
+            if (!free[i]) {
+                total += fuelPerSecond(slots.get(i), stats, effectLookup);
+            }
+        }
+        return total <= 0.0 ? 0.0 : fuelPerSecond(slots.get(index), stats, effectLookup) / total;
     }
 
     /** Per-effect cost, excluding the beacon-wide {@link BeaconStats#fuelMultiplier()}. */

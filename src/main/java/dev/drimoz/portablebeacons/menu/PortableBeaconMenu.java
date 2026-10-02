@@ -495,8 +495,16 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
      * <p>A root transaction, because there is genuinely no context to nest under: vanilla drives
      * slot writes from menu code, not from inside a transfer.
      */
-    private static void setSlot(ResourceHandler<ItemResource> handler, int index,
-                                ItemResource resource, int amount) {
+    private void setSlot(int index, ItemResource resource, int amount) {
+        // One concrete handler for the whole write. The live handler resolves a fresh one on every
+        // call, so the extract and the insert landed on two different views of the stack inside one
+        // transaction: the second still saw the old augment, refused the new one, and the swap was
+        // rolled back - after vanilla had already put the old augment on the cursor. Swapping two
+        // augments duplicated the one in the slot and deleted the one in hand.
+        ResourceHandler<ItemResource> handler = BPLookups.handlerOf(beacon());
+        if (handler == null) {
+            handler = detached;
+        }
         try (Transaction transaction = Transaction.openRoot()) {
             int held = handler.getAmountAsInt(index);
             if (held > 0) {
@@ -515,7 +523,7 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
     /** Rejects a second augment of a type already installed, so the rule is visible, not hidden. */
     private class AugmentSlot extends ResourceHandlerSlot {
         AugmentSlot(ResourceHandler<ItemResource> handler, int index, int x, int y) {
-            super(handler, (i, resource, amount) -> setSlot(handler, i, resource, amount),
+            super(handler, (i, resource, amount) -> setSlot(i, resource, amount),
                     index, x, y);
         }
 
@@ -580,7 +588,7 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
 
     private class FuelSlot extends ResourceHandlerSlot {
         FuelSlot(ResourceHandler<ItemResource> handler, int index, int x, int y) {
-            super(handler, (i, resource, amount) -> setSlot(handler, i, resource, amount),
+            super(handler, (i, resource, amount) -> setSlot(i, resource, amount),
                     index, x, y);
         }
 

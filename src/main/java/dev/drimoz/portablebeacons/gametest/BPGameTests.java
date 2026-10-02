@@ -8,6 +8,7 @@ import dev.drimoz.portablebeacons.core.BeaconEffectDef;
 import dev.drimoz.portablebeacons.core.EffectSlotConfig;
 import dev.drimoz.portablebeacons.core.BeaconState;
 import dev.drimoz.portablebeacons.item.PortableBeaconItem;
+import dev.drimoz.portablebeacons.item.AugmentItem;
 import dev.drimoz.portablebeacons.menu.PortableBeaconMenu;
 import dev.drimoz.portablebeacons.core.AugmentDef;
 import dev.drimoz.portablebeacons.core.AugmentInstance;
@@ -32,6 +33,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.wolf.Wolf;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -377,6 +379,30 @@ public final class BPGameTests {
 
             helper.assertTrue(menu.getSlot(0).mayPlace(better), "a higher tier could not replace its own type");
             helper.assertFalse(menu.getSlot(1).mayPlace(better), "a second augment of one type was accepted");
+        });
+    }
+
+    /**
+     * Regression: clicking an augment onto a different one already fitted put the fitted one on the
+     * cursor and left it in the slot too, deleting the one that was held. The write's extract and
+     * insert went through two separate views of the beacon, so the insert never saw the slot freed.
+     */
+    public static void clickingAnAugmentOntoAnotherSwapsThem(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ServerPlayer carrier = spawnPlayer(helper, cleanup);
+            ItemStack beacon = giveBeacon(carrier, AuraMode.SELF);
+            install(beacon, WAYFARER, 1);
+            PortableBeaconMenu menu = new PortableBeaconMenu(1, carrier.getInventory(), 0);
+            menu.setCarried(augment(ATTUNEMENT, 1));
+
+            menu.clicked(0, 0, ContainerInput.PICKUP, carrier);
+
+            List<AugmentInstance> installed = BPLookups.installedAugments(menu.beacon());
+            AugmentInstance carried = AugmentItem.instanceOf(menu.getCarried());
+            helper.assertTrue(installed.size() == 1 && installed.get(0).type().equals(ATTUNEMENT),
+                    "the slot holds " + installed + " after the swap");
+            helper.assertTrue(carried != null && carried.type().equals(WAYFARER),
+                    "the cursor holds " + menu.getCarried() + " after the swap");
         });
     }
 

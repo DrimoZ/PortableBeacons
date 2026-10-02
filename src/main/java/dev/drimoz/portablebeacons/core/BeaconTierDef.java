@@ -29,6 +29,8 @@ import java.util.List;
  * @param effectPool     effects named one by one
  * @param effectPoolTags pools named by {@code #name}: any effect declaring one of them in its
  *                       {@code pools} belongs to this tier too
+ * @param fuelMultiplier what this tier's effects cost before augments; 0 is a beacon that burns
+ *                       nothing, which is all the creative beacon is
  */
 public record BeaconTierDef(
         int level,
@@ -39,7 +41,8 @@ public record BeaconTierDef(
         int maxAmplifier,
         int auraRank,
         List<ResourceKey<BeaconEffectDef>> effectPool,
-        List<String> effectPoolTags
+        List<String> effectPoolTags,
+        double fuelMultiplier
 ) {
     /**
      * {@code effect_pool} as written: effect ids and {@code #pool} names in one list.
@@ -87,9 +90,11 @@ public record BeaconTierDef(
             Codec.intRange(0, 3).optionalFieldOf("aura_rank", 0)
                     .forGetter(BeaconTierDef::auraRank),
             Pool.CODEC.optionalFieldOf("effect_pool", new Pool(List.of(), List.of()))
-                    .forGetter(tier -> new Pool(tier.effectPool, tier.effectPoolTags))
-    ).apply(i, (level, slots, augments, range, capacity, amplifier, rank, pool) -> new BeaconTierDef(
-            level, slots, augments, range, capacity, amplifier, rank, pool.keys(), pool.tags())));
+                    .forGetter(tier -> new Pool(tier.effectPool, tier.effectPoolTags)),
+            Codec.doubleRange(0.0, Double.MAX_VALUE).optionalFieldOf("fuel_multiplier", 1.0)
+                    .forGetter(BeaconTierDef::fuelMultiplier)
+    ).apply(i, (level, slots, augments, range, capacity, amplifier, rank, pool, fuel) -> new BeaconTierDef(
+            level, slots, augments, range, capacity, amplifier, rank, pool.keys(), pool.tags(), fuel)));
 
     public BeaconTierDef {
         effectPool = List.copyOf(effectPool);
@@ -100,7 +105,15 @@ public record BeaconTierDef(
     public BeaconTierDef(int level, int effectSlots, int augmentSlots, double baseRange, int fuelCapacity,
                          int maxAmplifier, int auraRank, List<ResourceKey<BeaconEffectDef>> effectPool) {
         this(level, effectSlots, augmentSlots, baseRange, fuelCapacity, maxAmplifier, auraRank, effectPool,
-                List.of());
+                List.of(), 1.0);
+    }
+
+    /** A tier written before it could set its own fuel cost: it pays the standard rate. */
+    public BeaconTierDef(int level, int effectSlots, int augmentSlots, double baseRange, int fuelCapacity,
+                         int maxAmplifier, int auraRank, List<ResourceKey<BeaconEffectDef>> effectPool,
+                         List<String> effectPoolTags) {
+        this(level, effectSlots, augmentSlots, baseRange, fuelCapacity, maxAmplifier, auraRank, effectPool,
+                effectPoolTags, 1.0);
     }
 
     /**

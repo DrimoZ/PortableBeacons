@@ -229,6 +229,7 @@ public final class GenerateTextures {
         write("cinder_beacon", beacon(new int[]{0xE0603A, 0x8E2A18}, new int[]{0xF29B1D, 0xFFE08A}, 0, 0xF29B1D));
         write("void_beacon", beacon(new int[]{0xC48CE0, 0x7A4A9A}, new int[]{0xB07CD8, 0xEAD2FA}, 0, 0xC48CE0));
         write("tidal_beacon", beacon(new int[]{0x5AB8A8, 0x2E7A70}, new int[]{0x3FB6D8, 0xB4ECF8}, 0, 0x5AB8A8));
+        write("creative_beacon", beacon(new int[]{0xE070D0, 0x9A3A90}, new int[]{0xF6B8F0, 0xFFEFFC}, 0, 0xFFD54A));
     }
 
     /**
