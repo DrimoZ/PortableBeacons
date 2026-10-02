@@ -176,6 +176,12 @@ public final class GuiPreview {
         player.getInventory().setItem(0, beacon);
         player.getInventory().setItem(1, new ItemStack(Items.IRON_INGOT, 32));
         player.getInventory().setItem(2, augment("capacity", 3));
+        // From the preview datapack written by copyWorld: an augment no code knows about, which
+        // must still show its glyph and colour.
+        ItemStack sprinter = new ItemStack(BPItems.AUGMENT.get());
+        sprinter.set(BPComponents.AUGMENT.get(), new AugmentInstance(ResourceKey.create(BPRegistryKeys.AUGMENT,
+                net.minecraft.resources.Identifier.fromNamespaceAndPath("previewpack", "sprinter")), 1));
+        player.getInventory().setItem(3, sprinter);
         // Every augment and every beacon, so the item art is in the shot too. Tiers cycle 1-3 so the
         // casing pips can be checked against the tooltip.
         String[] augments = {"range", "focus", "amplification", "efficiency", "capacity", "attunement",
@@ -281,9 +287,27 @@ public final class GuiPreview {
                     }
                 }
             }
+            writePreviewPack(target.resolve("datapacks").resolve("previewpack"));
         } catch (IOException e) {
             throw new IllegalStateException("GUI preview: could not copy the dev world", e);
         }
+    }
+
+    /**
+     * A datapack augment, into the copy only: the README's own example, so the preview shows that
+     * what the docs promise - a datapack augment drawing a shipped glyph - actually renders.
+     */
+    private static void writePreviewPack(Path pack) throws IOException {
+        Path augment = pack.resolve("data/previewpack/portablebeacons/augment/sprinter.json");
+        Files.createDirectories(augment.getParent());
+        Files.writeString(pack.resolve("pack.mcmeta"),
+                "{ \"pack\": { \"description\": \"GUI preview\", \"min_format\": 101, \"max_format\": 101 } }");
+        Files.writeString(augment, """
+                { "max_tier": 1, "color": 5636095, "glyph": "bolt",
+                  "operations": [
+                    { "type": "add_effect_amplifier", "effect": "portablebeacons:speed", "values": [1] },
+                    { "type": "mul_effect_cost", "effect": "portablebeacons:speed", "values": [0.6] } ] }
+                """);
     }
 
     private GuiPreview() {}
