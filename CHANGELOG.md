@@ -71,9 +71,12 @@ are: the slots, the fuel and the configured effects are stored the same way.
 - **The beacon's tooltip counts the fuel slot** in its runtime, as the screen does, and the info tab
   shows moving and standing runtimes separately when Wayfarer or Sentinel makes them differ.
 - **JEI no longer covers the side tabs.**
+- **A new logo**, the beacon in relief on a dark plate, in the family of Immaterial Drawers'.
 - **New item art.** Augments are drawn as fitted modules - a casing, a screen in the augment's
   colour, its glyph - and show their tier as one to three lit pips, so Range I and Range III are no
-  longer the same icon. Beacons show their tier by the band's material, iron to netherite, and by pips.
+  longer the same icon. Beacons are now 3D models, drawn by the game like a block: an obsidian foot
+  with the tier's lit pips, a band in the tier's metal, and a glass dome with the beam's core glowing
+  inside - the same object as the new logo.
 
 ### Fixed
 - **Clicking an augment onto a different one swaps them.** It used to put the fitted augment on the

@@ -9,7 +9,7 @@ import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
 /**
- * Item models: one flat model per beacon, plus the augment's override table.
+ * Item models: the beacons' 3D model with each one's faces, plus the augment's override table.
  *
  * <p>The table is the reason this is worth generating rather than typing: one model per glyph and
  * tier, sixty-three of them, each selected by the value {@link AugmentLook} computes. A shape added
@@ -23,8 +23,9 @@ public class BPItemModelProvider extends ItemModelProvider {
 
     @Override
     protected void registerModels() {
-        BPItems.beacons().forEach(beacon -> withExistingParent(beacon.getId().getPath(), mcLoc("item/generated"))
-                .texture("layer0", modLoc("item/" + beacon.getId().getPath())));
+        // The beacons are one 3D model, portable_beacon.json, each wearing its own sheet of faces.
+        BPItems.beacons().forEach(beacon -> withExistingParent(beacon.getId().getPath(), modLoc("item/portable_beacon"))
+                .texture("parts", modLoc("item/beacon/" + beacon.getId().getPath())));
 
         // The fallback has no glyph: what a stack with no component looks like. Overrides ascend,
         // because the game keeps the last one whose threshold the value reaches.
