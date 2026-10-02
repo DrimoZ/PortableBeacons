@@ -10,7 +10,6 @@ displayName = "${mod_name}"
 authors = "${mod_authors}"
 displayURL = "https://github.com/DrimoZ/PortableBeacons"
 logoFile = "logo.png"
-logoBlur = false
 description = '''${mod_description}'''
 
 [[dependencies.${mod_id}]]
