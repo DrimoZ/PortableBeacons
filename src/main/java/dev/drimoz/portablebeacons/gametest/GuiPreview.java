@@ -81,7 +81,7 @@ public final class GuiPreview {
             return;
         }
         Minecraft minecraft = Minecraft.getInstance();
-        if (!started && minecraft.screen instanceof TitleScreen) {
+        if (!started && minecraft.gui.screen() instanceof TitleScreen) {
             started = true;
             minecraft.options.pauseOnLostFocus = false;
             copyWorld(minecraft);
@@ -107,7 +107,7 @@ public final class GuiPreview {
         File file = new File(minecraft.gameDirectory, "screenshots/preview/" + pendingShot + ".png");
         file.getParentFile().mkdirs();
         pendingShot = null;
-        Screenshot.takeScreenshot(minecraft.getMainRenderTarget(), image -> {
+        Screenshot.takeScreenshot(minecraft.gameRenderer.mainRenderTarget(), image -> {
             try (NativeImage owned = image) {
                 owned.writeToFile(file);
                 LOGGER.info("GUI preview: {}", file);
@@ -127,7 +127,7 @@ public final class GuiPreview {
     private static void script() {
         step(60, mc -> onServer(mc, GuiPreview::equip));
         step(20, mc -> onServer(mc, player -> BeaconMenuOpener.open(player, 0)));
-        step(30, mc -> mc.getToastManager().clear());
+        step(30, mc -> mc.gui.toastManager().clear());
         step(5, mc -> hover(mc, 0.0, 0.0));
         step(5, mc -> shot("beacon_main"));
 
@@ -152,7 +152,7 @@ public final class GuiPreview {
         step(10, mc -> shot("beacon_selector"));
         step(5, mc -> key(mc, GLFW.GLFW_KEY_ESCAPE));
 
-        step(5, mc -> mc.setScreen(null));
+        step(5, mc -> mc.gui.setScreen(null));
         step(10, Minecraft::stop);
     }
 
@@ -230,21 +230,21 @@ public final class GuiPreview {
 
     /** Clicks a point of the open screen, in its own coordinates - side tabs included. */
     private static void clickGui(Minecraft minecraft, int x, int y) {
-        if (minecraft.screen instanceof AbstractContainerScreen<?> screen) {
+        if (minecraft.gui.screen() instanceof AbstractContainerScreen<?> screen) {
             screen.mouseClicked(new MouseButtonEvent(screen.getLeftPos() + x, screen.getTopPos() + y,
                     new MouseButtonInfo(0, 0)), false);
         }
     }
 
     private static void key(Minecraft minecraft, int key) {
-        if (minecraft.screen != null) {
-            minecraft.screen.keyPressed(new KeyEvent(key, 0, 0));
+        if (minecraft.gui.screen() != null) {
+            minecraft.gui.screen().keyPressed(new KeyEvent(key, 0, 0));
         }
     }
 
     /** Puts the cursor on a point of the open screen, in its own coordinates. */
     private static void hoverGui(Minecraft minecraft, int x, int y) {
-        if (!(minecraft.screen instanceof AbstractContainerScreen<?> screen)) {
+        if (!(minecraft.gui.screen() instanceof AbstractContainerScreen<?> screen)) {
             return;
         }
         double scale = minecraft.getWindow().getGuiScale();

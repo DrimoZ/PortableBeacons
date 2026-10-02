@@ -1,6 +1,5 @@
 {
   "type": "portablebeacons:beacon_upgrade",
-  "category": "misc",
   "key": {
     "B": "minecraft:beacon",
     "N": "minecraft:netherite_ingot",

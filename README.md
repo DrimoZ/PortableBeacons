@@ -3,7 +3,7 @@
 Beacon effects in an inventory item. Four tiers, augments you slot in, and a fuel cost — all
 defined in datapacks rather than in code.
 
-**NeoForge 26.1.2** · Java 25 · MIT
+**NeoForge 26.2** · Java 25 · MIT
 
 **[Download on CurseForge](https://www.curseforge.com/minecraft/mc-mods/portables-beacons)**
 

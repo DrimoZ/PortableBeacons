@@ -315,3 +315,19 @@ One branch per game version, since each one keeps getting files rather than bein
 | `26.2` | branches from `26.1` once it builds and runs — not before, or it is just an empty copy that drifts. |
 
 `26.3` the same way, when there is a 26.3.
+
+## 11. 26.1 → 26.2: what it cost
+
+An afternoon, against the ten primers of 26.1. Twenty-nine compile errors, none in `core/`, none in
+the screen beyond one line:
+
+- **ModDevGradle 2.0.144 could not recompile 26.2** - it failed inside Minecraft's own decompiled
+  sources, before any of ours. 2.0.148 does.
+- **Advancement classes split into `predicates` and `triggers`** packages; `Criterion` moved with them.
+- **The current screen moved from `Minecraft` to `Gui`** (`mc.gui.screen()`, `mc.gui.setScreen`),
+  and the HUD became `Hud`, which is where `getMobEffectSprite` now lives.
+- **Tag providers take `ResourceKey`s**, not items: `add(holder.getKey())`.
+- **Entity types live in `EntityTypes`.**
+- Recipes are written without a default `category`; the files change, the game does not.
+
+All nineteen gametests passed on the first run that compiled.

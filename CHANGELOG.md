@@ -93,6 +93,12 @@ Versions follow `{mod version}+{minecraft version}`.
   closes. They went into one store shared by every open screen on the server, and could be lost or
   turn up in another player's.
 
+## 1.1.0+26.2 — the next drop
+
+Everything under *Unreleased*, built for **Minecraft 26.2** on NeoForge 26.2.0.88. No change of
+behaviour from the 26.1 file: the hop cost twenty-nine compile errors, listed in
+[PORTING.md](PORTING.md). Built against JEI 30.39.0.232 and Curios 16.0.0+26.2.
+
 ## 1.1.0
 
 ### Added

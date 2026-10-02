@@ -2,7 +2,7 @@ plugins {
     id 'java-library'
     id 'maven-publish'
     // ModDevGradle 2.x — the current NeoForge build plugin
-    id 'net.neoforged.moddev' version '2.0.144'
+    id 'net.neoforged.moddev' version '2.0.148'
 }
 
 version = "${mod_version}+${minecraft_version}"

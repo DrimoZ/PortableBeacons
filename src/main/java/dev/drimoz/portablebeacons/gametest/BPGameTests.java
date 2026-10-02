@@ -32,6 +32,7 @@ import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.ItemStack;
@@ -174,9 +175,9 @@ public final class BPGameTests {
             ServerPlayer carrier = spawnPlayer(helper, cleanup);
             giveBeacon(carrier, AuraMode.ALLIES_AND_PETS);
 
-            Wolf pet = helper.spawnWithNoFreeWill(EntityType.WOLF, CENTRE);
+            Wolf pet = helper.spawnWithNoFreeWill(EntityTypes.WOLF, CENTRE);
             pet.tame(carrier);
-            Wolf stray = helper.spawnWithNoFreeWill(EntityType.WOLF, CENTRE);
+            Wolf stray = helper.spawnWithNoFreeWill(EntityTypes.WOLF, CENTRE);
 
             BeaconTicker.tickPlayer(carrier);
 

@@ -28,7 +28,7 @@ import net.minecraft.ChatFormatting;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.Hud;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.CharacterEvent;
@@ -485,7 +485,7 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
         // Straight from vanilla's effect sprites, so any registered effect - vanilla, another mod's,
         // or one added by a datapack - shows its own icon with no texture from us.
         effectLookup().get(key).ifPresent(def -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED,
-                Gui.getMobEffectSprite(def.effect()), x, y, 16, 16));
+                Hud.getMobEffectSprite(def.effect()), x, y, 16, 16));
     }
 
     // ------------------------------------------------------------------ status
