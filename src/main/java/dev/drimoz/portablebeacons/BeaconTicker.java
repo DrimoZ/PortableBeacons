@@ -125,6 +125,11 @@ public final class BeaconTicker {
      * control, and a test that fails because the tick counter landed badly teaches nothing.
      */
     public static void tickPlayer(Player player) {
+        // A dimension the server has switched beacons off in: nothing applied and nothing spent,
+        // rather than charging for effects that are then withheld.
+        if (BPConfig.disabledIn(player.level().dimension())) {
+            return;
+        }
         ItemStack beacon = findActiveBeacon(player);
         if (beacon.isEmpty()) {
             return;
@@ -162,8 +167,7 @@ public final class BeaconTicker {
         }
 
         BeaconResolver.Lookup<BeaconEffectDef> effectLookup = BPLookups.effects(access);
-        BeaconStats stats = BeaconResolver.resolve(
-                tier, BPLookups.installedAugments(beacon), BPLookups.augments(access));
+        BeaconStats stats = BPLookups.stats(beacon, access);
 
         BeaconState state = BeaconResolver.sanitize(
                 PortableBeaconItem.stateOf(beacon), stats, effectLookup, tier);

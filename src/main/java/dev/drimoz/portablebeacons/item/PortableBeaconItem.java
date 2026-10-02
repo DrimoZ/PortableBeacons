@@ -156,12 +156,10 @@ public class PortableBeaconItem extends Item {
         if (units <= 0) {
             return;
         }
-        BeaconTierDef tierDef = lookup(registries, BPRegistryKeys.TIER, tier);
-        if (tierDef == null) {
+        BeaconStats stats = BPLookups.stats(stack, registries);
+        if (stats == null) {
             return;
         }
-        BeaconStats stats = BeaconResolver.resolve(tierDef, BPLookups.installedAugments(stack),
-                key -> Optional.ofNullable(lookup(registries, BPRegistryKeys.AUGMENT, key)));
         double perSecond = BeaconResolver.fuelPerSecond(state, stats,
                 key -> Optional.ofNullable(lookup(registries, BPRegistryKeys.EFFECT, key)));
         if (perSecond <= 0.0) {

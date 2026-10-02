@@ -84,6 +84,7 @@
   "portablebeacons.gui.runtime_motion": "Moving %s · Still %s",
   "portablebeacons.gui.reach": "Reach %s",
   "portablebeacons.gui.idle": "Idle",
+  "portablebeacons.gui.disabled_here": "Portable beacons do not work in this dimension",
   "portablebeacons.gui.low_fuel": "Low fuel: %s left",
   "portablebeacons.gui.selector_help": "Click: choose · Esc: close",
   "portablebeacons.tip.clear_effect": "Remove this effect",

@@ -116,8 +116,10 @@ side tabs. Effects are picked from a searchable grid filtered to what the beacon
 
 ## Configuration
 
-Four server-side options: whether fuel exists, whether the aura reaches players off your team,
-whether a real beacon makes an effect free, and whether reconfiguring needs a beacon nearby.
+Server-side options: whether fuel exists, whether the aura reaches players off your team, whether
+a real beacon makes an effect free, whether reconfiguring needs a beacon nearby, how fast a real
+beacon recharges a portable one, what forge energy is worth, a global fuel cost multiplier, a cap on
+how far shared effects reach, and the dimensions where portable beacons are switched off.
 
 **[Config reference →](https://github.com/DrimoZ/PortableBeacons/wiki/Configuration)**
 

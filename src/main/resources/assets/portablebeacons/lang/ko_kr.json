@@ -84,6 +84,7 @@
   "portablebeacons.gui.runtime_motion": "이동 중 %s · 정지 %s",
   "portablebeacons.gui.reach": "범위 %s",
   "portablebeacons.gui.idle": "대기 중",
+  "portablebeacons.gui.disabled_here": "이 차원에서는 휴대용 신호기가 작동하지 않습니다",
   "portablebeacons.gui.low_fuel": "연료 부족: %s 남음",
   "portablebeacons.gui.selector_help": "클릭: 선택 · Esc: 닫기",
   "portablebeacons.tip.clear_effect": "이 효과 제거",

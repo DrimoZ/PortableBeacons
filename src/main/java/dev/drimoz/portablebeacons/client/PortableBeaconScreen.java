@@ -501,6 +501,9 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
             // On, but dry: the one state that needs the player. It resumes by itself once fed.
             return GuiTheme.Status.PROBLEM;
         }
+        if (BPConfig.disabledIn(minecraft.player.level().dimension())) {
+            return GuiTheme.Status.WAITING;
+        }
         double perSecond = BeaconResolver.fuelPerSecond(state, stats(), effectLookup());
         if (perSecond <= 0.0) {
             return GuiTheme.Status.WAITING;
@@ -514,7 +517,9 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
     private Component statusText(GuiTheme.Status status) {
         return switch (status) {
             case WORKING -> Component.translatable("portablebeacons.gui.active");
-            case WAITING -> Component.translatable("portablebeacons.gui.idle");
+            case WAITING -> BPConfig.disabledIn(minecraft.player.level().dimension())
+                    ? Component.translatable("portablebeacons.gui.disabled_here")
+                    : Component.translatable("portablebeacons.gui.idle");
             case BLOCKED -> Component.translatable("portablebeacons.gui.low_fuel", totalRuntime());
             case PROBLEM -> Component.translatable("portablebeacons.msg.out_of_fuel");
             case OFF -> Component.translatable("portablebeacons.gui.inactive");

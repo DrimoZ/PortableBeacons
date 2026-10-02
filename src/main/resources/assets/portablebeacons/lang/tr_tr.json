@@ -84,6 +84,7 @@
   "portablebeacons.gui.runtime_motion": "Hareketli %s · Dururken %s",
   "portablebeacons.gui.reach": "Menzil %s",
   "portablebeacons.gui.idle": "Boşta",
+  "portablebeacons.gui.disabled_here": "Taşınabilir fenerler bu boyutta çalışmaz",
   "portablebeacons.gui.low_fuel": "Yakıt azaldı: %s kaldı",
   "portablebeacons.gui.selector_help": "Tıkla: seç · Esc: kapat",
   "portablebeacons.tip.clear_effect": "Bu etkiyi kaldır",

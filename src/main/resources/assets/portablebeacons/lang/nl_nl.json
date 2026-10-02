@@ -84,6 +84,7 @@
   "portablebeacons.gui.runtime_motion": "Bewegend %s · Stilstaand %s",
   "portablebeacons.gui.reach": "Bereik %s",
   "portablebeacons.gui.idle": "Inactief",
+  "portablebeacons.gui.disabled_here": "Draagbare vuurbakens werken niet in deze dimensie",
   "portablebeacons.gui.low_fuel": "Weinig brandstof: nog %s",
   "portablebeacons.gui.selector_help": "Klik: kiezen · Esc: sluiten",
   "portablebeacons.tip.clear_effect": "Dit effect verwijderen",

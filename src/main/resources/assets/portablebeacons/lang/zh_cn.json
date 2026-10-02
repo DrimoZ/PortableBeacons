@@ -84,6 +84,7 @@
   "portablebeacons.gui.runtime_motion": "移动 %s · 静止 %s",
   "portablebeacons.gui.reach": "范围 %s",
   "portablebeacons.gui.idle": "闲置",
+  "portablebeacons.gui.disabled_here": "便携信标在此维度中无法使用",
   "portablebeacons.gui.low_fuel": "燃料不足：剩余 %s",
   "portablebeacons.gui.selector_help": "点击：选择 · Esc：关闭",
   "portablebeacons.tip.clear_effect": "移除此效果",

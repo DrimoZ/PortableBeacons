@@ -84,6 +84,7 @@
   "portablebeacons.gui.runtime_motion": "En marcha %s · Quieto %s",
   "portablebeacons.gui.reach": "Alcance %s",
   "portablebeacons.gui.idle": "Inactiva",
+  "portablebeacons.gui.disabled_here": "Los faros portátiles no funcionan en esta dimensión",
   "portablebeacons.gui.low_fuel": "Poco combustible: quedan %s",
   "portablebeacons.gui.selector_help": "Clic: elegir · Esc: cerrar",
   "portablebeacons.tip.clear_effect": "Quitar este efecto",

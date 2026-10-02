@@ -205,7 +205,6 @@ public final class BPGameTests {
             int[] actions = {
                     PortableBeaconMenu.ACTION_SET_EFFECT,
                     PortableBeaconMenu.ACTION_CLEAR_EFFECT,
-                    PortableBeaconMenu.ACTION_CYCLE_AMPLIFIER,
                     PortableBeaconMenu.ACTION_TOGGLE_EFFECT,
                     PortableBeaconMenu.ACTION_CYCLE_AURA,
                     PortableBeaconMenu.ACTION_SET_AMPLIFIER,

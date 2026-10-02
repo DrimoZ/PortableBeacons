@@ -1,11 +1,13 @@
 package dev.drimoz.portablebeacons.registry;
 
+import dev.drimoz.portablebeacons.BPConfig;
 import dev.drimoz.portablebeacons.core.AugmentDef;
 import dev.drimoz.portablebeacons.core.AugmentInstance;
 import dev.drimoz.portablebeacons.core.BPRegistryKeys;
 import dev.drimoz.portablebeacons.core.BeaconEffectDef;
 import dev.drimoz.portablebeacons.core.FuelDef;
 import dev.drimoz.portablebeacons.core.BeaconResolver;
+import dev.drimoz.portablebeacons.core.BeaconStats;
 import dev.drimoz.portablebeacons.core.BeaconTierDef;
 import dev.drimoz.portablebeacons.item.AugmentItem;
 import dev.drimoz.portablebeacons.item.PortableBeaconItem;
@@ -80,6 +82,35 @@ public final class BPLookups {
             viaTag = Math.max(viaTag, def.units());
         }
         return viaTag;
+    }
+
+    /**
+     * A beacon's stats as the server charges them: its tier, its augments, then the server's rules.
+     *
+     * <p>The one way to get them. The ticker, the screen, the item's tooltip each used to resolve on
+     * their own, which was fine while the answer depended on the datapack alone; once a server
+     * config scales costs and caps reach, any of them skipping the rules would show one price and
+     * charge another.
+     *
+     * @return null for a stack that is not a beacon, or whose tier the datapack does not define
+     */
+    @Nullable
+    public static BeaconStats stats(ItemStack beaconStack, HolderLookup.Provider registries) {
+        if (!(beaconStack.getItem() instanceof PortableBeaconItem item)) {
+            return null;
+        }
+        BeaconTierDef tier = registries.lookup(BPRegistryKeys.TIER)
+                .flatMap(lookup -> lookup.get(item.tier()))
+                .map(Holder::value)
+                .orElse(null);
+        if (tier == null) {
+            return null;
+        }
+        BeaconResolver.Lookup<AugmentDef> augments = key -> registries.lookup(BPRegistryKeys.AUGMENT)
+                .flatMap(lookup -> lookup.get(key))
+                .map(Holder::value);
+        return BeaconResolver.resolve(tier, installedAugments(beaconStack), augments)
+                .withServerRules(BPConfig.fuelCostMultiplier(), BPConfig.maxAuraRange());
     }
 
     /**

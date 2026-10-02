@@ -84,6 +84,7 @@
   "portablebeacons.gui.runtime_motion": "In Bewegung %s · Stehend %s",
   "portablebeacons.gui.reach": "Reichw. %s",
   "portablebeacons.gui.idle": "Untätig",
+  "portablebeacons.gui.disabled_here": "Tragbare Leuchtfeuer funktionieren in dieser Dimension nicht",
   "portablebeacons.gui.low_fuel": "Wenig Brennstoff: noch %s",
   "portablebeacons.gui.selector_help": "Klick: wählen · Esc: schließen",
   "portablebeacons.tip.clear_effect": "Diesen Effekt entfernen",

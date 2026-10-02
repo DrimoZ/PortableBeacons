@@ -62,6 +62,19 @@ class BeaconResolverTest {
         assertEquals(9, stats.maxAmplifier());
     }
 
+    /** A server's rules apply after the augments: the cap holds even against a Range augment. */
+    @Test
+    void serverRulesScaleCostAndCapReach() {
+        BeaconStats augmented = BeaconResolver.resolve(TIER_4, List.of(new AugmentInstance(RANGE, 3)), AUGMENTS);
+        assertEquals(28.0, augmented.range());
+
+        BeaconStats ruled = augmented.withServerRules(2.0, 20.0);
+        assertEquals(20.0, ruled.range());
+        assertEquals(2.0 * augmented.fuelMultiplier(), ruled.fuelMultiplier(), 1e-9);
+
+        assertEquals(28.0, augmented.withServerRules(1.0, 0.0).range(), "0 means no cap");
+    }
+
     /** A targeted augment raises one effect's ceiling and leaves every other effect where it was. */
     @Test
     void aTargetedLevelBonusAppliesToItsEffectOnly() {

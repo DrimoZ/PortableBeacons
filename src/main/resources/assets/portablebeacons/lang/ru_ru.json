@@ -84,6 +84,7 @@
   "portablebeacons.gui.runtime_motion": "В движении %s · На месте %s",
   "portablebeacons.gui.reach": "Радиус %s",
   "portablebeacons.gui.idle": "Простой",
+  "portablebeacons.gui.disabled_here": "Переносные маяки не работают в этом измерении",
   "portablebeacons.gui.low_fuel": "Мало топлива: осталось %s",
   "portablebeacons.gui.selector_help": "Клик: выбрать · Esc: закрыть",
   "portablebeacons.tip.clear_effect": "Убрать этот эффект",

@@ -51,7 +51,8 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
     public static final int ACTION_TOGGLE_ACTIVE = 0;
     public static final int ACTION_SET_EFFECT = 1;
     public static final int ACTION_CLEAR_EFFECT = 2;
-    public static final int ACTION_CYCLE_AMPLIFIER = 3;
+    // 3 was ACTION_CYCLE_AMPLIFIER, replaced by ACTION_SET_AMPLIFIER; left unused rather than reused,
+    // so a mismatched client sending it is refused instead of doing something else.
     public static final int ACTION_TOGGLE_EFFECT = 4;
     public static final int ACTION_CYCLE_AURA = 5;
     /** The level outright, so the screen can step down as well as up; sanitize caps it. */
@@ -219,14 +220,9 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
      * stack, so the figure the GUI prints is the figure the ticker charges.
      */
     public BeaconStats stats() {
-        RegistryAccess access = player.level().registryAccess();
-        BeaconTierDef tier = tierDef();
-        if (tier == null) {
-            return new BeaconStats(0, 0, 0.0, 0, 0, 1.0, 1.0, 0, 1.0, 1.0,
-                    java.util.EnumSet.of(AuraMode.SELF), false, false);
-        }
-        return BeaconResolver.resolve(
-                tier, BPLookups.installedAugments(beacon()), BPLookups.augments(access));
+        BeaconStats stats = BPLookups.stats(beacon(), player.level().registryAccess());
+        return stats != null ? stats : new BeaconStats(0, 0, 0.0, 0, 0, 1.0, 1.0, 0, 1.0, 1.0,
+                java.util.EnumSet.of(AuraMode.SELF), false, false);
     }
 
     public BeaconTierDef tierDef() {
@@ -292,8 +288,6 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
                 }
                 yield state().withEffects(effects);
             }
-            case ACTION_CYCLE_AMPLIFIER -> state().withEffects(
-                    mutate(effects, slotIndex, slot -> cycleAmplifier(slot, stats, lookup)));
             case ACTION_TOGGLE_EFFECT -> state().withEffects(
                     mutate(effects, slotIndex, slot -> slot.withEnabled(!slot.enabled())));
             case ACTION_CYCLE_AURA -> state().withEffects(
@@ -356,7 +350,6 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
     private static boolean isReconfiguration(int action) {
         return action == ACTION_SET_EFFECT
                 || action == ACTION_CLEAR_EFFECT
-                || action == ACTION_CYCLE_AMPLIFIER
                 || action == ACTION_SET_AMPLIFIER
                 || action == ACTION_CYCLE_AURA;
     }
@@ -404,14 +397,6 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
             effects.set(slotIndex, op.apply(effects.get(slotIndex)));
         }
         return effects;
-    }
-
-    private static EffectSlotConfig cycleAmplifier(EffectSlotConfig slot, BeaconStats stats,
-                                                   BeaconResolver.Lookup<BeaconEffectDef> lookup) {
-        int cap = lookup.get(slot.effect())
-                .map(def -> Math.min(def.maxAmplifier(), stats.maxAmplifierFor(slot.effect())))
-                .orElse(0);
-        return slot.withAmplifier(cap <= 0 ? 0 : (slot.amplifier() + 1) % (cap + 1));
     }
 
     private static AuraMode nextAura(AuraMode current, BeaconStats stats) {

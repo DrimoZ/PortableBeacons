@@ -52,6 +52,21 @@ public record BeaconStats(
                 hideIcon, Map.of(), Map.of());
     }
 
+    /**
+     * These stats under a server's rules: every cost scaled by {@code costFactor}, and the aura's
+     * reach capped at {@code rangeCap} - 0 for no cap.
+     *
+     * <p>Applied after the augments, never before, so a cap is a cap: a Range augment cannot carry a
+     * beacon past it, and the screen shows the capped figure because it reads these same stats.
+     */
+    public BeaconStats withServerRules(double costFactor, double rangeCap) {
+        double cappedRange = rangeCap > 0.0 ? Math.min(range, rangeCap) : range;
+        return new BeaconStats(effectSlots, augmentSlots, cappedRange, fuelCapacity, maxAmplifier,
+                fuelMultiplier * Math.max(0.0, costFactor), auraCostMultiplier, freeEffectSlots,
+                movingCostMultiplier, stillCostMultiplier, allowedAuraModes, hideParticles, hideIcon,
+                effectAmplifierBonus, effectCostMultipliers);
+    }
+
     /** The level ceiling for one effect: the beacon's, plus whatever a targeted augment adds. */
     public int maxAmplifierFor(ResourceKey<BeaconEffectDef> effect) {
         return Math.clamp(maxAmplifier + effectAmplifierBonus.getOrDefault(effect, 0), 0, MAX_AMPLIFIER);

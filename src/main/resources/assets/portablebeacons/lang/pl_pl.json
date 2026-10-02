@@ -84,6 +84,7 @@
   "portablebeacons.gui.runtime_motion": "W ruchu %s · W miejscu %s",
   "portablebeacons.gui.reach": "Zasięg %s",
   "portablebeacons.gui.idle": "Bezczynny",
+  "portablebeacons.gui.disabled_here": "Przenośne sygnalizatory nie działają w tym wymiarze",
   "portablebeacons.gui.low_fuel": "Mało paliwa: zostało %s",
   "portablebeacons.gui.selector_help": "Klik: wybierz · Esc: zamknij",
   "portablebeacons.tip.clear_effect": "Usuń ten efekt",

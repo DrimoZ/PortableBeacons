@@ -84,6 +84,7 @@
   "portablebeacons.gui.runtime_motion": "En mouvement %s · À l'arrêt %s",
   "portablebeacons.gui.reach": "Portée %s",
   "portablebeacons.gui.idle": "En veille",
+  "portablebeacons.gui.disabled_here": "Les balises portatives ne fonctionnent pas dans cette dimension",
   "portablebeacons.gui.low_fuel": "Carburant faible : %s restants",
   "portablebeacons.gui.selector_help": "Clic : choisir · Échap : fermer",
   "portablebeacons.tip.clear_effect": "Retirer cet effet",

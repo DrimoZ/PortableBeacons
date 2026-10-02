@@ -84,6 +84,7 @@
   "portablebeacons.gui.runtime_motion": "移動 %s · 靜止 %s",
   "portablebeacons.gui.reach": "範圍 %s",
   "portablebeacons.gui.idle": "閒置",
+  "portablebeacons.gui.disabled_here": "便攜烽火台在此維度中無法使用",
   "portablebeacons.gui.low_fuel": "燃料不足：剩餘 %s",
   "portablebeacons.gui.selector_help": "點擊：選擇 · Esc：關閉",
   "portablebeacons.tip.clear_effect": "移除此效果",

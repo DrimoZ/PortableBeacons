@@ -84,6 +84,7 @@
   "portablebeacons.gui.runtime_motion": "Em movimento %s · Parado %s",
   "portablebeacons.gui.reach": "Alcance %s",
   "portablebeacons.gui.idle": "Parada",
+  "portablebeacons.gui.disabled_here": "Sinalizadores portáteis não funcionam nesta dimensão",
   "portablebeacons.gui.low_fuel": "Pouco combustível: restam %s",
   "portablebeacons.gui.selector_help": "Clique: escolher · Esc: fechar",
   "portablebeacons.tip.clear_effect": "Remover este efeito",

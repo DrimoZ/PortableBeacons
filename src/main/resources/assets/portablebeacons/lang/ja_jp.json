@@ -84,6 +84,7 @@
   "portablebeacons.gui.runtime_motion": "移動中 %s · 静止 %s",
   "portablebeacons.gui.reach": "範囲 %s",
   "portablebeacons.gui.idle": "待機中",
+  "portablebeacons.gui.disabled_here": "この次元では携帯ビーコンは機能しません",
   "portablebeacons.gui.low_fuel": "燃料残りわずか：残り%s",
   "portablebeacons.gui.selector_help": "クリック：選択 · Esc：閉じる",
   "portablebeacons.tip.clear_effect": "この効果を外す",

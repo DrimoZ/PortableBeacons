@@ -27,6 +27,9 @@ Versions follow `{mod version}+{minecraft version}`.
   `mul_effect_cost` multiplies one effect's cost, each naming its effect with `"effect"` - so a
   datapack can build a specialised augment (a sprinter's, a miner's) instead of only all-round ones.
   A targeted operation without its effect is refused when the file is read.
+- **Three server options.** `fuel_cost_multiplier` scales every cost after augments; `max_aura_range`
+  caps how far a shared effect reaches, Range augments included; `disabled_dimensions` lists the
+  dimensions where portable beacons do nothing and spend nothing - the screen says why.
 
 ### Changed
 - **A new screen, on FactoryIO's layout.** The fuel gauge and fuel slot sit in the window's first
