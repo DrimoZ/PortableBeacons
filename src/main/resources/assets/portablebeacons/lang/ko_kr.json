@@ -69,6 +69,8 @@
   "portablebeacons.op.free_effect_slot": "효과 %s개 무료",
   "portablebeacons.op.mul_cost_moving": "이동 중 소모 x%s",
   "portablebeacons.op.mul_cost_still": "정지 중 소모 x%s",
+  "portablebeacons.op.add_effect_amplifier": "%s: 레벨 +%s",
+  "portablebeacons.op.mul_effect_cost": "%s 비용 x%s",
   "portablebeacons.gui.stats": "능력치",
   "portablebeacons.tip.cost_meter": "연료 소모: %s",
   "portablebeacons.cost.very_low": "매우 낮음",

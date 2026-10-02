@@ -5,6 +5,7 @@ import dev.drimoz.portablebeacons.core.AugmentInstance;
 import dev.drimoz.portablebeacons.core.BPRegistryKeys;
 import dev.drimoz.portablebeacons.registry.BPComponents;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -58,7 +59,7 @@ public class AugmentItem extends Item {
                 .flatMap(lookup -> lookup.get(instance.type()))
                 .ifPresent(holder -> {
                     for (AugmentDef.Operation op : holder.value().operations()) {
-                        tooltip.accept(describe(op, instance.tier()));
+                        tooltip.accept(describe(op, instance.tier(), context.registries()));
                     }
                     tooltip.accept(Component.translatable("portablebeacons.tip.augment_rule")
                             .withStyle(ChatFormatting.DARK_GRAY));
@@ -66,13 +67,21 @@ public class AugmentItem extends Item {
     }
 
     /** Reads the effect straight off the registry entry, so a datapack augment describes itself. */
-    private static Component describe(AugmentDef.Operation op, int tier) {
+    private static Component describe(AugmentDef.Operation op, int tier, HolderLookup.Provider registries) {
         double value = op.valueFor(tier);
         String formatted = value == Math.rint(value)
                 ? String.valueOf((int) value)
                 : String.format(java.util.Locale.ROOT, "%.2f", value);
-        return Component.translatable("portablebeacons.op." + op.type().getSerializedName(), formatted)
-                .withStyle(ChatFormatting.GRAY);
+        String key = "portablebeacons.op." + op.type().getSerializedName();
+        if (op.effect().isPresent()) {
+            // A targeted operation names its effect first, by the game's own name for it.
+            Component effect = registries.lookup(BPRegistryKeys.EFFECT)
+                    .flatMap(lookup -> lookup.get(op.effect().get()))
+                    .<Component>map(holder -> holder.value().effect().value().getDisplayName())
+                    .orElse(Component.literal(op.effect().get().identifier().toString()));
+            return Component.translatable(key, effect, formatted).withStyle(ChatFormatting.GRAY);
+        }
+        return Component.translatable(key, formatted).withStyle(ChatFormatting.GRAY);
     }
 
     @Override

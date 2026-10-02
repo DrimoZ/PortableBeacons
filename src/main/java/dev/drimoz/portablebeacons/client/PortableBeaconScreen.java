@@ -375,7 +375,7 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
 
         // The level as a badge - a dark chip with a white numeral, which reads as something to press
         // the way a bare numeral never did. Muted when it has nowhere to go.
-        boolean amplifiable = canAmplify(def, stats);
+        boolean amplifiable = canAmplify(def, stats, slot.effect());
         int chipY = y + (ROW_H - LEVEL_H) / 2 - 1;
         GuiSprites.field(graphics, LEVEL_X, chipY, LEVEL_W, LEVEL_H);
         String level = roman(slot.amplifier() + 1);
@@ -1005,7 +1005,7 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
                 // Round and round, I to the ceiling and back to I: one button that always does
                 // something, the way a level selector in any game behaves. Right click steps back.
                 int cap = effectLookup().get(slot.effect())
-                        .map(def -> Math.min(def.maxAmplifier(), stats().maxAmplifier())).orElse(0);
+                        .map(def -> Math.min(def.maxAmplifier(), stats().maxAmplifierFor(slot.effect()))).orElse(0);
                 if (cap > 0) {
                     int step = secondary ? cap : 1;
                     send(PortableBeaconMenu.ACTION_SET_AMPLIFIER, row, (slot.amplifier() + step) % (cap + 1));
@@ -1208,8 +1208,8 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
         return tier == null ? 1 : tier.level();
     }
 
-    private static boolean canAmplify(BeaconEffectDef def, BeaconStats stats) {
-        return Math.min(def.maxAmplifier(), stats.maxAmplifier()) > 0;
+    private static boolean canAmplify(BeaconEffectDef def, BeaconStats stats, ResourceKey<BeaconEffectDef> key) {
+        return Math.min(def.maxAmplifier(), stats.maxAmplifierFor(key)) > 0;
     }
 
     private static boolean within(int x, int y, int left, int top, int width, int height) {

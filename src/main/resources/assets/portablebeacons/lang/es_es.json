@@ -69,6 +69,8 @@
   "portablebeacons.op.free_effect_slot": "%s efecto gratuito",
   "portablebeacons.op.mul_cost_moving": "Coste en movimiento x%s",
   "portablebeacons.op.mul_cost_still": "Coste al estar quieto x%s",
+  "portablebeacons.op.add_effect_amplifier": "%s: +%s nivel",
+  "portablebeacons.op.mul_effect_cost": "Coste de %s x%s",
   "portablebeacons.gui.stats": "Estadísticas",
   "portablebeacons.tip.cost_meter": "Coste de combustible: %s",
   "portablebeacons.cost.very_low": "muy bajo",

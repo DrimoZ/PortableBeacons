@@ -409,7 +409,7 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
     private static EffectSlotConfig cycleAmplifier(EffectSlotConfig slot, BeaconStats stats,
                                                    BeaconResolver.Lookup<BeaconEffectDef> lookup) {
         int cap = lookup.get(slot.effect())
-                .map(def -> Math.min(def.maxAmplifier(), stats.maxAmplifier()))
+                .map(def -> Math.min(def.maxAmplifier(), stats.maxAmplifierFor(slot.effect())))
                 .orElse(0);
         return slot.withAmplifier(cap <= 0 ? 0 : (slot.amplifier() + 1) % (cap + 1));
     }

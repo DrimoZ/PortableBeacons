@@ -62,6 +62,46 @@ class BeaconResolverTest {
         assertEquals(9, stats.maxAmplifier());
     }
 
+    /** A targeted augment raises one effect's ceiling and leaves every other effect where it was. */
+    @Test
+    void aTargetedLevelBonusAppliesToItsEffectOnly() {
+        ResourceKey<AugmentDef> runner = augmentKey("runner");
+        AugmentDef runnerDef = new AugmentDef(1, 0, List.of(new AugmentDef.Operation(
+                AugmentDef.Type.ADD_EFFECT_AMPLIFIER, List.of(2.0), java.util.Optional.of(effectKey("speed")))));
+
+        BeaconStats stats = BeaconResolver.resolve(TIER_4, List.of(new AugmentInstance(runner, 1)),
+                lookup(Map.of(runner, runnerDef)));
+
+        assertEquals(3, stats.maxAmplifierFor(effectKey("speed")));
+        assertEquals(1, stats.maxAmplifierFor(effectKey("haste")));
+    }
+
+    @Test
+    void aTargetedDiscountAppliesToItsEffectOnly() {
+        ResourceKey<AugmentDef> thrift = augmentKey("thrift");
+        AugmentDef thriftDef = new AugmentDef(1, 0, List.of(new AugmentDef.Operation(
+                AugmentDef.Type.MUL_EFFECT_COST, List.of(0.5), java.util.Optional.of(effectKey("speed")))));
+        BeaconStats stats = BeaconResolver.resolve(TIER_4, List.of(new AugmentInstance(thrift, 1)),
+                lookup(Map.of(thrift, thriftDef)));
+        BeaconResolver.Lookup<BeaconEffectDef> effects = lookup(Map.of(
+                effectKey("speed"), new BeaconEffectDef(null, 2.0, 0, 1, 2.0),
+                effectKey("haste"), new BeaconEffectDef(null, 2.0, 0, 1, 2.0)));
+
+        assertEquals(1.0, BeaconResolver.fuelPerSecond(
+                new EffectSlotConfig(effectKey("speed"), 0, true, AuraMode.SELF), stats, effects), 1e-9);
+        assertEquals(2.0, BeaconResolver.fuelPerSecond(
+                new EffectSlotConfig(effectKey("haste"), 0, true, AuraMode.SELF), stats, effects), 1e-9);
+    }
+
+    /** Without its effect a targeted operation would do nothing and say it did: refused when read. */
+    @Test
+    void aTargetedOperationWithoutAnEffectIsRejected() {
+        var json = com.google.gson.JsonParser.parseString(
+                "{ \"operations\": [ { \"type\": \"mul_effect_cost\", \"values\": [0.5] } ] }");
+        org.junit.jupiter.api.Assertions.assertTrue(
+                AugmentDef.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json).isError());
+    }
+
     @Test
     void augmentsStackAcrossTypes() {
         BeaconStats stats = BeaconResolver.resolve(TIER_4,

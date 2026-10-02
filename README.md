@@ -166,6 +166,20 @@ any shipped glyph for its icon with `"glyph"` - one of the augments' own (`"rang
 Ceilings a datapack can reach: effect levels up to X, 8 effect slots and 8 augment slots per tier,
 three tiers per augment.
 
+Two operations act on a single effect, named by `"effect"`, which is how a pack builds a
+specialised augment rather than another all-round one:
+
+```json
+// data/mypack/portablebeacons/augment/sprinter.json - Speed one level higher, and cheaper
+{
+  "max_tier": 1, "color": 5636095, "glyph": "bolt",
+  "operations": [
+    { "type": "add_effect_amplifier", "effect": "portablebeacons:speed", "values": [1] },
+    { "type": "mul_effect_cost", "effect": "portablebeacons:speed", "values": [0.6] }
+  ]
+}
+```
+
 **[Full datapack guide →](https://github.com/DrimoZ/PortableBeacons/wiki/Datapack-Guide)** — every field
 of all four registries, with worked examples for adding an effect, an augment and a themed tier.
 

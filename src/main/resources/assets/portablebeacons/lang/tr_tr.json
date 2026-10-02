@@ -69,6 +69,8 @@
   "portablebeacons.op.free_effect_slot": "%s etki ücretsiz",
   "portablebeacons.op.mul_cost_moving": "Hareket hâlinde maliyet x%s",
   "portablebeacons.op.mul_cost_still": "Dururken maliyet x%s",
+  "portablebeacons.op.add_effect_amplifier": "%s: +%s seviye",
+  "portablebeacons.op.mul_effect_cost": "%s maliyeti x%s",
   "portablebeacons.gui.stats": "Değerler",
   "portablebeacons.tip.cost_meter": "Yakıt tüketimi: %s",
   "portablebeacons.cost.very_low": "çok düşük",

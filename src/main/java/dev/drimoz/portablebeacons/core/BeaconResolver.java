@@ -5,7 +5,9 @@ import net.minecraft.resources.ResourceKey;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -43,6 +45,8 @@ public final class BeaconResolver {
         double stillCostMultiplier = 1.0;
         int auraTierBonus = 0;
         int concealment = 0;
+        Map<ResourceKey<BeaconEffectDef>, Integer> effectBonus = new HashMap<>();
+        Map<ResourceKey<BeaconEffectDef>, Double> effectCost = new HashMap<>();
 
         for (AugmentInstance instance : dedupeByType(augments)) {
             Optional<AugmentDef> maybeDef = augmentLookup.get(instance.type());
@@ -68,6 +72,11 @@ public final class BeaconResolver {
                     // Highest wins rather than summing: this value names a behaviour, so adding
                     // two of them would be meaningless.
                     case HIDE_EFFECTS -> concealment = Math.max(concealment, (int) value);
+                    // Targeted: the codec guarantees an effect is named, so these never act on nothing.
+                    case ADD_EFFECT_AMPLIFIER -> op.effect().ifPresent(key ->
+                            effectBonus.merge(key, (int) value, Integer::sum));
+                    case MUL_EFFECT_COST -> op.effect().ifPresent(key ->
+                            effectCost.merge(key, Math.max(0.0, value), (a, b) -> a * b));
                 }
             }
         }
@@ -93,7 +102,9 @@ public final class BeaconResolver {
                 Math.max(0.0, stillCostMultiplier),
                 auraModes,
                 concealment >= 1,
-                concealment >= 2);
+                concealment >= 2,
+                effectBonus,
+                effectCost);
     }
 
     /**
@@ -211,7 +222,8 @@ public final class BeaconResolver {
         double shared = slot.aura().isAura()
                 ? 1.0 + (slot.aura().costMultiplier() - 1.0) * stats.auraCostMultiplier()
                 : 1.0;
-        double base = maybeDef.get().costPerSecond(slot.amplifier(), AuraMode.SELF) * shared;
+        double base = maybeDef.get().costPerSecond(slot.amplifier(), AuraMode.SELF) * shared
+                * stats.costMultiplierFor(slot.effect());
         return slot.aura().isAura() ? base * rangeFactor(stats.range()) : base;
     }
 
@@ -244,7 +256,7 @@ public final class BeaconResolver {
                     || !tier.allows(slot.effect(), maybeDef.get())) {
                 continue;
             }
-            int amplifierCap = Math.min(maybeDef.get().maxAmplifier(), stats.maxAmplifier());
+            int amplifierCap = Math.min(maybeDef.get().maxAmplifier(), stats.maxAmplifierFor(slot.effect()));
             AuraMode aura = stats.allows(slot.aura()) ? slot.aura() : AuraMode.SELF;
             kept.add(slot.withAmplifier(Math.clamp(slot.amplifier(), 0, amplifierCap))
                     .withAura(aura));

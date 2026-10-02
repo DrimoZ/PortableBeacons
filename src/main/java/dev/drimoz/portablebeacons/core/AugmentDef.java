@@ -1,7 +1,9 @@
 package dev.drimoz.portablebeacons.core;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.StringRepresentable;
 
 import java.util.List;
@@ -51,11 +53,28 @@ public record AugmentDef(int maxTier, int color, List<Operation> operations, Opt
      *
      * @param values value for tier 1, 2, 3 — must hold at least {@code maxTier} entries
      */
-    public record Operation(Type type, List<Double> values) {
-        public static final Codec<Operation> CODEC = RecordCodecBuilder.create(i -> i.group(
+    public record Operation(Type type, List<Double> values, Optional<ResourceKey<BeaconEffectDef>> effect) {
+        public static final Codec<Operation> CODEC = RecordCodecBuilder.<Operation>create(i -> i.group(
                 Type.CODEC.fieldOf("type").forGetter(Operation::type),
-                Codec.DOUBLE.listOf().fieldOf("values").forGetter(Operation::values)
-        ).apply(i, Operation::new));
+                Codec.DOUBLE.listOf().fieldOf("values").forGetter(Operation::values),
+                ResourceKey.codec(BPRegistryKeys.EFFECT).optionalFieldOf("effect").forGetter(Operation::effect)
+        ).apply(i, Operation::new)).validate(Operation::targetedHaveATarget);
+
+        /** An operation on the beacon as a whole, which is every one but the targeted types. */
+        public Operation(Type type, List<Double> values) {
+            this(type, values, Optional.empty());
+        }
+
+        /**
+         * Rejected when read, with the file's name, rather than silently doing nothing: a targeted
+         * operation without its effect would be an augment that changes nothing and says it does.
+         */
+        private static DataResult<Operation> targetedHaveATarget(Operation op) {
+            if (op.type().targeted() && op.effect().isEmpty()) {
+                return DataResult.error(() -> op.type().getSerializedName() + " needs an \"effect\"");
+            }
+            return DataResult.success(op);
+        }
 
         /** Value for a 1-based augment tier, clamped to what the JSON actually declares. */
         public double valueFor(int tier) {
@@ -98,9 +117,22 @@ public record AugmentDef(int maxTier, int color, List<Operation> operations, Opt
          * still, so an augment can favour either travelling or holding a position.
          */
         MUL_COST_MOVING("mul_cost_moving"),
-        MUL_COST_STILL("mul_cost_still");
+        MUL_COST_STILL("mul_cost_still"),
+        /**
+         * Raises one effect's level ceiling, named by the operation's {@code effect}: an augment
+         * that specialises - Speed one level higher - rather than lifting everything at once the way
+         * Amplification does. The effect's own {@code max_amplifier} still binds.
+         */
+        ADD_EFFECT_AMPLIFIER("add_effect_amplifier"),
+        /** Multiplies one effect's cost, named by {@code effect}: a discount with a subject. */
+        MUL_EFFECT_COST("mul_effect_cost");
 
         public static final Codec<Type> CODEC = StringRepresentable.fromEnum(Type::values);
+
+        /** Whether this type acts on one effect, and so needs the operation's {@code effect}. */
+        public boolean targeted() {
+            return this == ADD_EFFECT_AMPLIFIER || this == MUL_EFFECT_COST;
+        }
 
         private final String name;
 

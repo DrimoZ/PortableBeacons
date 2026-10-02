@@ -1,5 +1,8 @@
 package dev.drimoz.portablebeacons.core;
 
+import net.minecraft.resources.ResourceKey;
+
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -14,6 +17,8 @@ import java.util.Set;
  * @param maxAmplifier     highest amplifier any effect may reach
  * @param fuelMultiplier   global factor on consumption (Efficiency lowers it)
  * @param allowedAuraModes aura modes the player may pick
+ * @param effectAmplifierBonus per effect, levels added to {@code maxAmplifier} by targeted augments
+ * @param effectCostMultipliers per effect, factors on its cost from targeted augments
  */
 public record BeaconStats(
         int effectSlots,
@@ -28,8 +33,33 @@ public record BeaconStats(
         double stillCostMultiplier,
         Set<AuraMode> allowedAuraModes,
         boolean hideParticles,
-        boolean hideIcon
+        boolean hideIcon,
+        Map<ResourceKey<BeaconEffectDef>, Integer> effectAmplifierBonus,
+        Map<ResourceKey<BeaconEffectDef>, Double> effectCostMultipliers
 ) {
+    public BeaconStats {
+        effectAmplifierBonus = Map.copyOf(effectAmplifierBonus);
+        effectCostMultipliers = Map.copyOf(effectCostMultipliers);
+    }
+
+    /** Stats with no per-effect adjustment, which is what a beacon without targeted augments has. */
+    public BeaconStats(int effectSlots, int augmentSlots, double range, int fuelCapacity, int maxAmplifier,
+                       double fuelMultiplier, double auraCostMultiplier, int freeEffectSlots,
+                       double movingCostMultiplier, double stillCostMultiplier, Set<AuraMode> allowedAuraModes,
+                       boolean hideParticles, boolean hideIcon) {
+        this(effectSlots, augmentSlots, range, fuelCapacity, maxAmplifier, fuelMultiplier, auraCostMultiplier,
+                freeEffectSlots, movingCostMultiplier, stillCostMultiplier, allowedAuraModes, hideParticles,
+                hideIcon, Map.of(), Map.of());
+    }
+
+    /** The level ceiling for one effect: the beacon's, plus whatever a targeted augment adds. */
+    public int maxAmplifierFor(ResourceKey<BeaconEffectDef> effect) {
+        return Math.clamp(maxAmplifier + effectAmplifierBonus.getOrDefault(effect, 0), 0, MAX_AMPLIFIER);
+    }
+
+    public double costMultiplierFor(ResourceKey<BeaconEffectDef> effect) {
+        return effectCostMultipliers.getOrDefault(effect, 1.0);
+    }
     /**
      * The most effect slots a beacon can ever have, however generous the tier and the augments.
      *

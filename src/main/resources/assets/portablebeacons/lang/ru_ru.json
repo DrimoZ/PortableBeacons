@@ -69,6 +69,8 @@
   "portablebeacons.op.free_effect_slot": "%s эффект бесплатно",
   "portablebeacons.op.mul_cost_moving": "Расход в движении x%s",
   "portablebeacons.op.mul_cost_still": "Расход на месте x%s",
+  "portablebeacons.op.add_effect_amplifier": "%s: +%s ур.",
+  "portablebeacons.op.mul_effect_cost": "Стоимость: %s x%s",
   "portablebeacons.gui.stats": "Характеристики",
   "portablebeacons.tip.cost_meter": "Расход топлива: %s",
   "portablebeacons.cost.very_low": "очень низкий",

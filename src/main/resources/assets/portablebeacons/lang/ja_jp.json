@@ -69,6 +69,8 @@
   "portablebeacons.op.free_effect_slot": "効果 %s 個が無料",
   "portablebeacons.op.mul_cost_moving": "移動中のコスト x%s",
   "portablebeacons.op.mul_cost_still": "静止中のコスト x%s",
+  "portablebeacons.op.add_effect_amplifier": "%s：レベル+%s",
+  "portablebeacons.op.mul_effect_cost": "%sのコスト x%s",
   "portablebeacons.gui.stats": "ステータス",
   "portablebeacons.tip.cost_meter": "燃料消費: %s",
   "portablebeacons.cost.very_low": "非常に低い",

@@ -69,6 +69,8 @@
   "portablebeacons.op.free_effect_slot": "%s ефект безкоштовно",
   "portablebeacons.op.mul_cost_moving": "Витрата в русі x%s",
   "portablebeacons.op.mul_cost_still": "Витрата на місці x%s",
+  "portablebeacons.op.add_effect_amplifier": "%s: +%s рів.",
+  "portablebeacons.op.mul_effect_cost": "Вартість: %s x%s",
   "portablebeacons.gui.stats": "Характеристики",
   "portablebeacons.tip.cost_meter": "Витрата палива: %s",
   "portablebeacons.cost.very_low": "дуже низька",

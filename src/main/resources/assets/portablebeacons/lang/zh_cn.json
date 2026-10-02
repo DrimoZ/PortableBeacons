@@ -69,6 +69,8 @@
   "portablebeacons.op.free_effect_slot": "%s 个效果免费",
   "portablebeacons.op.mul_cost_moving": "移动时消耗 x%s",
   "portablebeacons.op.mul_cost_still": "静止时消耗 x%s",
+  "portablebeacons.op.add_effect_amplifier": "%s：等级 +%s",
+  "portablebeacons.op.mul_effect_cost": "%s 消耗 x%s",
   "portablebeacons.gui.stats": "属性",
   "portablebeacons.tip.cost_meter": "燃料消耗：%s",
   "portablebeacons.cost.very_low": "极低",

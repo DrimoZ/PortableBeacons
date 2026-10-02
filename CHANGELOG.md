@@ -23,6 +23,10 @@ Versions follow `{mod version}+{minecraft version}`.
   scrolls past five rows and the augment tab grows a second row only when a tier needs it, so the
   shipped beacons look exactly as before. Augments keep three tiers: their casing shows the tier as
   pips, and five do not read at 16 pixels.
+- **Two targeted augment operations.** `add_effect_amplifier` raises one effect's level ceiling and
+  `mul_effect_cost` multiplies one effect's cost, each naming its effect with `"effect"` - so a
+  datapack can build a specialised augment (a sprinter's, a miner's) instead of only all-round ones.
+  A targeted operation without its effect is refused when the file is read.
 
 ### Changed
 - **A new screen, on FactoryIO's layout.** The fuel gauge and fuel slot sit in the window's first
