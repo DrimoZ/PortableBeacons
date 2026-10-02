@@ -1,10 +1,7 @@
 # Roadmap
 
-**1.1.0 on two Minecraft versions, both carrying the same Unreleased work.** What is under
-*Unreleased* in the [changelog](CHANGELOG.md) - economy fixes, upgrades that keep their augments, a
-new screen on FactoryIO's layout, new item art, recharging at a real beacon and by forge energy,
-higher datapack ceilings, a creative beacon - is on both 1.21.1 and 26.1. Only the plumbing differs
-where the game's API does.
+**2.0.0 on three Minecraft versions: 1.21.1, 26.1 and 26.2, with the same content.** Only the
+plumbing differs where the game's API does. `main` follows the newest version, 26.2.
 
 What follows is ordered by what actually moves the mod forward — which is no longer "what is
 missing" but "what do players hit first". The pre-release checklist that used to live here is done;
@@ -18,26 +15,19 @@ its history is in the git log and the [changelog](CHANGELOG.md).
 client opens on a "1 warning" screen for it - ours is fixed, theirs is not. Nothing to do but
 change `curios_version` when a fixed 26.2 build appears.
 
-**Upload 1.0.1** to CurseForge as release type *Release*, for game version 1.21.1. The project is
-live at <https://www.curseforge.com/minecraft/mc-mods/portables-beacons>; the changelog section and
-the listing copy are ready in [CHANGELOG.md](CHANGELOG.md) and [STORE.md](STORE.md).
+**Release 2.0.0.** The jars, the description, the images and the per-file settings are listed in
+[STORE.md](STORE.md)'s release checklist; the changelog section is `## 2.0.0`.
 
-**Say the id change out loud on the page.** Anyone who played 1.0.0 or the 0.9.0 beta loses their
-saved beacons — the item ids, the data component and the item tag all moved. That is worth one line
-at the top of the description, not a footnote.
+**Publish the rewritten wiki** with the release, not before: it describes 2.0.0.
 
-**Play the 1.21.1 build of the Unreleased work.** The 26.1 build has been played; 1.21.1 shares its
-content but not its rendering code - the screen, the augment icons and the energy hookup were
-translated to the older API, and no test judges how they look.
+**Decide on 1.20.1.** Feasible, at roughly twice the cost of the 1.21.1 backport - no data
+components, an older capability and networking system, no GUI sprites - and most 1.20.1 packs run
+Forge rather than NeoForge.
 
 ## Then — the first week
 
 **Watch the issue tracker.** This is the whole point of shipping. Until reports come in, every
 priority below is a guess, and a guess should lose to a real report every time.
-
-**Screenshots.** Still the single biggest thing standing between the page and a download. Three
-carry it: the beacon screen with a drawer open, the effect picker mid-search, and the JEI fuel
-category. A short GIF of a drawer opening would do more than any paragraph on the page.
 
 **Tell people it exists.** r/feedthebeast and r/MinecraftMods on a weekend, the NeoForged Discord's
 showcase channel. Modpack authors are the real growth channel — a small utility mod with a clean

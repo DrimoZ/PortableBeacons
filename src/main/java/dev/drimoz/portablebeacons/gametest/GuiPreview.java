@@ -156,12 +156,13 @@ public final class GuiPreview {
         step(10, Minecraft::stop);
     }
 
-    /** A Beacon IV with two effects, two augments and fuel in the slot - the busy case. */
+    /** A Beacon IV with three effects, a full augment row and fuel in the slot - the busy case. */
     private static void equip(ServerPlayer player) {
         ItemStack beacon = new ItemStack(BPItems.BEACON_IV.get());
         BeaconState state = new BeaconState(List.of(
                 new EffectSlotConfig(effect("strength"), 1, true, AuraMode.SELF),
-                new EffectSlotConfig(effect("resistance"), 0, true, AuraMode.TEAM)),
+                new EffectSlotConfig(effect("resistance"), 0, true, AuraMode.ALLIES),
+                new EffectSlotConfig(effect("speed"), 1, true, AuraMode.TEAM)),
                 21000, true, 36000);
         ResourceHandler<ItemResource> slots = BPLookups.handlerOf(beacon);
         try (Transaction transaction = Transaction.openRoot()) {
@@ -170,6 +171,10 @@ public final class GuiPreview {
             slots.insert(PortableBeaconItem.augmentSlot(0), ItemResource.of(augment("range", 2)), 1,
                     transaction);
             slots.insert(PortableBeaconItem.augmentSlot(1), ItemResource.of(augment("wayfarer", 1)), 1,
+                    transaction);
+            slots.insert(PortableBeaconItem.augmentSlot(2), ItemResource.of(augment("attunement", 1)), 1,
+                    transaction);
+            slots.insert(PortableBeaconItem.augmentSlot(3), ItemResource.of(augment("efficiency", 2)), 1,
                     transaction);
             transaction.commit();
         }
