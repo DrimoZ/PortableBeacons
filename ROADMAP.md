@@ -14,6 +14,10 @@ its history is in the git log and the [changelog](CHANGELOG.md).
 
 ## Now
 
+**Bump Curios on 26.2 once it stops using `logoFile`.** Curios 16.0.0+26.2 still does, and the 26.2
+client opens on a "1 warning" screen for it - ours is fixed, theirs is not. Nothing to do but
+change `curios_version` when a fixed 26.2 build appears.
+
 **Upload 1.0.1** to CurseForge as release type *Release*, for game version 1.21.1. The project is
 live at <https://www.curseforge.com/minecraft/mc-mods/portables-beacons>; the changelog section and
 the listing copy are ready in [CHANGELOG.md](CHANGELOG.md) and [STORE.md](STORE.md).
