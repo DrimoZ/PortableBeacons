@@ -8,6 +8,7 @@ import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.ModelProvider;
 import net.minecraft.client.data.models.model.ItemModelUtils;
+import net.minecraft.client.data.models.model.ModelTemplate;
 import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.data.models.model.TextureMapping;
 import net.minecraft.client.data.models.model.TextureSlot;
@@ -20,9 +21,10 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
- * Item models: twelve flat models, plus the augment's glyph table.
+ * Item models: the beacons' 3D model with each one's faces, plus the augment's glyph table.
  *
  * <p>The table is the reason this is worth generating rather than typing. It selects on the
  * glyph name - see {@link AugmentLook} - so a shape added here is one any augment, built-in or
@@ -40,14 +42,22 @@ public class BPItemModelProvider extends ModelProvider {
             "star", "bolt", "heart", "gem", "shield", "leaf"
     };
 
+    private static final TextureSlot PARTS = TextureSlot.create("parts");
+    /** Hand-written in resources: its four cuboids are geometry, not a pattern worth generating. */
+    private static final ModelTemplate BEACON = new ModelTemplate(
+            Optional.of(BPRegistryKeys.id("item/portable_beacon")), Optional.empty(), PARTS);
+
     public BPItemModelProvider(PackOutput output) {
         super(output, PortableBeacons.MOD_ID);
     }
 
     @Override
     protected void registerModels(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
-        BPItems.beacons().forEach(beacon ->
-                itemModels.generateFlatItem(beacon.get(), ModelTemplates.FLAT_ITEM));
+        // The beacons are one 3D model, portable_beacon.json, each wearing its own sheet of faces.
+        BPItems.beacons().forEach(beacon -> itemModels.itemModelOutput.accept(beacon.get(),
+                ItemModelUtils.plainModel(BEACON.create(beacon.get(),
+                        new TextureMapping().put(PARTS, texture("beacon/" + beacon.getId().getPath())),
+                        itemModels.modelOutput))));
 
         List<SelectItemModel.SwitchCase<String>> cases = new ArrayList<>(GLYPHS.length);
         for (String name : GLYPHS) {

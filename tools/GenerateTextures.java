@@ -168,23 +168,24 @@ public final class GenerateTextures {
 
     // ------------------------------------------------------------------ beacons
 
-    private static final String[] BEACON = {
-            "......kkkk......",
-            ".....kWWWWk.....",
-            "....kGGccGGk....",
-            "...kGGcCCcGGk...",
-            "...kGcCWWCcGk...",
-            "...kGGcCCcGGk...",
-            "...kGGGccGGGk...",
-            "..kkkkkkkkkkkk..",
-            "..kMMMMMMMMMMk..",
-            "..kmmmmmmmmmmk..",
-            ".kOOOOOOOOOOOOk.",
-            ".kOooooooooooOk.",
-            ".kOoo1o2o3o4oOk.",
-            ".kOooooooooooOk.",
-            "..kkkkkkkkkkkk..",
-            "................"};
+    /*
+     * The beacons are 3D item models - portable_beacon.json: an obsidian foot, the tier's band, a
+     * glass dome with the beam's core inside - drawn by the game the way it draws a block, so the
+     * inventory icon is the logo's object rather than a flat picture of it. These are the faces.
+     *
+     * One sheet per beacon, read by UV region:
+     *   core       (0,0)  6x6
+     *   band side  (0,6)  12x2
+     *   foot side  (0,8)  14x4   - the tier's pips, or a themed beacon's strip
+     *   band top   (12,0) 1x1    - seen through the glass, so dark: a bright one drowned the core
+     *   foot top   (13,0) 1x1
+     * The glass is shared: glass_side 10x9 and glass_top 10x10, each from the sheet's corner.
+     */
+
+    private static final int OBSIDIAN_TOP = 0x3A2E52;
+    private static final int OBSIDIAN = 0x2A2041;
+    private static final int OBSIDIAN_DARK = 0x1E1730;
+    private static final int PIP_OFF = 0x1C1529;
 
     /**
      * @param band   the tier's material, light then dark
@@ -193,40 +194,68 @@ public final class GenerateTextures {
      * @param accent the themed beacon's strip colour, or 0
      */
     private static BufferedImage beacon(int[] band, int[] core, int pips, int accent) {
-        Map<Character, Integer> palette = new LinkedHashMap<>();
-        palette.put('k', 0x15161C);
-        palette.put('W', 0xFFFFFF);
-        palette.put('G', 0xB6DCE6);
-        palette.put('c', core[0]);
-        palette.put('C', core[1]);
-        palette.put('M', band[0]);
-        palette.put('m', band[1]);
-        palette.put('O', 0x3A2E52);
-        palette.put('o', 0x231B33);
-        for (int pip = 1; pip <= 4; pip++) {
-            palette.put((char) ('0' + pip), pips == 0 ? accent : pip <= pips ? 0xF2F2F2 : 0x231B33);
-        }
-        BufferedImage image = ascii(BEACON, palette);
-        if (pips == 0) {
-            // A continuous strip rather than four dots: themed beacons sit beside the ladder, not on it.
-            for (int x = 5; x <= 11; x++) {
-                set(image, x, 12, accent);
+        BufferedImage image = blank();
+        fill(image, 0, 0, 6, 6, 0xFF000000 | core[0]);
+        fill(image, 1, 1, 4, 4, 0xFF000000 | mix(core[0], core[1]));
+        fill(image, 2, 2, 2, 2, 0xFF000000 | core[1]);
+        fill(image, 0, 6, 12, 1, 0xFF000000 | band[0]);
+        fill(image, 0, 7, 12, 1, 0xFF000000 | band[1]);
+        fill(image, 0, 8, 14, 1, 0xFF000000 | OBSIDIAN_TOP);
+        fill(image, 0, 9, 14, 2, 0xFF000000 | OBSIDIAN);
+        fill(image, 0, 11, 14, 1, 0xFF000000 | OBSIDIAN_DARK);
+        if (pips > 0) {
+            int[] at = {3, 5, 8, 10};
+            for (int pip = 0; pip < 4; pip++) {
+                fill(image, at[pip], 10, 1, 1, 0xFF000000 | (pip < pips ? 0xF2F2F2 : PIP_OFF));
             }
+        } else {
+            // A continuous strip rather than four dots: themed beacons sit beside the ladder, not on it.
+            fill(image, 2, 10, 10, 1, 0xFF000000 | accent);
+        }
+        set(image, 12, 0, OBSIDIAN);
+        set(image, 13, 0, OBSIDIAN_TOP);
+        return image;
+    }
+
+    private static int mix(int a, int b) {
+        int r = (((a >> 16) & 255) + ((b >> 16) & 255)) / 2;
+        int g = (((a >> 8) & 255) + ((b >> 8) & 255)) / 2;
+        return (r << 16) | (g << 8) | (((a & 255) + (b & 255)) / 2);
+    }
+
+    /** Glass as the game draws it: a light frame round a pane you can see through. */
+    private static BufferedImage glass(int width, int height, boolean top) {
+        BufferedImage image = blank();
+        fill(image, 0, 0, width, height, top ? 0x50E8FAFF : 0x38CFEFF5);
+        int frame = 0xFFE6FCFF;
+        fill(image, 0, 0, width, 1, frame);
+        fill(image, 0, 0, 1, height, frame);
+        fill(image, width - 1, 0, 1, height, top ? frame : 0xFFAAD8E2);
+        if (top) {
+            fill(image, 0, height - 1, width, 1, frame);
+        } else {
+            // The game's glass highlight, two pixels across the pane.
+            fill(image, 2, 3, 1, 1, 0xB0FFFFFF);
+            fill(image, 3, 2, 1, 1, 0xB0FFFFFF);
         }
         return image;
     }
 
     private static void writeBeacons() throws IOException {
-        int[] beam = {0x55D0E0, 0xA8F4FA};
-        write("beacon_i", beacon(new int[]{0xD8D8D8, 0x9A9A9A}, beam, 1, 0));
-        write("beacon_ii", beacon(new int[]{0xF7D44A, 0xC08A1E}, beam, 2, 0));
-        write("beacon_iii", beacon(new int[]{0x7FE8E0, 0x2FA8A0}, beam, 3, 0));
-        write("beacon_iv", beacon(new int[]{0x6A5A64, 0x3E3238}, beam, 4, 0));
+        new File(ITEM_DIR + "/beacon").mkdirs();
+        int[] beam = {0x55D0E0, 0xC8FAFF};
+        write("beacon/beacon_i", beacon(new int[]{0xD8D8D8, 0x9A9A9A}, beam, 1, 0));
+        write("beacon/beacon_ii", beacon(new int[]{0xF7D44A, 0xC08A1E}, beam, 2, 0));
+        write("beacon/beacon_iii", beacon(new int[]{0x7FE8E0, 0x2FA8A0}, beam, 3, 0));
+        write("beacon/beacon_iv", beacon(new int[]{0x7A6A74, 0x4E4249}, beam, 4, 0));
 
-        write("cinder_beacon", beacon(new int[]{0xE0603A, 0x8E2A18}, new int[]{0xF29B1D, 0xFFE08A}, 0, 0xF29B1D));
-        write("void_beacon", beacon(new int[]{0xC48CE0, 0x7A4A9A}, new int[]{0xB07CD8, 0xEAD2FA}, 0, 0xC48CE0));
-        write("tidal_beacon", beacon(new int[]{0x5AB8A8, 0x2E7A70}, new int[]{0x3FB6D8, 0xB4ECF8}, 0, 0x5AB8A8));
-        write("creative_beacon", beacon(new int[]{0xE070D0, 0x9A3A90}, new int[]{0xF6B8F0, 0xFFEFFC}, 0, 0xFFD54A));
+        write("beacon/cinder_beacon", beacon(new int[]{0xE0603A, 0x8E2A18}, new int[]{0xF29B1D, 0xFFE08A}, 0, 0xF29B1D));
+        write("beacon/void_beacon", beacon(new int[]{0xC48CE0, 0x7A4A9A}, new int[]{0xB07CD8, 0xEAD2FA}, 0, 0xC48CE0));
+        write("beacon/tidal_beacon", beacon(new int[]{0x5AB8A8, 0x2E7A70}, new int[]{0x3FB6D8, 0xB4ECF8}, 0, 0x5AB8A8));
+        write("beacon/creative_beacon", beacon(new int[]{0xE070D0, 0x9A3A90}, new int[]{0xF6B8F0, 0xFFEFFC}, 0, 0xFFD54A));
+
+        write("beacon/glass_side", glass(10, 9, false));
+        write("beacon/glass_top", glass(10, 10, true));
     }
 
     // ------------------------------------------------------------------ plumbing

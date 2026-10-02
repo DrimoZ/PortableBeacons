@@ -1,6 +1,6 @@
 {
-  "parent": "minecraft:item/generated",
+  "parent": "portablebeacons:item/portable_beacon",
   "textures": {
-    "layer0": "portablebeacons:item/beacon_iii"
+    "parts": "portablebeacons:item/beacon/beacon_iii"
   }
 }

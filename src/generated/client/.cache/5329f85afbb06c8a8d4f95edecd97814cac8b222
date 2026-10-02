@@ -1,4 +1,4 @@
-// 26.1.2	2026-10-02T08:57:28.3596031	Model Definitions - portablebeacons
+// 26.1.2	2026-10-02T14:21:19.1713545	Model Definitions - portablebeacons
 1386122182bb6366a6c85a95e0866eacfcf6988c assets/portablebeacons/items/augment.json
 f2d62b9a19c03206f1d93b646691b7bf6f894cbe assets/portablebeacons/items/beacon_i.json
 c2aa56b37e6ce57b9794c059d6cf2933c58db44f assets/portablebeacons/items/beacon_ii.json
@@ -71,11 +71,11 @@ d04e8dbe45e8ec20a25cd1355f0aa65d9dd11a24 assets/portablebeacons/models/item/augm
 99822637daf618f1628c9ae8a697e37ad5df07a4 assets/portablebeacons/models/item/augment_wellspring_1.json
 9847446c88214dd6e4fad7aea7a2d77d9d464f14 assets/portablebeacons/models/item/augment_wellspring_2.json
 60f1684e78ddae3582c6265c36c14da2acc8eb91 assets/portablebeacons/models/item/augment_wellspring_3.json
-851b70e52b0c8df14ab493f71288934fd7e548b7 assets/portablebeacons/models/item/beacon_i.json
-cdc92edefc6c73e54f4e32b45114b89db9c6a27f assets/portablebeacons/models/item/beacon_ii.json
-d30e4ec33ceca36919d4fc69c1a48765dcc0bd98 assets/portablebeacons/models/item/beacon_iii.json
-ad7fbe9e9d5b1dd9196320b087d830d8598a30eb assets/portablebeacons/models/item/beacon_iv.json
-8e8adc0fda2075c28d6de1a3759230b0933b765c assets/portablebeacons/models/item/cinder_beacon.json
-95f98fcc4e677056816c5c957b4780d0b3730880 assets/portablebeacons/models/item/creative_beacon.json
-9023fb49c791c93ff21c2b78e91c9658737df1ea assets/portablebeacons/models/item/tidal_beacon.json
-85f3fb59769c69cbf2c9ae968ee34b3fb79cec4a assets/portablebeacons/models/item/void_beacon.json
+5bb91ace98c75feb339a521f4b63f2456ef3c84d assets/portablebeacons/models/item/beacon_i.json
+7e4e624dd6155761257146b779adbb4417f73d52 assets/portablebeacons/models/item/beacon_ii.json
+ca5e572e5a461a08c97865f2944c518c97a7dfa6 assets/portablebeacons/models/item/beacon_iii.json
+e450a9ae18c0dedb827791b2f5accd774d15f197 assets/portablebeacons/models/item/beacon_iv.json
+454d11b13b1a14ba225db66804a309c7e952aeb2 assets/portablebeacons/models/item/cinder_beacon.json
+57f9bc54f3a9a98c0420d2f4ab7c980af0945995 assets/portablebeacons/models/item/creative_beacon.json
+721d7a10f2278d73c8fe63acfd49617793f29134 assets/portablebeacons/models/item/tidal_beacon.json
+124ff788090f0058e1c8470b33dee62afc5f156a assets/portablebeacons/models/item/void_beacon.json

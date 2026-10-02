@@ -43,10 +43,10 @@ public class Banners {
         header(shots, out, "header_fuel", "beacon_fuel_tooltip", 0.4, "Fuel", "Ingots, a real beacon, or Forge Energy");
         header(shots, out, "header_data", "beacon_selector", 0.5, "Data-driven", "Effects, tiers, augments and fuels from JSON");
 
-        itemSheet(out, "items_beacons", "Beacons", 4,
+        itemSheet(out, "items_beacons", "Beacons", 4, shots,
                 "beacon_i", "beacon_ii", "beacon_iii", "beacon_iv",
                 "cinder_beacon", "void_beacon", "tidal_beacon", "creative_beacon");
-        itemSheet(out, "items_augments", "Augments", 5,
+        itemSheet(out, "items_augments", "Augments", 5, shots,
                 "range", "focus", "amplification", "efficiency", "capacity", "attunement", "discretion",
                 "communion", "wellspring", "wayfarer", "sentinel", "vanguard", "prism", "recluse");
 
@@ -56,7 +56,7 @@ public class Banners {
         gui(shots, out, "picker", "beacon_selector", 928, 272, 1632, 1100);
     }
 
-    /** The top banner: the title large, the Beacon IV beside it, on the main screen. */
+    /** The top banner: the title large, the logo beside it, on the main screen. */
     static void banner(File shots, File out) throws Exception {
         int h = 280;
         BufferedImage b = blur(cover(ImageIO.read(new File(shots, "beacon_main.png")), W, h, 0.4));
@@ -65,8 +65,9 @@ public class Banners {
         g.fillRect(0, 0, W, h);
         g.setPaint(new GradientPaint(0, 0, alpha(INK, 235), W * 0.8f, 0, alpha(INK, 60)));
         g.fillRect(0, 0, W, h);
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-        g.drawImage(ImageIO.read(new File(ITEMS + "beacon_iv.png")), W - 34 - 192, 44, 192, 192, null);
+        // The logo is drawn at 512 for this: smoothing, unlike the pixel art, only helps it shrink.
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        g.drawImage(ImageIO.read(new File("src/main/resources/logo.png")), W - 24 - 232, 24, 232, 232, null);
         int x = 34;
         text(g, "Portable Beacons", x, 52, 6, Color.WHITE);
         text(g, "A beacon you carry.", x + 2, 128, 3, new Color(236, 236, 240));
@@ -96,9 +97,11 @@ public class Banners {
     /**
      * The repository's item textures, enlarged without smoothing, with their English name. An
      * augment is composed as the game composes it: casing, screen tinted by its data file's colour,
-     * glyph - at its highest tier.
+     * glyph - at its highest tier. A beacon is a 3D model, so it is cut from the GUI preview's capture
+     * instead: the inventory's third row holds the eight, in this order, at GUI scale 4.
      */
-    static void itemSheet(File out, String name, String title, int cols, String... ids) throws Exception {
+    static void itemSheet(File out, String name, String title, int cols, File shots, String... ids) throws Exception {
+        BufferedImage capture = ImageIO.read(new File(shots, "beacon_main.png"));
         String lang = Files.readString(Path.of("src/main/resources/assets/portablebeacons/lang/en_us.json"));
         int cell = W / cols, icon = 80, rowH = icon + 44, top = 64;
         int rows = (ids.length + cols - 1) / cols;
@@ -113,10 +116,12 @@ public class Banners {
         for (int i = 0; i < ids.length; i++) {
             int cx = (i % cols) * cell, cy = top + (i / cols) * rowH;
             boolean augment = new File("src/main/resources/data/portablebeacons/portablebeacons/augment/" + ids[i] + ".json").exists();
-            BufferedImage tex = augment ? augment(ids[i], maxTier(ids[i])) : ImageIO.read(new File(ITEMS + ids[i] + ".png"));
+            // The inventory slot's item, 16 GUI pixels at scale 4: column 0 of the window plus 18 per slot.
+            BufferedImage tex = augment ? augment(ids[i], maxTier(ids[i])) : cutOut(capture.getSubimage(960 + 72 * i, 916, 64, 64));
+            int size = augment ? icon : 64, inset = (icon - size) / 2;
             g.setColor(new Color(255, 255, 255, 14));
             g.fillRect(cx + (cell - icon) / 2 - 8, cy - 4, icon + 16, icon + 8);
-            g.drawImage(tex, cx + (cell - icon) / 2, cy, icon, icon, null);
+            g.drawImage(tex, cx + (cell - size) / 2, cy + inset, size, size, null);
             String label = label(lang, ids[i], augment);
             int scale = width(label) * 2 > cell - 12 ? 1 : 2;
             text(g, label, cx + (cell - width(label) * scale) / 2, cy + icon + 12, scale, SUB);
@@ -130,6 +135,18 @@ public class Banners {
         String json = Files.readString(Path.of("src/main/resources/data/portablebeacons/portablebeacons/augment/" + id + ".json"));
         var m = java.util.regex.Pattern.compile("\"max_tier\"\\s*:\\s*(\\d+)").matcher(json);
         return m.find() ? Integer.parseInt(m.group(1)) : 3;
+    }
+
+    /** The slot's flat grey behind a captured item, made transparent: only exact matches, so glass blended over it stays. */
+    static BufferedImage cutOut(BufferedImage slot) {
+        int bg = slot.getRGB(1, 1) & 0xFFFFFF;
+        BufferedImage o = new BufferedImage(slot.getWidth(), slot.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < slot.getHeight(); y++)
+            for (int x = 0; x < slot.getWidth(); x++) {
+                int p = slot.getRGB(x, y) & 0xFFFFFF;
+                if (p != bg) o.setRGB(x, y, 0xFF000000 | p);
+            }
+        return o;
     }
 
     static BufferedImage augment(String id, int tier) throws Exception {
