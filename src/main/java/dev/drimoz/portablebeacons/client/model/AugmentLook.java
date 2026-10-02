@@ -25,39 +25,53 @@ import org.jspecify.annotations.Nullable;
  * augment simply rendered as the wrong glyph — no error anywhere.
  *
  * <p>The 1.21.4 model system selects on values, not just numbers, so the integer is unnecessary:
- * the model selects on the augment's own registry key. There is nothing left to keep in sync, and
- * a datapack augment names itself rather than claiming a number no registry hands out.
+ * the model selects on a value. There is nothing left to keep in sync.
+ *
+ * <p>The value is the <em>glyph</em>, not the augment. Selecting on the augment's own key meant a
+ * datapack augment could never have an icon: item models are fixed when resources load, before any
+ * world's data exists, so no case could ever name it. Selecting on a glyph name lets it borrow any
+ * shipped shape by saying {@code "glyph": "bolt"} in its JSON.
  */
 public final class AugmentLook {
 
-    /** {@code portablebeacons:augment_type} — the key of the augment in a stack, or null if none. */
-    public static final class TypeProperty implements SelectItemModelProperty<ResourceKey<AugmentDef>> {
+    /**
+     * {@code portablebeacons:augment_glyph} — the glyph a stack draws: the one its augment names, or
+     * for the mod's own augments the one named after them. Null - the bare casing - otherwise.
+     */
+    public static final class GlyphProperty implements SelectItemModelProperty<String> {
 
-        public static final TypeProperty INSTANCE = new TypeProperty();
-        public static final SelectItemModelProperty.Type<TypeProperty, ResourceKey<AugmentDef>> TYPE =
-                SelectItemModelProperty.Type.create(
-                        MapCodec.unit(INSTANCE), ResourceKey.codec(BPRegistryKeys.AUGMENT));
+        public static final GlyphProperty INSTANCE = new GlyphProperty();
+        public static final SelectItemModelProperty.Type<GlyphProperty, String> TYPE =
+                SelectItemModelProperty.Type.create(MapCodec.unit(INSTANCE), com.mojang.serialization.Codec.STRING);
 
         @Override
         @Nullable
-        public ResourceKey<AugmentDef> get(ItemStack stack, @Nullable ClientLevel level,
-                                           @Nullable LivingEntity owner, int seed,
-                                           ItemDisplayContext context) {
+        public String get(ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity owner, int seed,
+                          ItemDisplayContext context) {
             AugmentInstance instance = AugmentItem.instanceOf(stack);
-            return instance == null ? null : instance.type();
+            if (instance == null) {
+                return null;
+            }
+            AugmentDef def = definitionOf(stack);
+            if (def != null && def.glyph().isPresent()) {
+                return def.glyph().get();
+            }
+            return instance.type().identifier().getNamespace().equals(BPRegistryKeys.MOD_ID)
+                    ? instance.type().identifier().getPath()
+                    : null;
         }
 
         @Override
-        public com.mojang.serialization.Codec<ResourceKey<AugmentDef>> valueCodec() {
-            return ResourceKey.codec(BPRegistryKeys.AUGMENT);
+        public com.mojang.serialization.Codec<String> valueCodec() {
+            return com.mojang.serialization.Codec.STRING;
         }
 
         @Override
-        public SelectItemModelProperty.Type<TypeProperty, ResourceKey<AugmentDef>> type() {
+        public SelectItemModelProperty.Type<GlyphProperty, String> type() {
             return TYPE;
         }
 
-        private TypeProperty() {}
+        private GlyphProperty() {}
     }
 
     /**

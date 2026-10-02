@@ -70,7 +70,7 @@ public final class BPClientEvents {
          */
         @SubscribeEvent
         public static void registerModelProperties(RegisterSelectItemModelPropertyEvent event) {
-            event.register(BPRegistryKeys.id("augment_type"), AugmentLook.TypeProperty.TYPE);
+            event.register(BPRegistryKeys.id("augment_glyph"), AugmentLook.GlyphProperty.TYPE);
             event.register(BPRegistryKeys.id("augment_tier"), AugmentLook.TierProperty.TYPE);
         }
 

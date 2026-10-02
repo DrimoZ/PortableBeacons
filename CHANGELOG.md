@@ -12,6 +12,12 @@ Versions follow `{mod version}+{minecraft version}`.
 - **Forge energy.** Any energy mod's charger fills a beacon through the energy capability, at
   `energy_per_fuel_unit` FE per fuel unit (40 by default); 0 turns it off. Whole units only, and a
   beacon never gives energy back.
+- **Effect pools.** An effect can declare `"pools": [...]`, and a tier's `effect_pool` can list
+  `"#pool"` beside effect ids. The four standard tiers now list `"#standard"`, so a datapack effect
+  joins all four from its own file instead of being added to every tier.
+- **Glyphs for datapack augments.** An augment can name its icon's glyph with `"glyph"`: any of the
+  shipped augments' glyphs, or one of six generic shapes - star, bolt, heart, gem, shield, leaf.
+  Before, an augment from a datapack could only ever show a bare casing.
 
 ### Changed
 - **A new screen, on FactoryIO's layout.** The fuel gauge and fuel slot sit in the window's first

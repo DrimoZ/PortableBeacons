@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.StringRepresentable;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * One entry of the {@code portablebeacons:augment} datapack registry.
@@ -26,14 +27,23 @@ import java.util.List;
  * @param maxTier    highest tier this augment exists in (1..3)
  * @param color      tint applied to the augment texture; alpha is forced opaque at render time
  * @param operations modifiers applied to the beacon's resolved stats
+ * @param glyph      which glyph its icon draws - one of the shipped shapes, by name. Lets a
+ *                   datapack augment look like itself without a resource pack; a built-in augment
+ *                   needs none, it draws the glyph named after it
  */
-public record AugmentDef(int maxTier, int color, List<Operation> operations) {
+public record AugmentDef(int maxTier, int color, List<Operation> operations, Optional<String> glyph) {
 
     public static final Codec<AugmentDef> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.intRange(1, 3).optionalFieldOf("max_tier", 3).forGetter(AugmentDef::maxTier),
             Codec.INT.optionalFieldOf("color", 0xFFFFFF).forGetter(AugmentDef::color),
-            Operation.CODEC.listOf().fieldOf("operations").forGetter(AugmentDef::operations)
+            Operation.CODEC.listOf().fieldOf("operations").forGetter(AugmentDef::operations),
+            Codec.STRING.optionalFieldOf("glyph").forGetter(AugmentDef::glyph)
     ).apply(i, AugmentDef::new));
+
+    /** An augment with no glyph of its own: a built-in one draws the glyph named after it. */
+    public AugmentDef(int maxTier, int color, List<Operation> operations) {
+        this(maxTier, color, operations, Optional.empty());
+    }
 
     /**
      * A modifier with one value per augment tier. Indexing by tier rather than defining three

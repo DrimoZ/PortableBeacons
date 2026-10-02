@@ -241,7 +241,7 @@ public final class BeaconResolver {
             Optional<BeaconEffectDef> maybeDef = effectLookup.get(slot.effect());
             if (maybeDef.isEmpty()
                     || maybeDef.get().minTier() > tier.level()
-                    || !tier.allows(slot.effect())) {
+                    || !tier.allows(slot.effect(), maybeDef.get())) {
                 continue;
             }
             int amplifierCap = Math.min(maybeDef.get().maxAmplifier(), stats.maxAmplifier());

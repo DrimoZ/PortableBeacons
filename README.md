@@ -152,9 +152,16 @@ Four datapack registries under `data/<namespace>/portablebeacons/`:
   "effect": "minecraft:fire_resistance",
   "cost": 2.0,
   "max_amplifier": 0,
-  "min_tier": 2
+  "min_tier": 2,
+  "pools": [ "standard" ]
 }
 ```
+
+`"pools"` is what makes that one file: the four standard tiers list `"#standard"` in their
+`effect_pool`, so any effect in the `standard` pool is offered by all four with no tier file
+touched. A pack can invent its own pools the same way. An augment added by a datapack can borrow
+any shipped glyph for its icon with `"glyph"` - one of the augments' own (`"range"`, `"focus"`,
+…) or a generic shape: `star`, `bolt`, `heart`, `gem`, `shield`, `leaf`.
 
 **[Full datapack guide →](https://github.com/DrimoZ/PortableBeacons/wiki/Datapack-Guide)** — every field
 of all four registries, with worked examples for adding an effect, an augment and a themed tier.

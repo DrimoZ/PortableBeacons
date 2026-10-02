@@ -153,6 +153,20 @@ public final class GenerateTextures {
         // A padlock: everything kept in.
         GLYPHS.put("recluse", new String[]{
                 "..wwww..", ".w....w.", ".w....w.", "wwwwwwww", "www..www", "wwwwwwww"});
+
+        // Generic shapes, owned by no augment: for datapack augments to borrow with "glyph".
+        GLYPHS.put("star", new String[]{
+                "...ww...", "...ww...", "wwwwwwww", ".wwwwww.", ".ww..ww.", "ww....ww"});
+        GLYPHS.put("bolt", new String[]{
+                "....www.", "...www..", "..wwwww.", ".wwwww..", "...ww...", "..ww...."});
+        GLYPHS.put("heart", new String[]{
+                ".ww..ww.", "wwwwwwww", "wwwwwwww", ".wwwwww.", "..wwww..", "...ww..."});
+        GLYPHS.put("gem", new String[]{
+                "..wwww..", ".ww..ww.", "wwwwwwww", ".ww..ww.", "..w..w..", "...ww..."});
+        GLYPHS.put("shield", new String[]{
+                "wwwwwwww", "w..ww..w", "w..ww..w", ".w.ww.w.", "..wwww..", "...ww..."});
+        GLYPHS.put("leaf", new String[]{
+                ".....www", "...wwww.", "..www.w.", ".ww.ww..", ".www....", "w......."});
     }
 
     // ------------------------------------------------------------------ beacons

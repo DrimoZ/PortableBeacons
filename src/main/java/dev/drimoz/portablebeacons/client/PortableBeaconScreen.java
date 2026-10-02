@@ -1116,7 +1116,7 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
         BeaconTierDef tier = menu.tierDef();
         String needle = search.toLowerCase(Locale.ROOT);
         rowsCache = allKeys().stream()
-                .filter(key -> tier == null || tier.allows(key))
+                .filter(key -> tier == null || tier.allows(key, effectLookup().get(key).orElse(null)))
                 .filter(key -> needle.isEmpty() || effectLookup().get(key)
                         .map(def -> def.effect().value().getDisplayName().getString()
                                 .toLowerCase(Locale.ROOT).contains(needle))

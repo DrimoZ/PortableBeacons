@@ -1,2 +1,2 @@
 { "level": 4, "effect_slots": 3, "augment_slots": 4, "base_range": 16.0, "fuel_capacity": 36000, "max_amplifier": 1, "aura_rank": 1,
-  "effect_pool": [ "portablebeacons:speed", "portablebeacons:haste", "portablebeacons:jump_boost", "portablebeacons:resistance", "portablebeacons:strength", "portablebeacons:regeneration" ] }
+  "effect_pool": [ "#standard" ] }

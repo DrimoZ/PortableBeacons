@@ -2,7 +2,6 @@ package dev.drimoz.portablebeacons.datagen;
 
 import dev.drimoz.portablebeacons.PortableBeacons;
 import dev.drimoz.portablebeacons.client.model.AugmentLook;
-import dev.drimoz.portablebeacons.core.AugmentDef;
 import dev.drimoz.portablebeacons.core.BPRegistryKeys;
 import dev.drimoz.portablebeacons.registry.BPItems;
 import net.minecraft.client.data.models.BlockModelGenerators;
@@ -17,7 +16,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.item.SelectItemModel;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceKey;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -27,15 +25,19 @@ import java.util.List;
  * Item models: twelve flat models, plus the augment's glyph table.
  *
  * <p>The table is the reason this is worth generating rather than typing. It selects on the
- * augment's registry key — see {@link AugmentLook} — so adding an augment here means naming it
- * once, not keeping an integer in step across two files.
+ * glyph name - see {@link AugmentLook} - so a shape added here is one any augment, built-in or
+ * from a datapack, can draw by naming it.
  */
 public class BPItemModelProvider extends ModelProvider {
 
-    /** The built-in augments, by registry name. Order is presentational only. */
-    private static final String[] AUGMENTS = {
+    /**
+     * Every glyph a model exists for: one per built-in augment, named after it, then generic shapes
+     * for datapack augments to borrow. Must match {@code tools/GenerateTextures.java}.
+     */
+    private static final String[] GLYPHS = {
             "range", "focus", "amplification", "efficiency", "capacity", "attunement", "discretion",
-            "communion", "wellspring", "wayfarer", "sentinel", "vanguard", "prism", "recluse"
+            "communion", "wellspring", "wayfarer", "sentinel", "vanguard", "prism", "recluse",
+            "star", "bolt", "heart", "gem", "shield", "leaf"
     };
 
     public BPItemModelProvider(PackOutput output) {
@@ -47,18 +49,16 @@ public class BPItemModelProvider extends ModelProvider {
         BPItems.beacons().forEach(beacon ->
                 itemModels.generateFlatItem(beacon.get(), ModelTemplates.FLAT_ITEM));
 
-        List<SelectItemModel.SwitchCase<ResourceKey<AugmentDef>>> cases =
-                new ArrayList<>(AUGMENTS.length);
-        for (String name : AUGMENTS) {
-            cases.add(ItemModelUtils.when(
-                    ResourceKey.create(BPRegistryKeys.AUGMENT, BPRegistryKeys.id(name)),
+        List<SelectItemModel.SwitchCase<String>> cases = new ArrayList<>(GLYPHS.length);
+        for (String name : GLYPHS) {
+            cases.add(ItemModelUtils.when(name,
                     byTier(tier -> augmentModel(itemModels, name, tier))));
         }
 
-        // The fallback has no glyph: what a stack with no component - or a datapack augment with
-        // no texture of its own - looks like. It still shows its colour and its tier.
+        // The fallback has no glyph: what a stack with no component - or a datapack augment that
+        // names no glyph, or one no model exists for - looks like. It still shows its colour and its tier.
         itemModels.itemModelOutput.accept(BPItems.AUGMENT.get(), ItemModelUtils.select(
-                AugmentLook.TypeProperty.INSTANCE,
+                AugmentLook.GlyphProperty.INSTANCE,
                 byTier(tier -> augmentModel(itemModels, null, tier)),
                 cases));
     }

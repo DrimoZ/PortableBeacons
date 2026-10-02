@@ -348,7 +348,7 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
         Optional<BeaconEffectDef> def = lookup.get(key);
         // Every one of these is re-checked here even though the GUI greys them out: the button id
         // arrives from the client and cannot be trusted on its own.
-        if (def.isEmpty() || def.get().minTier() > tier.level() || !tier.allows(key)) {
+        if (def.isEmpty() || def.get().minTier() > tier.level() || !tier.allows(key, def.get())) {
             return effects;
         }
         if (effects.stream().anyMatch(slot -> slot.effect().equals(key))) {

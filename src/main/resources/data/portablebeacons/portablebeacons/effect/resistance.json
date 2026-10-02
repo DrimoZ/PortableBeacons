@@ -1,1 +1,1 @@
-{ "effect": "minecraft:resistance", "cost": 1.5, "max_amplifier": 2, "min_tier": 2 }
+{ "effect": "minecraft:resistance", "cost": 1.5, "max_amplifier": 2, "min_tier": 2, "pools": [ "standard" ] }
