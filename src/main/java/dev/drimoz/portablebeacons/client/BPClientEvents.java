@@ -5,6 +5,7 @@ import dev.drimoz.portablebeacons.PortableBeacons;
 import dev.drimoz.portablebeacons.client.model.AugmentLook;
 import dev.drimoz.portablebeacons.net.OpenBeaconPayload;
 import dev.drimoz.portablebeacons.net.ToggleBeaconPayload;
+import dev.drimoz.portablebeacons.core.BPRegistryKeys;
 import dev.drimoz.portablebeacons.registry.BPItems;
 import dev.drimoz.portablebeacons.registry.BPMenus;
 import net.minecraft.client.KeyMapping;
@@ -15,6 +16,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
@@ -50,6 +52,11 @@ public final class BPClientEvents {
         @SubscribeEvent
         public static void registerScreens(RegisterMenuScreensEvent event) {
             event.register(BPMenus.BEACON.get(), PortableBeaconScreen::new);
+        }
+
+        @SubscribeEvent
+        public static void registerHud(RegisterGuiLayersEvent event) {
+            event.registerAboveAll(BPRegistryKeys.id("beacon_hud"), new BeaconHud());
         }
 
         @SubscribeEvent

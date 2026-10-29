@@ -102,6 +102,9 @@ or off (`beacon_recharge_per_second`, 20 by default), so a base with a beacon do
 station. And any energy mod's charger fills a beacon through the forge energy capability, at
 `energy_per_fuel_unit` FE per unit (40 by default: an iron ingot's worth is 12,000 FE).
 
+While a beacon runs, its remaining runtime sits in the bottom-right corner of the screen - green,
+amber in its last minute, red once dry. `show_hud` in the client config hides it.
+
 A minute before it runs dry the beacon says so. When it does run dry it stays switched on and
 waits, and resumes by itself the moment there is fuel in its slot. Only one beacon runs at a time:
 switching one on switches your others off.

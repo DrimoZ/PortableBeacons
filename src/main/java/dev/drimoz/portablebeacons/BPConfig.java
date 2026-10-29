@@ -17,6 +17,25 @@ public final class BPConfig {
     }
 
     /**
+     * The one per-player option, so it lives apart from the server spec above: a player hiding the
+     * HUD should not need the server's say.
+     */
+    public static final ModConfigSpec CLIENT_SPEC;
+    private static final ModConfigSpec.BooleanValue SHOW_HUD;
+
+    static {
+        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        SHOW_HUD = builder
+                .comment("Show the running beacon's remaining runtime in the corner of the screen.")
+                .define("show_hud", true);
+        CLIENT_SPEC = builder.build();
+    }
+
+    public static boolean showHud() {
+        return !CLIENT_SPEC.isLoaded() || SHOW_HUD.get();
+    }
+
+    /**
      * Whether fuel exists at all, from either side.
      *
      * <p>Server configs are synced, but the menu is also built during login before that lands, so

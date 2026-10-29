@@ -102,7 +102,8 @@ Fourteen augments, at most four slots: the question is never which ones you want
 Every effect burns fuel each second, more for higher levels and more again for sharing it. Copper,
 iron, gold, emerald, diamond and netherite each last longer than the last.
 
-- **The screen shows time, not units**: how long the beacon lasts at what it is drawing now.
+- **The screen shows time, not units**: how long the beacon lasts at what it is drawing now - and
+  so does a corner of the HUD while it runs, without opening anything.
 - **A real beacon recharges it.** Stand in a lit beacon's range and every beacon you carry tops up.
 - **Forge Energy.** Any mod's charger fills it.
 - **A minute's warning** before it runs dry, and when it does, it waits and starts again by itself
