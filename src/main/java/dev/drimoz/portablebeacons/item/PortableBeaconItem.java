@@ -150,24 +150,33 @@ public class PortableBeaconItem extends Item {
         if (registries == null || !BPConfig.fuelEnabled()) {
             return;
         }
-        // The buffer and the slot together, as the screen counts it: the slot is burned before the
-        // beacon runs dry, so leaving it out promised a fraction of the real runtime.
-        int units = state.fuel() + BPLookups.reserveUnits(stack, registries);
-        if (units <= 0) {
+        int seconds = runtimeSeconds(stack, state, registries);
+        if (seconds <= 0) {
             return;
         }
+        tooltip.accept(Component.translatable("portablebeacons.gui.runtime", Durations.format(seconds))
+                .withStyle(ChatFormatting.DARK_GRAY));
+    }
+
+    /**
+     * Seconds of fuel left at the current draw, or -1 when nothing draws - nothing enabled, or a
+     * tier that burns nothing - or the tier is unknown. Shared by the tooltip and the HUD so the two
+     * never disagree.
+     */
+    public static int runtimeSeconds(ItemStack stack, BeaconState state, HolderLookup.Provider registries) {
         BeaconStats stats = BPLookups.stats(stack, registries);
         if (stats == null) {
-            return;
+            return -1;
         }
         double perSecond = BeaconResolver.fuelPerSecond(state, stats,
                 key -> Optional.ofNullable(lookup(registries, BPRegistryKeys.EFFECT, key)));
         if (perSecond <= 0.0) {
-            return;
+            return -1;
         }
-        tooltip.accept(Component.translatable("portablebeacons.gui.runtime",
-                        Durations.format((int) (units / perSecond)))
-                .withStyle(ChatFormatting.DARK_GRAY));
+        // The buffer and the slot together, as the screen counts it: the slot is burned before the
+        // beacon runs dry, so leaving it out promised a fraction of the real runtime.
+        int units = state.fuel() + BPLookups.reserveUnits(stack, registries);
+        return (int) (units / perSecond);
     }
 
     @Nullable

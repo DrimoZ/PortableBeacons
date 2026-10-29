@@ -29,6 +29,7 @@ public class PortableBeacons {
         BPRecipes.SERIALIZERS.register(modEventBus);
 
         modContainer.registerConfig(ModConfig.Type.SERVER, BPConfig.SPEC);
+        modContainer.registerConfig(ModConfig.Type.CLIENT, BPConfig.CLIENT_SPEC);
         modEventBus.addListener(PortableBeacons::addPacks);
     }
 

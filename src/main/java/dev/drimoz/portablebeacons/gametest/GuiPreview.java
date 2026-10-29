@@ -153,6 +153,8 @@ public final class GuiPreview {
         step(5, mc -> key(mc, GLFW.GLFW_KEY_ESCAPE));
 
         step(5, mc -> mc.gui.setScreen(null));
+        // The corner HUD, with the screen shut: the beacon equipped above is on and fuelled.
+        step(20, mc -> shot("hud"));
         step(10, Minecraft::stop);
     }
 
