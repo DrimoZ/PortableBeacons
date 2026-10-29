@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import dev.drimoz.portablebeacons.PortableBeacons;
 import dev.drimoz.portablebeacons.client.model.AugmentLook;
 import dev.drimoz.portablebeacons.net.OpenBeaconPayload;
+import dev.drimoz.portablebeacons.net.ToggleBeaconPayload;
 import dev.drimoz.portablebeacons.registry.BPItems;
 import dev.drimoz.portablebeacons.registry.BPMenus;
 import net.minecraft.client.KeyMapping;
@@ -35,6 +36,13 @@ public final class BPClientEvents {
             GLFW.GLFW_KEY_B,
             "key.categories.portablebeacons");
 
+    /** Unbound by default: every free letter near the movement keys is some other mod's. */
+    public static final KeyMapping TOGGLE_PACK = new KeyMapping(
+            "key.portablebeacons.toggle_beacon",
+            KeyConflictContext.IN_GAME,
+            InputConstants.UNKNOWN,
+            "key.categories.portablebeacons");
+
     @EventBusSubscriber(modid = PortableBeacons.MOD_ID,
             value = Dist.CLIENT)
     public static final class ModBus {
@@ -47,6 +55,7 @@ public final class BPClientEvents {
         @SubscribeEvent
         public static void registerKeys(RegisterKeyMappingsEvent event) {
             event.register(OPEN_PACK);
+            event.register(TOGGLE_PACK);
         }
 
         /** Tints the augment's screen layer from its registry entry - see {@link AugmentLook}. */
@@ -75,6 +84,9 @@ public final class BPClientEvents {
                 // No slot index: the server finds the beacon itself, so a crafted packet cannot
                 // point the menu at an arbitrary stack.
                 PacketDistributor.sendToServer(new OpenBeaconPayload(OpenBeaconPayload.FIND_ANY));
+            }
+            while (TOGGLE_PACK.consumeClick()) {
+                PacketDistributor.sendToServer(ToggleBeaconPayload.INSTANCE);
             }
         }
 

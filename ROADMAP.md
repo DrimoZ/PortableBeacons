@@ -54,6 +54,30 @@ tier that used to have it for free. That is the right shape, but the numbers hav
 — only tested. Whether Beacon II spending its single augment slot on Attunement feels like a
 decision or a tax is something only playing will say.
 
+## Backlog
+
+Ranked by impact on players and pack authors against what it costs, with the cost counted on
+three branches - anything in code lands on 1.21.1, 26.1 and 26.2. Real issue reports outrank this
+whole list the day they arrive.
+
+| # | Item | Why | Cost |
+|---|---|---|---|
+| 1 | ~~**A key to switch the beacon on and off**~~ - done on 26.2, to backport | Stopping the drain mid-fight meant opening the screen; with a worn beacon there is no item to click at all | Small: one payload, one bind |
+| 2 | **Check team sharing against FTB Teams / Open Parties and Claims** | Team mode asks `isAlliedTo`, i.e. vanilla scoreboard teams. Neither mod documents a bridge to them, so team sharing may silently do nothing in the packs this mod grows through. Next step: two players in one FTB team, in a pack, before writing any binding | Small to check, medium to bind |
+| 3 | ~~**An optional built-in "Extended effects" datapack**~~ - done on 26.2, to backport (the pack format differs per branch) | Luck, Hero of the Village, Invisibility - off by default so the default pool stays vanilla. Absorption and Health Boost left out: re-applied every pass, they misbehave | Small: data plus a pack finder |
+| 4 | **A fuel and runtime HUD while the beacon runs** | A fuel-burning item with no gauge on screen is checked by opening it, which is what the dry warning papers over | Medium: a GUI layer, a toggle |
+| 5 | **Publish on Modrinth too** | The direct competitors (Inventory Beacon, Beacon Overhaul Continued) live there; one Gradle task can upload to both, so it is not two pages kept half-current | Small once `curseforge-gradle` is wired |
+| 6 | **Specialised example augments** (Sprinter, Miner, Diver) | Shows off `add_effect_amplifier` / `mul_effect_cost`, which nothing shipped uses | Small: data, glyphs exist |
+| 7 | **Effect presets** | Two or three saved loadouts, switched from the screen | Medium: state, codec, GUI |
+| 8 | **A hostile aura mode** | Glowing or Slowness on monsters in range, behind a costly augment - the one idea no other beacon mod does well | Medium: new `AuraMode`, balance |
+| 9 | **New augment operations**: solar recharge, last-stand burst, lingering effects | Each opens a family of datapack augments rather than one item | Medium each |
+| 10 | **A Nether Star tier V** | An endgame target; must stay under the placed beacon's reach | Small in data, needs a balance pass |
+| 11 | **More fuels** (amethyst, echo shard) | Renewable early fuel. Waits on the sharing balance pass, since fuel value is the other half of the same numbers | Data only |
+| 12 | **`/portablebeacons inspect`** | Computed stats of the held beacon, for datapack authors | Small |
+
+Not on it: Fabric and 1.20.1 before reports exist, and a block that holds a portable beacon - it
+would compete with the vanilla beacon this mod is careful not to replace.
+
 ## Settled
 
 **The rename.** Done fully: display name, mod id, Java package, every item id, the data component,

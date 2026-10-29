@@ -107,13 +107,16 @@ iron, gold, emerald, diamond and netherite each last longer than the last.
 - **Forge Energy.** Any mod's charger fills it.
 - **A minute's warning** before it runs dry, and when it does, it waits and starts again by itself
   as soon as there is fuel.
+- **A key switches it on and off** without opening anything, worn or carried.
 - **Servers can turn fuel off entirely**: the slot and gauge disappear with it.
 
 ![Data-driven](https://media.forgecdn.net/attachments/description/1650659/description_cdd0e9e0-9035-4b96-bc91-e45484b09ce5.png)
 
 Effects, tiers, augments and fuels are datapack files. A pack can retune every number, add any
 effect from the game or another mod, or make a new augment with its own colour and icon, all
-without code. The shipped list sticks to the vanilla beacon's kind of effects on purpose.
+without code. The shipped list sticks to the vanilla beacon's kind of effects on purpose; a
+built-in **Extended effects** datapack, off until you tick it, adds Luck, Hero of the Village and
+Invisibility.
 
 Nine server options cover the rest: fuel on or off, PvP-safe sharing, a global cost multiplier, a
 reach cap, dimensions where beacons switch off, and more.

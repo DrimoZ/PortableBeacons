@@ -1,0 +1,1 @@
+{ "effect": "minecraft:luck", "cost": 1.0, "max_amplifier": 1, "min_tier": 2, "pools": [ "standard" ] }
