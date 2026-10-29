@@ -3,6 +3,14 @@
 All notable changes to this project are documented here, newest first.
 Versions follow `{mod version}+{minecraft version}`.
 
+## Unreleased
+
+### Added
+- **A key to switch the beacon on and off** without opening it - the running one goes off, or the
+  one the open key would pick comes on. Unbound by default, under *Portable Beacon* in the controls.
+- **An optional Extended effects datapack**, shipped inside the mod and off until a world enables
+  it: Luck, Hero of the Village and Invisibility for the four standard tiers.
+
 ## 2.0.0
 
 One release for **1.21.1, 26.1 and 26.2** at once, with the same content on all three. The first

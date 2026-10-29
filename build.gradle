@@ -257,9 +257,6 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
     options.release = 25
     options.compilerArgs << '-Xlint:deprecation'
-    // javac stops reporting after 100 errors by default, which during a port hides most of the
-    // work behind the first hundred symptoms. Remove once the port compiles.
-    options.compilerArgs << '-Xmaxerrs' << '2000'
 }
 
 publishing {

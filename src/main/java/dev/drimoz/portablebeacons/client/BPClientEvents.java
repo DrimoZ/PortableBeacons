@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import dev.drimoz.portablebeacons.PortableBeacons;
 import dev.drimoz.portablebeacons.core.BPRegistryKeys;
 import dev.drimoz.portablebeacons.net.OpenBeaconPayload;
+import dev.drimoz.portablebeacons.net.ToggleBeaconPayload;
 import dev.drimoz.portablebeacons.registry.BPItems;
 import dev.drimoz.portablebeacons.registry.BPMenus;
 import net.minecraft.client.KeyMapping;
@@ -39,6 +40,13 @@ public final class BPClientEvents {
             InputConstants.Type.KEYSYM.getOrCreate(GLFW.GLFW_KEY_B),
             CATEGORY);
 
+    /** Unbound by default: every free letter near the movement keys is some other mod's. */
+    public static final KeyMapping TOGGLE_PACK = new KeyMapping(
+            "key.portablebeacons.toggle_beacon",
+            KeyConflictContext.IN_GAME,
+            InputConstants.UNKNOWN,
+            CATEGORY);
+
     @EventBusSubscriber(modid = PortableBeacons.MOD_ID,
             value = Dist.CLIENT)
     public static final class ModBus {
@@ -52,6 +60,7 @@ public final class BPClientEvents {
         public static void registerKeys(RegisterKeyMappingsEvent event) {
             event.registerCategory(CATEGORY);
             event.register(OPEN_PACK);
+            event.register(TOGGLE_PACK);
         }
 
         /**
@@ -87,6 +96,9 @@ public final class BPClientEvents {
                 // No slot index: the server finds the beacon itself, so a crafted packet cannot
                 // point the menu at an arbitrary stack.
                 ClientPacketDistributor.sendToServer(new OpenBeaconPayload(OpenBeaconPayload.FIND_ANY));
+            }
+            while (TOGGLE_PACK.consumeClick()) {
+                ClientPacketDistributor.sendToServer(ToggleBeaconPayload.INSTANCE);
             }
         }
 

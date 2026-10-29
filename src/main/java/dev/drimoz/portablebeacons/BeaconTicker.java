@@ -141,7 +141,7 @@ public final class BeaconTicker {
      * Only the first active beacon does anything. Letting several stack would make the tier ladder
      * pointless — four tier-I beacons would beat one tier-IV.
      */
-    private static ItemStack findActiveBeacon(Player player) {
+    public static ItemStack findActiveBeacon(Player player) {
         // Curios first: a beacon the player has deliberately equipped should beat one that happens to
         // be loose in the bag. The reverse order made a worn beacon look broken - the inventory one
         // quietly won and there was nothing on screen to say why.

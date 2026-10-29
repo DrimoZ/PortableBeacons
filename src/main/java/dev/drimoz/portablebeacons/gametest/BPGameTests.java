@@ -10,6 +10,7 @@ import dev.drimoz.portablebeacons.core.BeaconState;
 import dev.drimoz.portablebeacons.item.PortableBeaconItem;
 import dev.drimoz.portablebeacons.item.AugmentItem;
 import dev.drimoz.portablebeacons.menu.PortableBeaconMenu;
+import dev.drimoz.portablebeacons.net.ToggleBeaconPayload;
 import dev.drimoz.portablebeacons.core.AugmentDef;
 import dev.drimoz.portablebeacons.core.AugmentInstance;
 import dev.drimoz.portablebeacons.registry.BPComponents;
@@ -366,6 +367,47 @@ public final class BPGameTests {
             helper.assertTrue(PortableBeaconItem.stateOf(second).active(), "the beacon switched on is not on");
             helper.assertFalse(PortableBeaconItem.stateOf(first).active(), "the other beacon was left on");
         });
+    }
+
+    /**
+     * The key stops whichever beacon runs, then starts the one the open key would pick - never a
+     * second one alongside it.
+     */
+    public static void theToggleKeyStopsTheRunningBeaconThenRestartsIt(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ServerPlayer carrier = spawnPlayer(helper, cleanup);
+            ItemStack first = giveBeacon(carrier, AuraMode.SELF);
+            ItemStack second = new ItemStack(BPItems.BEACON_IV.get());
+            carrier.getInventory().setItem(1, second);
+
+            ToggleBeaconPayload.toggle(carrier);
+            helper.assertFalse(PortableBeaconItem.stateOf(first).active(), "the running beacon was not stopped");
+
+            ToggleBeaconPayload.toggle(carrier);
+            helper.assertTrue(PortableBeaconItem.stateOf(first).active(), "the first beacon did not restart");
+            helper.assertFalse(PortableBeaconItem.stateOf(second).active(), "a second beacon was switched on");
+        });
+    }
+
+    /**
+     * The extended effects are offered, opt-in, and load. A bad pack.mcmeta drops the pack with
+     * nothing louder than a log line, and a pack that switched itself on would widen every world's
+     * pool unasked.
+     *
+     * <p>"Opt-in" is asked of the pack source rather than of the selection: the game test server
+     * selects every available pack, so here the pack is always on - which is what lets the last
+     * check see its effects at all.
+     */
+    public static void theExtendedEffectsPackIsOfferedButOff(GameTestHelper helper) {
+        var packs = helper.getLevel().getServer().getPackRepository();
+        var pack = packs.getPack("mod/portablebeacons:datapacks/extended_effects");
+        helper.assertTrue(pack != null, "the extended effects pack was not found");
+        helper.assertFalse(pack.getPackSource().shouldAddAutomatically(),
+                "the extended effects pack would switch itself on in new worlds");
+        helper.assertTrue(helper.getLevel().registryAccess().lookupOrThrow(BPRegistryKeys.EFFECT)
+                        .containsKey(BPRegistryKeys.id("luck")),
+                "the extended effects pack loaded no effects");
+        helper.succeed();
     }
 
     /**
