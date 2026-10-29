@@ -55,6 +55,10 @@ public final class BPTestFunctions {
                     (Consumer<GameTestHelper>) BPGameTests::aDryBeaconWaitsThenResumes);
             helper.register(id("switching_one_beacon_on_switches_the_others_off"),
                     (Consumer<GameTestHelper>) BPGameTests::switchingOneBeaconOnSwitchesTheOthersOff);
+            helper.register(id("the_toggle_key_stops_the_running_beacon_then_restarts_it"),
+                    (Consumer<GameTestHelper>) BPGameTests::theToggleKeyStopsTheRunningBeaconThenRestartsIt);
+            helper.register(id("the_extended_effects_pack_is_offered_but_off"),
+                    (Consumer<GameTestHelper>) BPGameTests::theExtendedEffectsPackIsOfferedButOff);
             helper.register(id("an_augment_swaps_for_its_own_type"),
                     (Consumer<GameTestHelper>) BPGameTests::anAugmentSwapsForItsOwnType);
             helper.register(id("clicking_an_augment_onto_another_swaps_them"),

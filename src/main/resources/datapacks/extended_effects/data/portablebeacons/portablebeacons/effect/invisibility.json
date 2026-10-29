@@ -1,0 +1,1 @@
+{ "effect": "minecraft:invisibility", "cost": 2.0, "max_amplifier": 0, "min_tier": 3, "pools": [ "standard" ] }

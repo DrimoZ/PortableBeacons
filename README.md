@@ -89,7 +89,8 @@ iron, gold, emerald, diamond and netherite are worth increasing amounts; the bea
 fuel slot. Sharing an effect with allies costs more than keeping it to yourself, which is the
 main decision the mod asks you to make.
 
-A master switch stops all consumption instantly, and each effect can be turned off individually
+A master switch stops all consumption instantly - from the screen, or from a key that works with
+the screen closed (unbound by default, under *Portable Beacon* in the controls) - and each effect can be turned off individually
 without losing its settings. An effect a real beacon is already providing is free, and the beacon
 refuses fuel its buffer cannot hold whole rather than burning most of a netherite ingot for
 nothing — which is what gives Capacity and the higher tiers a purpose. Pulling a Capacity augment
@@ -198,6 +199,12 @@ displays correctly with no texture needed.
 The default pool is deliberately limited to the vanilla beacon's effects. Widening it is a
 datapack away, but it is not the default: an unrestricted pool turns a utility mod into a cheat
 item.
+
+One such datapack ships inside the mod, off: **Extended effects** adds Luck, Hero of the Village
+and Invisibility to the four standard tiers. Tick it in the world's datapack screen, or
+`/datapack enable "mod/portablebeacons:datapacks/extended_effects"` on a server. Absorption and
+Health Boost stay out of it - re-applied every pass, the one would refill its hearts forever and
+the other risks cutting them.
 
 ---
 

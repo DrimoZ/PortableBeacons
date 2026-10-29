@@ -1,0 +1,1 @@
+{ "effect": "minecraft:hero_of_the_village", "cost": 2.5, "max_amplifier": 1, "min_tier": 3, "pools": [ "standard" ] }

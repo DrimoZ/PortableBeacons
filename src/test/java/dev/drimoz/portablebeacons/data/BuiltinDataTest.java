@@ -40,6 +40,13 @@ class BuiltinDataTest {
         assertAllParse("effect", BeaconEffectDef.CODEC);
     }
 
+    /** The opt-in pack is read by the same codec, but from its own root, which the scans above miss. */
+    @Test
+    void extendedEffectsParse() throws IOException {
+        assertAllParse(ProjectFiles.resources().resolve(Path.of("datapacks", "extended_effects",
+                "data", "portablebeacons", "portablebeacons")), "effect", BeaconEffectDef.CODEC);
+    }
+
     @Test
     void augmentsParse() throws IOException {
         assertAllParse("augment", AugmentDef.CODEC);
@@ -56,8 +63,12 @@ class BuiltinDataTest {
     }
 
     private static void assertAllParse(String folder, Codec<?> codec) throws IOException {
+        assertAllParse(DATA, folder, codec);
+    }
+
+    private static void assertAllParse(Path root, String folder, Codec<?> codec) throws IOException {
         List<Path> files;
-        try (Stream<Path> stream = Files.list(DATA.resolve(folder))) {
+        try (Stream<Path> stream = Files.list(root.resolve(folder))) {
             files = stream.filter(path -> path.toString().endsWith(".json")).toList();
         }
         assertFalse(files.isEmpty(), "no built-in entries found for " + folder);
