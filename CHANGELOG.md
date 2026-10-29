@@ -10,6 +10,9 @@ Versions follow `{mod version}+{minecraft version}`.
   one the open key would pick comes on. Unbound by default, under *Portable Beacon* in the controls.
 - **An optional Extended effects datapack**, shipped inside the mod and off until a world enables
   it: Luck, Hero of the Village and Invisibility for the four standard tiers.
+- **The running beacon's runtime on the HUD**, bottom-right, in the status light's colours: green,
+  amber in the last minute, red once dry. Hidden with F1, or for good with `show_hud` in the new
+  client config.
 
 ## 2.0.0
 

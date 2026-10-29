@@ -16,6 +16,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
@@ -54,6 +55,11 @@ public final class BPClientEvents {
         @SubscribeEvent
         public static void registerScreens(RegisterMenuScreensEvent event) {
             event.register(BPMenus.BEACON.get(), PortableBeaconScreen::new);
+        }
+
+        @SubscribeEvent
+        public static void registerHud(RegisterGuiLayersEvent event) {
+            event.registerAboveAll(BPRegistryKeys.id("beacon_hud"), new BeaconHud());
         }
 
         @SubscribeEvent
