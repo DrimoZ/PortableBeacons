@@ -13,6 +13,9 @@ Versions follow `{mod version}+{minecraft version}`.
 - **The running beacon's runtime on the HUD**, bottom-right, in the status light's colours: green,
   amber in the last minute, red once dry. Hidden with F1, or for good with `show_hud` in the new
   client config.
+- **Three specialist augments.** Sprinter and Miner take Speed or Haste one level higher at 0.6×
+  its cost; Diver halves the cost of Water Breathing, Dolphin's Grace and Conduit Power. Crafted
+  like the others, around sugar, a golden pickaxe and a turtle scute.
 
 ## 2.0.0
 
