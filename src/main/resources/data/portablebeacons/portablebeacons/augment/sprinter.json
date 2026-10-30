@@ -1,0 +1,9 @@
+{
+  "max_tier": 1,
+  "color": 15917388,
+  "glyph": "bolt",
+  "operations": [
+    { "type": "add_effect_amplifier", "effect": "portablebeacons:speed", "values": [1.0] },
+    { "type": "mul_effect_cost", "effect": "portablebeacons:speed", "values": [0.6] }
+  ]
+}

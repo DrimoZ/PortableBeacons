@@ -188,7 +188,8 @@ public final class GuiPreview {
         // Every augment and every beacon, so the item art is in the shot too. Tiers cycle 1-3 so the
         // casing pips can be checked against the tooltip.
         String[] augments = {"range", "focus", "amplification", "efficiency", "capacity", "attunement",
-                "discretion", "communion", "wellspring", "wayfarer", "sentinel", "vanguard", "prism", "recluse"};
+                "discretion", "communion", "wellspring", "wayfarer", "sentinel", "vanguard", "prism", "recluse",
+                "sprinter", "miner", "diver"};
         for (int i = 0; i < augments.length; i++) {
             player.getInventory().setItem(9 + i, augment(augments[i], 1 + i % 3));
         }

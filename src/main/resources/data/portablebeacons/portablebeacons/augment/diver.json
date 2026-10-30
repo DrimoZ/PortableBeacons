@@ -1,0 +1,10 @@
+{
+  "max_tier": 1,
+  "color": 3057824,
+  "glyph": "gem",
+  "operations": [
+    { "type": "mul_effect_cost", "effect": "portablebeacons:water_breathing", "values": [0.5] },
+    { "type": "mul_effect_cost", "effect": "portablebeacons:dolphins_grace", "values": [0.5] },
+    { "type": "mul_effect_cost", "effect": "portablebeacons:conduit_power", "values": [0.5] }
+  ]
+}

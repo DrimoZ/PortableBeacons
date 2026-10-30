@@ -55,7 +55,16 @@ where the decisions are:
 | Prism | +1 effect slot, +1 level ceiling | fuel ×2.2 |
 | Recluse | fuel ×0.35, buffer ×3, no particles | −2 sharing ranks |
 
-Fourteen augments, at most four slots. The question is never which you want but which four.
+Three more are specialists - one effect, or one pool, made cheaper, worth a slot only to a beacon
+built around it:
+
+| Augment | Effect |
+|---|---|
+| Sprinter | Speed one level higher, its cost ×0.6 |
+| Miner | Haste one level higher, its cost ×0.6 |
+| Diver | Water Breathing, Dolphin's Grace and Conduit Power at half cost |
+
+Seventeen augments, at most four slots. The question is never which you want but which four.
 
 Sharing is earned rather than given: Beacons I and II keep everything to the carrier, III and IV
 reach your team, and anything wider needs Attunement or Vanguard. Each tier's starting point is a
@@ -178,15 +187,16 @@ three tiers per augment.
 A tier's `fuel_multiplier` (default 1) scales what its effects cost before augments.
 
 Two operations act on a single effect, named by `"effect"`, which is how a pack builds a
-specialised augment rather than another all-round one:
+specialised augment rather than another all-round one - the shipped Sprinter, Miner and Diver are
+built this way:
 
 ```json
-// data/mypack/portablebeacons/augment/sprinter.json - Speed one level higher, and cheaper
+// data/mypack/portablebeacons/augment/leaper.json - Jump Boost one level higher, and cheaper
 {
-  "max_tier": 1, "color": 5636095, "glyph": "bolt",
+  "max_tier": 1, "color": 5636095, "glyph": "leaf",
   "operations": [
-    { "type": "add_effect_amplifier", "effect": "portablebeacons:speed", "values": [1] },
-    { "type": "mul_effect_cost", "effect": "portablebeacons:speed", "values": [0.6] }
+    { "type": "add_effect_amplifier", "effect": "portablebeacons:jump_boost", "values": [1] },
+    { "type": "mul_effect_cost", "effect": "portablebeacons:jump_boost", "values": [0.6] }
   ]
 }
 ```
