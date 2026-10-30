@@ -1,0 +1,9 @@
+{
+  "max_tier": 1,
+  "color": 11563066,
+  "glyph": "star",
+  "operations": [
+    { "type": "add_effect_amplifier", "effect": "portablebeacons:haste", "values": [1.0] },
+    { "type": "mul_effect_cost", "effect": "portablebeacons:haste", "values": [0.6] }
+  ]
+}

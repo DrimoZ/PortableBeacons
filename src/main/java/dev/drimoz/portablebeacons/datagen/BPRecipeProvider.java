@@ -85,6 +85,10 @@ public class BPRecipeProvider extends RecipeProvider {
         augment(output, lookup, "vanguard", Items.END_ROD, 1);
         augment(output, lookup, "prism", Items.AMETHYST_CLUSTER, 1);
         augment(output, lookup, "recluse", Items.SCULK_SENSOR, 1);
+        // The specialists: one effect, or one pool, made cheaper.
+        augment(output, lookup, "sprinter", Items.SUGAR, 1);
+        augment(output, lookup, "miner", Items.GOLDEN_PICKAXE, 1);
+        augment(output, lookup, "diver", Items.TURTLE_SCUTE, 1);
     }
 
     private void beacon(RecipeOutput output, HolderLookup.Provider lookup, ItemLike result,
