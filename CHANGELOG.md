@@ -6,6 +6,10 @@ Versions follow `{mod version}+{minecraft version}`.
 ## Unreleased
 
 ### Added
+- **Three effect presets**, under the figures in the info tab: right-click a number to save the
+  current effects, click it to load them. Loading is a reconfiguration, so it needs a nearby beacon
+  where `require_beacon_to_configure` says so; a preset the beacon can no longer hold in full keeps
+  what still fits. Beacons from before keep working: they simply have no presets yet.
 - **Hunter, and the `mark_hostiles` operation**: monsters in the aura's reach glow, and at level 2
   are slowed. Only while the beacon runs and pays; fuel ×1.3 / ×1.6.
 - **Three new augment operations, and an augment for each.** `solar_charge` (fuel per second under

@@ -128,6 +128,7 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
     private static final int SCROLLBAR_W = 12;
 
     private final SideTabs tabs;
+    private final InfoTab infoTab;
 
     /** First effect row shown, when a beacon has more than fit. */
     private int rowScroll;
@@ -154,7 +155,8 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
         this.titleLabelY = GuiMetrics.TITLE_Y;
         this.inventoryLabelX = GuiMetrics.MARGIN;
         this.inventoryLabelY = GuiMetrics.inventoryLabelY(PortableBeaconMenu.CONTENT_BOTTOM);
-        this.tabs = new SideTabs(List.of(new InfoTab(), new AugmentTab()), IMAGE_W, AugmentTab.ID);
+        this.infoTab = new InfoTab();
+        this.tabs = new SideTabs(List.of(infoTab, new AugmentTab()), IMAGE_W, AugmentTab.ID);
     }
 
     /**
@@ -560,7 +562,7 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
 
         @Override
         protected int contentWidth() {
-            int widest = 0;
+            int widest = chipsX() + BeaconState.PRESETS * (CHIP_W + CHIP_GAP);
             for (Component line : lines()) {
                 widest = Math.max(widest, font.width(line));
             }
@@ -569,7 +571,7 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
 
         @Override
         protected int contentHeight() {
-            return lines().size() * GuiTheme.LINE;
+            return presetRowY() + GuiTheme.LINE;
         }
 
         @Override
@@ -580,6 +582,61 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
                 int colour = i == 0 ? status().tabColour : GuiTheme.TAB_LABEL;
                 graphics.drawString(font, lines.get(i), x, y + i * GuiTheme.LINE, colour, true);
             }
+            int rowY = y + presetRowY();
+            graphics.text(font, PRESETS_LABEL, x, rowY + 1, GuiTheme.TAB_LABEL, true);
+            int hovered = presetAt(mouseX, mouseY);
+            for (int i = 0; i < BeaconState.PRESETS; i++) {
+                int chipX = x + chipsX() + i * (CHIP_W + CHIP_GAP);
+                boolean saved = !menu.state().preset(i).isEmpty();
+                graphics.fill(chipX, rowY, chipX + CHIP_W, rowY + GuiTheme.LINE,
+                        hovered == i ? 0xFF6A6A6A : saved ? 0xFF3C3C3C : 0x60000000);
+                String number = String.valueOf(i + 1);
+                graphics.text(font, number, chipX + (CHIP_W - font.width(number)) / 2 + 1, rowY + 1,
+                        saved ? GuiTheme.TAB_VALUE : GuiTheme.TAB_MUTED, true);
+            }
+        }
+
+        @Override
+        protected List<Component> contentTooltip(int x, int y, int mouseX, int mouseY) {
+            int index = presetAt(mouseX, mouseY);
+            if (index < 0) {
+                return List.of();
+            }
+            Component load = menu.state().preset(index).isEmpty()
+                    ? Component.translatable("portablebeacons.gui.preset_empty")
+                    : Component.translatable("portablebeacons.gui.preset_load");
+            return List.of(Component.translatable("portablebeacons.gui.preset", index + 1), load,
+                    Component.translatable("portablebeacons.gui.preset_save"));
+        }
+
+        /**
+         * Presets sit under the figures as three numbered chips - click loads, right-click saves - so
+         * switching loadout is one click on a tab that is open anyway, not a screen of its own.
+         */
+        private static final int CHIP_W = 12;
+        private static final int CHIP_GAP = 2;
+        private static final Component PRESETS_LABEL = Component.translatable("portablebeacons.gui.presets");
+
+        private int presetRowY() {
+            return lines().size() * GuiTheme.LINE + 2;
+        }
+
+        private int chipsX() {
+            return font.width(PRESETS_LABEL) + 4;
+        }
+
+        /** The chip under the mouse, by preset number, or -1. Only once open: a sliding tab has no chips. */
+        int presetAt(double mouseX, double mouseY) {
+            if (!isFullyOpen()) {
+                return -1;
+            }
+            int x = (int) mouseX - (left() + GuiMetrics.TAB_PADDING) - chipsX();
+            int y = (int) mouseY - (top() + GuiMetrics.TAB_HEADER) - presetRowY();
+            if (x < 0 || y < 0 || y >= GuiTheme.LINE || x % (CHIP_W + CHIP_GAP) >= CHIP_W) {
+                return -1;
+            }
+            int index = x / (CHIP_W + CHIP_GAP);
+            return index < BeaconState.PRESETS ? index : -1;
         }
     }
 
@@ -1000,6 +1057,13 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
             return true;
         }
         if (tabs.mouseClicked(mouseX, mouseY)) {
+            click();
+            return true;
+        }
+        int preset = infoTab.presetAt(event.x(), event.y());
+        if (preset >= 0) {
+            boolean save = event.button() == GLFW.GLFW_MOUSE_BUTTON_RIGHT;
+            send(save ? PortableBeaconMenu.ACTION_SAVE_PRESET : PortableBeaconMenu.ACTION_LOAD_PRESET, preset, 0);
             click();
             return true;
         }
