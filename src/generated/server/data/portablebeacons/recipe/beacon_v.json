@@ -1,0 +1,17 @@
+{
+  "type": "portablebeacons:beacon_upgrade",
+  "key": {
+    "B": "minecraft:beacon",
+    "N": "minecraft:netherite_block",
+    "P": "portablebeacons:beacon_iv",
+    "S": "minecraft:nether_star"
+  },
+  "pattern": [
+    " S ",
+    "NPN",
+    "SBS"
+  ],
+  "result": {
+    "id": "portablebeacons:beacon_v"
+  }
+}

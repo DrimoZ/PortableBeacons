@@ -7,6 +7,7 @@
   "item.portablebeacons.beacon_ii": "Przenośny sygnalizator II",
   "item.portablebeacons.beacon_iii": "Przenośny sygnalizator III",
   "item.portablebeacons.beacon_iv": "Przenośny sygnalizator IV",
+  "item.portablebeacons.beacon_v": "Przenośny sygnalizator V",
   "item.portablebeacons.cinder_beacon": "Sygnalizator żaru",
   "item.portablebeacons.void_beacon": "Sygnalizator pustki",
   "item.portablebeacons.tidal_beacon": "Sygnalizator przypływu",
@@ -117,6 +118,8 @@
   "advancement.portablebeacons.augmented.description": "Zdobądź moduł do włożenia w plecak",
   "advancement.portablebeacons.tier_four.title": "Cała gwiazda",
   "advancement.portablebeacons.tier_four.description": "Zdobądź Przenośny sygnalizator IV",
+  "advancement.portablebeacons.tier_five.title": "Ponad drabinę",
+  "advancement.portablebeacons.tier_five.description": "Zdobądź Przenośny sygnalizator V",
   "advancement.portablebeacons.themed.title": "Specjalista",
   "advancement.portablebeacons.themed.description": "Zdobądź sygnalizator żaru, pustki lub przypływu"
 }

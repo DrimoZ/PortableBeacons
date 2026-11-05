@@ -80,7 +80,7 @@ public record BeaconTierDef(
     }
 
     public static final Codec<BeaconTierDef> CODEC = RecordCodecBuilder.create(i -> i.group(
-            Codec.intRange(1, 4).fieldOf("level").forGetter(BeaconTierDef::level),
+            Codec.intRange(1, 5).fieldOf("level").forGetter(BeaconTierDef::level),
             Codec.intRange(0, BeaconStats.MAX_EFFECT_SLOTS).fieldOf("effect_slots").forGetter(BeaconTierDef::effectSlots),
             Codec.intRange(0, BeaconStats.MAX_AUGMENT_SLOTS).fieldOf("augment_slots").forGetter(BeaconTierDef::augmentSlots),
             Codec.DOUBLE.fieldOf("base_range").forGetter(BeaconTierDef::baseRange),

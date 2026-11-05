@@ -7,6 +7,7 @@
   "item.portablebeacons.beacon_ii": "Faro portátil II",
   "item.portablebeacons.beacon_iii": "Faro portátil III",
   "item.portablebeacons.beacon_iv": "Faro portátil IV",
+  "item.portablebeacons.beacon_v": "Faro portátil V",
   "item.portablebeacons.cinder_beacon": "Faro de brasas",
   "item.portablebeacons.void_beacon": "Faro del vacío",
   "item.portablebeacons.tidal_beacon": "Faro de marea",
@@ -117,6 +118,8 @@
   "advancement.portablebeacons.augmented.description": "Consigue una mejora para instalar en una mochila",
   "advancement.portablebeacons.tier_four.title": "La estrella entera",
   "advancement.portablebeacons.tier_four.description": "Consigue un Faro portátil IV",
+  "advancement.portablebeacons.tier_five.title": "Más allá de la escalera",
+  "advancement.portablebeacons.tier_five.description": "Consigue un Faro portátil V",
   "advancement.portablebeacons.themed.title": "Especialista",
   "advancement.portablebeacons.themed.description": "Consigue un faro de brasas, del vacío o de marea"
 }

@@ -1,0 +1,6 @@
+{
+  "parent": "portablebeacons:item/portable_beacon",
+  "textures": {
+    "parts": "portablebeacons:item/beacon/beacon_v"
+  }
+}

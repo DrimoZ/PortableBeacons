@@ -1,6 +1,6 @@
 # Portable Beacons
 
-Beacon effects in an inventory item. Four tiers, augments you slot in, and a fuel cost — all
+Beacon effects in an inventory item. Five tiers, augments you slot in, and a fuel cost — all
 defined in datapacks rather than in code.
 
 **NeoForge 26.1.2** · Java 25 · MIT
@@ -23,6 +23,7 @@ strong, and what it costs are all configured through its own screen.
 | II | 1 | I | you | 8 blocks | 1 |
 | III | 2 | I | your team | 12 blocks | 2 |
 | IV | 3 | II | your team | 16 blocks | 4 |
+| V | 4 | III | your team | 18 blocks | 5 |
 
 Ranges are far below the vanilla beacon's 20–50 blocks on purpose: a beacon that follows you is
 worth much more than a fixed one at equal reach.
@@ -176,8 +177,8 @@ Four datapack registries under `data/<namespace>/portablebeacons/`:
 }
 ```
 
-`"pools"` is what makes that one file: the four standard tiers list `"#standard"` in their
-`effect_pool`, so any effect in the `standard` pool is offered by all four with no tier file
+`"pools"` is what makes that one file: the five standard tiers list `"#standard"` in their
+`effect_pool`, so any effect in the `standard` pool is offered by all five with no tier file
 touched. A pack can invent its own pools the same way. An augment added by a datapack can borrow
 any shipped glyph for its icon with `"glyph"` - one of the augments' own (`"range"`, `"focus"`,
 …) or a generic shape: `star`, `bolt`, `heart`, `gem`, `shield`, `leaf`.
@@ -218,7 +219,7 @@ datapack away, but it is not the default: an unrestricted pool turns a utility m
 item.
 
 One such datapack ships inside the mod, off: **Extended effects** adds Luck, Hero of the Village
-and Invisibility to the four standard tiers. Tick it in the world's datapack screen, or
+and Invisibility to the five standard tiers. Tick it in the world's datapack screen, or
 `/datapack enable "mod/portablebeacons:datapacks/extended_effects"` on a server. Absorption and
 Health Boost stay out of it - re-applied every pass, the one would refill its hearts forever and
 the other risks cutting them.

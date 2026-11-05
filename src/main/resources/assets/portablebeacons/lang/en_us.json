@@ -7,6 +7,7 @@
   "item.portablebeacons.beacon_ii": "Portable Beacon II",
   "item.portablebeacons.beacon_iii": "Portable Beacon III",
   "item.portablebeacons.beacon_iv": "Portable Beacon IV",
+  "item.portablebeacons.beacon_v": "Portable Beacon V",
   "item.portablebeacons.cinder_beacon": "Cinder Beacon",
   "item.portablebeacons.void_beacon": "Void Beacon",
   "item.portablebeacons.tidal_beacon": "Tidal Beacon",
@@ -117,6 +118,8 @@
   "advancement.portablebeacons.augmented.description": "Obtain an augment to slot into a beacon",
   "advancement.portablebeacons.tier_four.title": "The Whole Star",
   "advancement.portablebeacons.tier_four.description": "Obtain a Portable Beacon IV",
+  "advancement.portablebeacons.tier_five.title": "Past the Ladder",
+  "advancement.portablebeacons.tier_five.description": "Obtain a Portable Beacon V",
   "advancement.portablebeacons.themed.title": "Specialist",
   "advancement.portablebeacons.themed.description": "Obtain a Cinder, Void or Tidal Beacon"
 }

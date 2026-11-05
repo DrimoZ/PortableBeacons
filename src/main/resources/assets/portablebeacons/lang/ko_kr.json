@@ -7,6 +7,7 @@
   "item.portablebeacons.beacon_ii": "휴대용 신호기 II",
   "item.portablebeacons.beacon_iii": "휴대용 신호기 III",
   "item.portablebeacons.beacon_iv": "휴대용 신호기 IV",
+  "item.portablebeacons.beacon_v": "휴대용 신호기 V",
   "item.portablebeacons.cinder_beacon": "잔불 신호기",
   "item.portablebeacons.void_beacon": "공허 신호기",
   "item.portablebeacons.tidal_beacon": "조수 신호기",
@@ -117,6 +118,8 @@
   "advancement.portablebeacons.augmented.description": "팩에 넣을 증강 모듈을 얻으세요",
   "advancement.portablebeacons.tier_four.title": "별 하나 통째로",
   "advancement.portablebeacons.tier_four.description": "휴대용 신호기 IV를 얻으세요",
+  "advancement.portablebeacons.tier_five.title": "사다리 너머",
+  "advancement.portablebeacons.tier_five.description": "휴대용 신호기 V를 얻으세요",
   "advancement.portablebeacons.themed.title": "전문가",
   "advancement.portablebeacons.themed.description": "잔불, 공허 또는 조수 신호기를 얻으세요"
 }

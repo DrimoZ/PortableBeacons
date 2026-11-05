@@ -7,6 +7,7 @@
   "item.portablebeacons.beacon_ii": "便携信标 II",
   "item.portablebeacons.beacon_iii": "便携信标 III",
   "item.portablebeacons.beacon_iv": "便携信标 IV",
+  "item.portablebeacons.beacon_v": "便携信标 V",
   "item.portablebeacons.cinder_beacon": "余烬信标",
   "item.portablebeacons.void_beacon": "虚空信标",
   "item.portablebeacons.tidal_beacon": "潮汐信标",
@@ -117,6 +118,8 @@
   "advancement.portablebeacons.augmented.description": "获得一个可装入背包的强化模块",
   "advancement.portablebeacons.tier_four.title": "整颗星辰",
   "advancement.portablebeacons.tier_four.description": "获得便携信标 IV",
+  "advancement.portablebeacons.tier_five.title": "登峰造极",
+  "advancement.portablebeacons.tier_five.description": "获得便携信标 V",
   "advancement.portablebeacons.themed.title": "专精",
   "advancement.portablebeacons.themed.description": "获得余烬、虚空或潮汐信标"
 }
