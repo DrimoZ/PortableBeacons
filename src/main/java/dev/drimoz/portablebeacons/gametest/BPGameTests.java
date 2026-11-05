@@ -461,8 +461,8 @@ public final class BPGameTests {
             ServerPlayer carrier = spawnPlayer(helper, cleanup);
             ItemStack beacon = giveBeacon(carrier, AuraMode.SELF);
             install(beacon, ResourceKey.create(BPRegistryKeys.AUGMENT, BPRegistryKeys.id("hunter")), 2);
-            var zombie = helper.spawnWithNoFreeWill(EntityTypes.ZOMBIE, CENTRE);
-            var pig = helper.spawnWithNoFreeWill(EntityTypes.PIG, CENTRE);
+            var zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, CENTRE);
+            var pig = helper.spawnWithNoFreeWill(EntityType.PIG, CENTRE);
 
             BeaconTicker.tickPlayer(carrier);
 
