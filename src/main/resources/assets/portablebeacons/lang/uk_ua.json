@@ -7,6 +7,7 @@
   "item.portablebeacons.beacon_ii": "Переносний маяк II",
   "item.portablebeacons.beacon_iii": "Переносний маяк III",
   "item.portablebeacons.beacon_iv": "Переносний маяк IV",
+  "item.portablebeacons.beacon_v": "Переносний маяк V",
   "item.portablebeacons.cinder_beacon": "Маяк жару",
   "item.portablebeacons.void_beacon": "Маяк порожнечі",
   "item.portablebeacons.tidal_beacon": "Припливний маяк",
@@ -117,6 +118,8 @@
   "advancement.portablebeacons.augmented.description": "Отримайте модуль для встановлення в ранець",
   "advancement.portablebeacons.tier_four.title": "Ціла зоря",
   "advancement.portablebeacons.tier_four.description": "Отримайте переносний маяк IV",
+  "advancement.portablebeacons.tier_five.title": "Понад драбину",
+  "advancement.portablebeacons.tier_five.description": "Отримайте переносний маяк V",
   "advancement.portablebeacons.themed.title": "Спеціаліст",
   "advancement.portablebeacons.themed.description": "Отримайте маяк жару, порожнечі або припливний"
 }

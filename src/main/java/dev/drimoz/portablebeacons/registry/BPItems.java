@@ -29,6 +29,12 @@ public final class BPItems {
             beacon("beacon_iii", "tier_3", Rarity.RARE);
     public static final DeferredItem<PortableBeaconItem> BEACON_IV =
             beacon("beacon_iv", "tier_4", Rarity.EPIC);
+    /**
+     * The endgame rung, three Nether Stars past IV. Its reach stops at 18 blocks on purpose: a
+     * level-one pyramid already reaches 20, so the placed beacon stays the better base.
+     */
+    public static final DeferredItem<PortableBeaconItem> BEACON_V =
+            beacon("beacon_v", "tier_5", Rarity.EPIC);
 
     /**
      * Themed beacons: same machinery, different effect pool.
@@ -61,7 +67,7 @@ public final class BPItems {
             ITEMS.registerItem("augment", props -> new AugmentItem(props.stacksTo(1)));
 
     public static List<DeferredItem<PortableBeaconItem>> beacons() {
-        return List.of(BEACON_I, BEACON_II, BEACON_III, BEACON_IV, BEACON_CINDER, BEACON_VOID, BEACON_TIDAL,
+        return List.of(BEACON_I, BEACON_II, BEACON_III, BEACON_IV, BEACON_V, BEACON_CINDER, BEACON_VOID, BEACON_TIDAL,
                 BEACON_CREATIVE);
     }
 

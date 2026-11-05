@@ -71,7 +71,7 @@ whole list the day they arrive.
 | 7 | **Effect presets** | Two or three saved loadouts, switched from the screen | Medium: state, codec, GUI |
 | 8 | **A hostile aura mode** | Glowing or Slowness on monsters in range, behind a costly augment - the one idea no other beacon mod does well | Medium: new `AuraMode`, balance |
 | 9 | **New augment operations**: solar recharge, last-stand burst, lingering effects | Each opens a family of datapack augments rather than one item | Medium each |
-| 10 | **A Nether Star tier V** | An endgame target; must stay under the placed beacon's reach | Small in data, needs a balance pass |
+| 10 | ~~**A Nether Star tier V**~~ - done on 26.2 | An endgame target; must stay under the placed beacon's reach | Small in data, needs a balance pass |
 | 11 | **More fuels** (amethyst, echo shard) | Renewable early fuel. Waits on the sharing balance pass, since fuel value is the other half of the same numbers | Data only |
 | 12 | ~~**`/portablebeacons inspect`**~~ - done on 26.2 | Computed stats of the held beacon, for datapack authors | Small |
 

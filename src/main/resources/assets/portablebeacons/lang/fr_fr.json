@@ -7,6 +7,7 @@
   "item.portablebeacons.beacon_ii": "Balise portative II",
   "item.portablebeacons.beacon_iii": "Balise portative III",
   "item.portablebeacons.beacon_iv": "Balise portative IV",
+  "item.portablebeacons.beacon_v": "Balise portative V",
   "item.portablebeacons.cinder_beacon": "Balise de Braise",
   "item.portablebeacons.void_beacon": "Balise du Vide",
   "item.portablebeacons.tidal_beacon": "Balise des Marées",
@@ -117,6 +118,8 @@
   "advancement.portablebeacons.augmented.description": "Obtenez une augmentation à insérer dans une balise",
   "advancement.portablebeacons.tier_four.title": "L’étoile entière",
   "advancement.portablebeacons.tier_four.description": "Obtenez une Balise portative IV",
+  "advancement.portablebeacons.tier_five.title": "Au-delà de l’échelle",
+  "advancement.portablebeacons.tier_five.description": "Obtenez une Balise portative V",
   "advancement.portablebeacons.themed.title": "Spécialiste",
   "advancement.portablebeacons.themed.description": "Obtenez une Balise de Braise, du Vide ou des Marées"
 }

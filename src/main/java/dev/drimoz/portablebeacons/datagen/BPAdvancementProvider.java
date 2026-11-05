@@ -62,6 +62,13 @@ public class BPAdvancementProvider implements AdvancementProvider.AdvancementGen
                 .addCriterion("has_beacon_iv", has(BPItems.BEACON_IV.get()))
                 .save(saver, id("tier_four"), helper);
 
+        Advancement.Builder.advancement()
+                .parent(root)
+                .display(BPItems.BEACON_V.get(), title("tier_five"), description("tier_five"),
+                        null, AdvancementType.CHALLENGE, true, true, false)
+                .addCriterion("has_beacon_v", has(BPItems.BEACON_V.get()))
+                .save(saver, id("tier_five"));
+
         // Any one of the three, because they are alternatives rather than a set to collect.
         Advancement.Builder.advancement()
                 .parent(root)

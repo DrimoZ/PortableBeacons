@@ -7,6 +7,7 @@
   "item.portablebeacons.beacon_ii": "Draagbaar vuurbaken II",
   "item.portablebeacons.beacon_iii": "Draagbaar vuurbaken III",
   "item.portablebeacons.beacon_iv": "Draagbaar vuurbaken IV",
+  "item.portablebeacons.beacon_v": "Draagbaar vuurbaken V",
   "item.portablebeacons.cinder_beacon": "Sintelvuurbaken",
   "item.portablebeacons.void_beacon": "Leegtevuurbaken",
   "item.portablebeacons.tidal_beacon": "Getijdevuurbaken",
@@ -117,6 +118,8 @@
   "advancement.portablebeacons.augmented.description": "Bemachtig een module voor in een rugzak",
   "advancement.portablebeacons.tier_four.title": "De hele ster",
   "advancement.portablebeacons.tier_four.description": "Bemachtig een Draagbaar vuurbaken IV",
+  "advancement.portablebeacons.tier_five.title": "Voorbij de ladder",
+  "advancement.portablebeacons.tier_five.description": "Bemachtig een Draagbaar vuurbaken V",
   "advancement.portablebeacons.themed.title": "Specialist",
   "advancement.portablebeacons.themed.description": "Bemachtig een sintel-, leegte- of getijdevuurbaken"
 }

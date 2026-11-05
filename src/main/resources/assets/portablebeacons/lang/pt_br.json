@@ -7,6 +7,7 @@
   "item.portablebeacons.beacon_ii": "Sinalizador portátil II",
   "item.portablebeacons.beacon_iii": "Sinalizador portátil III",
   "item.portablebeacons.beacon_iv": "Sinalizador portátil IV",
+  "item.portablebeacons.beacon_v": "Sinalizador portátil V",
   "item.portablebeacons.cinder_beacon": "Sinalizador de brasa",
   "item.portablebeacons.void_beacon": "Sinalizador do vazio",
   "item.portablebeacons.tidal_beacon": "Sinalizador das marés",
@@ -117,6 +118,8 @@
   "advancement.portablebeacons.augmented.description": "Obtenha um módulo para instalar em uma mochila",
   "advancement.portablebeacons.tier_four.title": "A estrela inteira",
   "advancement.portablebeacons.tier_four.description": "Obtenha um Sinalizador portátil IV",
+  "advancement.portablebeacons.tier_five.title": "Além da escada",
+  "advancement.portablebeacons.tier_five.description": "Obtenha um Sinalizador portátil V",
   "advancement.portablebeacons.themed.title": "Especialista",
   "advancement.portablebeacons.themed.description": "Obtenha um sinalizador de brasa, do vazio ou das marés"
 }

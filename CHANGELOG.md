@@ -6,12 +6,16 @@ Versions follow `{mod version}+{minecraft version}`.
 ## Unreleased
 
 ### Added
+- **Portable Beacon V**, the endgame rung: four effects up to level III, five augment slots, 18
+  blocks of reach and double the buffer of IV - still under a placed beacon's 20. Crafted from a
+  Beacon IV with three Nether Stars and two blocks of netherite; it keeps what the IV carried.
+  `min_tier` can now be 5 too, so a datapack can save an effect for it.
 - **`/portablebeacons inspect`** for operators: the held beacon's stats after augments and server
   rules, factor by factor, for whoever is writing a datapack.
 - **A key to switch the beacon on and off** without opening it - the running one goes off, or the
   one the open key would pick comes on. Unbound by default, under *Portable Beacon* in the controls.
 - **An optional Extended effects datapack**, shipped inside the mod and off until a world enables
-  it: Luck, Hero of the Village and Invisibility for the four standard tiers.
+  it: Luck, Hero of the Village and Invisibility for the five standard tiers.
 - **The running beacon's runtime on the HUD**, bottom-right, in the status light's colours: green,
   amber in the last minute, red once dry. Hidden with F1, or for good with `show_hud` in the new
   client config.

@@ -7,6 +7,7 @@
   "item.portablebeacons.beacon_ii": "Taşınabilir Fener II",
   "item.portablebeacons.beacon_iii": "Taşınabilir Fener III",
   "item.portablebeacons.beacon_iv": "Taşınabilir Fener IV",
+  "item.portablebeacons.beacon_v": "Taşınabilir Fener V",
   "item.portablebeacons.cinder_beacon": "Kor Feneri",
   "item.portablebeacons.void_beacon": "Boşluk Feneri",
   "item.portablebeacons.tidal_beacon": "Gelgit Feneri",
@@ -117,6 +118,8 @@
   "advancement.portablebeacons.augmented.description": "Çantaya takmak için bir modül edin",
   "advancement.portablebeacons.tier_four.title": "Yıldızın Tamamı",
   "advancement.portablebeacons.tier_four.description": "Bir Taşınabilir Fener IV edin",
+  "advancement.portablebeacons.tier_five.title": "Merdivenin ötesi",
+  "advancement.portablebeacons.tier_five.description": "Bir Taşınabilir Fener V edin",
   "advancement.portablebeacons.themed.title": "Uzman",
   "advancement.portablebeacons.themed.description": "Kor, Boşluk veya Gelgit feneri edin"
 }

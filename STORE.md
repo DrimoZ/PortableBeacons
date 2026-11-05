@@ -16,7 +16,7 @@ with the URL CurseForge gives it.
 
 > One line, 256 characters at most, shown under the name in every search result.
 
-A beacon you carry. Pick its effects, choose who they reach, and pay for them in fuel. Four tiers, three themed beacons, seventeen augments, and everything defined in datapacks.
+A beacon you carry. Pick its effects, choose who they reach, and pay for them in fuel. Five tiers, three themed beacons, seventeen augments, and everything defined in datapacks.
 
 ## Categories
 
