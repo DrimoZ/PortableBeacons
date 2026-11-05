@@ -61,6 +61,8 @@ public final class BPTestFunctions {
                     (Consumer<GameTestHelper>) BPGameTests::theExtendedEffectsPackIsOfferedButOff);
             helper.register(id("inspect_reports_the_held_beacon"),
                     (Consumer<GameTestHelper>) BPGameTests::inspectReportsTheHeldBeacon);
+            helper.register(id("bastion_answers_a_low_hit_once_per_cooldown"),
+                    (Consumer<GameTestHelper>) BPGameTests::bastionAnswersALowHitOncePerCooldown);
             helper.register(id("an_augment_swaps_for_its_own_type"),
                     (Consumer<GameTestHelper>) BPGameTests::anAugmentSwapsForItsOwnType);
             helper.register(id("clicking_an_augment_onto_another_swaps_them"),

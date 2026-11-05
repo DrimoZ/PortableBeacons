@@ -410,6 +410,30 @@ public final class BPGameTests {
         helper.succeed();
     }
 
+    /**
+     * Bastion answers a hit that leaves the carrier under a third of their health, once: the
+     * second hit inside the cooldown grants nothing, which is what keeps it a last stand rather
+     * than permanent Resistance.
+     */
+    public static void bastionAnswersALowHitOncePerCooldown(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ServerPlayer carrier = spawnPlayer(helper, cleanup);
+            ItemStack beacon = giveBeacon(carrier, AuraMode.SELF);
+            install(beacon, ResourceKey.create(BPRegistryKeys.AUGMENT, BPRegistryKeys.id("bastion")), 1);
+
+            // Health set and the handler driven by hand: the test player is creative, and takes no
+            // damage at all to fire the event with.
+            carrier.setHealth(4.0F);
+            BeaconTicker.lastStand(carrier);
+            helper.assertTrue(carrier.hasEffect(MobEffects.RESISTANCE), "a low hit granted no Resistance");
+            helper.assertTrue(carrier.getCooldowns().isOnCooldown(beacon), "the beacon did not cool down");
+
+            carrier.removeEffect(MobEffects.RESISTANCE);
+            BeaconTicker.lastStand(carrier);
+            helper.assertFalse(carrier.hasEffect(MobEffects.RESISTANCE), "Bastion fired again inside its cooldown");
+        });
+    }
+
     /** The inspect command answers for a held beacon and refuses an empty hand, rather than throwing. */
     public static void inspectReportsTheHeldBeacon(GameTestHelper helper) {
         run(helper, cleanup -> {

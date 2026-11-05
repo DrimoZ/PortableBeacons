@@ -1,0 +1,8 @@
+{
+  "max_tier": 2,
+  "color": 16762941,
+  "glyph": "star",
+  "operations": [
+    { "type": "solar_charge", "values": [0.5, 1.0] }
+  ]
+}
