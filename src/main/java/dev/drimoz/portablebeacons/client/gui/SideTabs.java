@@ -91,7 +91,7 @@ public final class SideTabs {
      * @return {@code true} if a tab took the click. A click in the content that no control takes is
      *         left to the screen: it may be a slot, like the augments'.
      */
-    public boolean mouseClicked(double mouseX, double mouseY) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
         for (SideTab tab : tabs) {
             if (!tab.contains(mouseX, mouseY)) {
                 continue;
@@ -100,7 +100,7 @@ public final class SideTabs {
                 toggle(tab);
                 return true;
             }
-            return false;
+            return tab.contentClicked(tab.contentX(), tab.contentY(), mouseX, mouseY, button);
         }
         return false;
     }

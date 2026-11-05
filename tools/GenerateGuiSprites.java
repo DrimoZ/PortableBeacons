@@ -175,6 +175,11 @@ public final class GenerateGuiSprites {
                 "............", "............", "..rr....rr..", "...rr..rr...", "....rrrr....",
                 ".....rr.....", "....rrrr....", "...rr..rr...", "..rr....rr..", "............",
                 "............", "............"}, PALETTE));
+        // Three entries on a list, for the presets tab: white on its tint, like the info and augment icons.
+        write("icon_presets", ascii(new String[]{
+                "............", "............", ".ww.wwwwwww.", ".ww.wwwwwww.", "............",
+                ".ww.wwwwwww.", ".ww.wwwwwww.", "............", ".ww.wwwwwww.", ".ww.wwwwwww.",
+                "............", "............"}, PALETTE));
         write("icon_aura_self", ascii(new String[]{
                 "............", ".....kk.....", "....kkkk....", "....kkkk....", ".....kk.....",
                 "............", "...kkkkkk...", "..kkkkkkkk..", "..kkkkkkkk..", "..kkkkkkkk..",

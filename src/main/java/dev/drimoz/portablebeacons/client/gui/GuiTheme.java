@@ -1,5 +1,9 @@
 package dev.drimoz.portablebeacons.client.gui;
 
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
+
 /**
  * The palette of every screen in the mod - FactoryIO's, so the two read as one family.
  *
@@ -34,6 +38,8 @@ public final class GuiTheme {
 
     public static final int TAB_INFO = 0xFFC89420;
     public static final int TAB_AUGMENTS = 0xFF3C6FC8;
+    /** Purple, apart from the blue it sits under: presets set the whole loadout, not a part of it. */
+    public static final int TAB_PRESETS = 0xFF8060B8;
 
     // Washes
 
@@ -87,6 +93,29 @@ public final class GuiTheme {
             this.tabColour = tabColour;
             this.sprite = sprite;
         }
+    }
+
+    /**
+     * A section heading inside a tab: muted, with a hairline under it, so a tab of figures reads as
+     * groups rather than as one long list. Returns the height it took.
+     */
+    public static int tabHeading(GuiGraphics graphics, Font font, Component text, int x, int y,
+                                 int width) {
+        graphics.drawString(font, text, x, y, TAB_MUTED, true);
+        graphics.fill(x, y + LINE - 1, x + width, y + LINE, 0x40FFFFFF);
+        return LINE + 2;
+    }
+
+    /** One figure: its name on the left in the tab's label grey, its value flush right and brighter. */
+    public static void tabRow(GuiGraphics graphics, Font font, Component label, Component value,
+                              int valueColour, int x, int y, int width) {
+        graphics.drawString(font, label, x, y, TAB_LABEL, true);
+        graphics.drawString(font, value, x + width - font.width(value), y, valueColour, true);
+    }
+
+    /** The widest a row needs to be, so a tab sizes itself to its longest label and value together. */
+    public static int tabRowWidth(Font font, Component label, Component value) {
+        return font.width(label) + 8 + font.width(value);
     }
 
     private GuiTheme() {}

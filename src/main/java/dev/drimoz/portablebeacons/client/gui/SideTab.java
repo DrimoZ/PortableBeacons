@@ -66,6 +66,17 @@ public abstract class SideTab {
         return List.of();
     }
 
+    /**
+     * A click in the content, once the tab is fully open. A tab that owns controls takes it here, so
+     * the screen holds no knowledge of any tab's buttons - it used to test the info tab's chips by
+     * hand, which is how a tab's layout ended up written in two places.
+     *
+     * @return {@code true} if a control took it; {@code false} leaves it to the screen, for the
+     *         augment tab's slots
+     */
+    protected boolean contentClicked(int x, int y, double mouseX, double mouseY, int button) {
+        return false;
+    }
     /** Called every frame: the augment tab shows or hides its slots from here. */
     protected void onOpennessChanged(boolean fullyOpen) {}
 
