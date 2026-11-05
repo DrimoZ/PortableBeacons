@@ -136,9 +136,10 @@ no gauge, no runtime figures.
 One row per effect, with everything set in place: click the icon to change the effect, the level to
 raise it, the figure to choose who it reaches, the switch to turn it off - right-click steps back.
 A bar under each name shows its share of the drain. The fuel gauge and slot sit beside the list,
-the master switch and a status light in the title band; the beacon's figures and its augments are
-side tabs. Effects are picked from a searchable grid filtered to what the beacon accepts. Three
-presets under the figures keep whole loadouts: right-click a number to save, click it to load.
+the master switch and a status light in the title band; the beacon's figures, its augments and its
+presets are side tabs. The figures are grouped - aura, fuel, loadout - with each value set flush
+right. Three presets keep whole loadouts of effects: each has a Save and a Load button, and shows
+the effects it holds. Effects are picked from a searchable grid filtered to what the beacon accepts.
 
 ---
 

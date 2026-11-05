@@ -138,6 +138,16 @@ public final class GuiPreview {
         // Both tabs shut: the augment tab's header sits against the right edge.
         step(5, mc -> clickGui(mc, 176 + 11, 15));
         step(15, mc -> shot("beacon_tabs_shut"));
+
+        // The presets tab sits under the augments': 22 high shut, two apart, so its header is at 39.
+        // Saved by clicking the real buttons - preset 1 and 2 - and left with 3 empty to hover.
+        step(5, mc -> clickGui(mc, 176 + 11, 39));
+        step(15, mc -> clickGui(mc, 176 + 6 + 84, 50 + 12 + 7));
+        step(5, mc -> clickGui(mc, 176 + 6 + 84, 50 + 30 + 12 + 7));
+        step(10, mc -> hoverGui(mc, 176 + 6 + 84, 50 + 60 + 12 + 7));
+        step(10, mc -> shot("beacon_presets"));
+        step(5, mc -> clickGui(mc, 176 + 11, 39));
+
         step(5, mc -> clickGui(mc, 176 + 11, 15));
 
         // Tooltips: the fuel gauge, then the first row's audience icon.

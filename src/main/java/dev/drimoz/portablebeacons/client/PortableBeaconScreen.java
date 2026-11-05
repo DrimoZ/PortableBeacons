@@ -4,6 +4,7 @@ import dev.drimoz.portablebeacons.BPConfig;
 import dev.drimoz.portablebeacons.BeaconTicker;
 import dev.drimoz.portablebeacons.client.gui.GuiSprites;
 import dev.drimoz.portablebeacons.client.gui.GuiTheme;
+import dev.drimoz.portablebeacons.client.gui.IconButton;
 import dev.drimoz.portablebeacons.client.gui.SideTab;
 import dev.drimoz.portablebeacons.client.gui.SideTabs;
 import dev.drimoz.portablebeacons.core.AugmentInstance;
@@ -134,7 +135,6 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
     private static final int SCROLLBAR_W = 12;
 
     private final SideTabs tabs;
-    private final InfoTab infoTab;
 
     /** First effect row shown, when a beacon has more than fit. */
     private int rowScroll;
@@ -160,8 +160,7 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
         this.titleLabelY = GuiMetrics.TITLE_Y;
         this.inventoryLabelX = GuiMetrics.MARGIN;
         this.inventoryLabelY = GuiMetrics.inventoryLabelY(PortableBeaconMenu.CONTENT_BOTTOM);
-        this.infoTab = new InfoTab();
-        this.tabs = new SideTabs(List.of(infoTab, new AugmentTab()), IMAGE_W, AugmentTab.ID);
+        this.tabs = new SideTabs(List.of(new InfoTab(), new AugmentTab(), new PresetsTab()), IMAGE_W, AugmentTab.ID);
     }
 
     /**
@@ -484,10 +483,15 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
     }
 
     private void drawEffectIcon(GuiGraphicsExtractor graphics, ResourceKey<BeaconEffectDef> key, int x, int y) {
+        drawEffectIcon(graphics, key, x, y, 16);
+    }
+
+    private void drawEffectIcon(GuiGraphicsExtractor graphics, ResourceKey<BeaconEffectDef> key, int x, int y,
+                                int size) {
         // Straight from vanilla's effect sprites, so any registered effect - vanilla, another mod's,
         // or one added by a datapack - shows its own icon with no texture from us.
         effectLookup().get(key).ifPresent(def -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED,
-                Gui.getMobEffectSprite(def.effect()), x, y, 16, 16));
+                Gui.getMobEffectSprite(def.effect()), x, y, size, size));
     }
 
     // ------------------------------------------------------------------ status
@@ -536,8 +540,25 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
 
     // ------------------------------------------------------------------ tabs
 
-    /** The beacon's figures. On the left and yellow: it informs, it sets nothing. */
+    /**
+     * The beacon's figures, in three groups. On the left and yellow: it informs, it sets nothing.
+     *
+     * <p>A figure is a name and a value with the value flush right. The first version was a sentence
+     * per figure, which put every number a different distance from the edge and made each translation
+     * its own layout; YetAnotherFarmingStation's tabs are grouped this way, and read faster for it.
+     */
     private final class InfoTab extends SideTab {
+
+        /** A heading or the status line has no value; a figure has both. */
+        private record Line(Component label, Component value, int colour, boolean heading) {
+            static Line heading(String key) {
+                return new Line(Component.translatable(key), null, 0, true);
+            }
+
+            static Line figure(String key, Component value, int colour) {
+                return new Line(Component.translatable(key), value, colour, false);
+            }
+        }
 
         InfoTab() {
             super("info", Side.LEFT, GuiTheme.TAB_INFO);
@@ -553,106 +574,211 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
             return GuiSprites.Icon.INFO;
         }
 
-        private List<Component> lines() {
+        private List<Line> lines() {
             BeaconState state = menu.state();
             BeaconStats stats = stats();
-            List<Component> lines = new ArrayList<>(4);
-            lines.add(statusText(status()));
-            lines.add(Component.translatable("portablebeacons.gui.range",
-                    String.format(Locale.ROOT, "%.0f", stats.range())));
+            // The runtime in the status light's colour once it is short, so the figure says what the
+            // light says without being read.
+            int runtimeColour = status() == GuiTheme.Status.BLOCKED || status() == GuiTheme.Status.PROBLEM
+                    ? status().tabColour : GuiTheme.TAB_VALUE;
+            List<Line> lines = new ArrayList<>(12);
+            lines.add(new Line(statusText(status()), null, status().tabColour, false));
+
+            lines.add(Line.heading("portablebeacons.gui.group_reach"));
+            lines.add(Line.figure("portablebeacons.gui.row_range", Component.literal(String.format(Locale.ROOT, "%.0f m", stats.range())),
+                    GuiTheme.TAB_VALUE));
+            lines.add(Line.figure("portablebeacons.gui.row_sharing", Component.translatable("portablebeacons.aura."
+                    + widestAura(stats).getSerializedName()), GuiTheme.TAB_VALUE));
+
             if (BPConfig.fuelEnabled() && !burnsNothing()) {
-                lines.add(Component.translatable("portablebeacons.gui.runtime", totalRuntime()));
-                // Wayfarer and Sentinel price moving and standing differently, and one figure would
-                // be wrong for whichever the player is not doing. Shown only when the two differ.
+                lines.add(Line.heading("portablebeacons.gui.group_fuel"));
+                int units = state.fuel() + reserveUnits();
+                // Wayfarer and Sentinel price moving and standing differently, and one figure would be
+                // wrong for whichever the player is not doing. Shown only when the two differ.
                 if (stats.movingCostMultiplier() != stats.stillCostMultiplier()) {
-                    int units = state.fuel() + reserveUnits();
-                    lines.add(Component.translatable("portablebeacons.gui.runtime_motion",
-                            atCurrentDraw(units, BeaconResolver.fuelPerSecond(state, stats, effectLookup(), true)),
-                            atCurrentDraw(units, BeaconResolver.fuelPerSecond(state, stats, effectLookup(), false))));
+                    lines.add(Line.figure("portablebeacons.gui.row_moving", Component.literal(atCurrentDraw(units,
+                            BeaconResolver.fuelPerSecond(state, stats, effectLookup(), true))), runtimeColour));
+                    lines.add(Line.figure("portablebeacons.gui.row_still", Component.literal(atCurrentDraw(units,
+                            BeaconResolver.fuelPerSecond(state, stats, effectLookup(), false))), runtimeColour));
+                } else {
+                    lines.add(Line.figure("portablebeacons.gui.row_runtime", Component.literal(totalRuntime()), runtimeColour));
                 }
             }
-            lines.add(Component.translatable("portablebeacons.gui.slots",
-                    state.effects().size(), stats.effectSlots()));
+
+            lines.add(Line.heading("portablebeacons.gui.group_loadout"));
+            lines.add(Line.figure("portablebeacons.gui.row_effects", Component.literal(state.effects().size() + " / " + stats.effectSlots()),
+                    GuiTheme.TAB_VALUE));
+            lines.add(Line.figure("portablebeacons.gui.row_augments", Component.literal(
+                    BPLookups.installedAugments(menu.beacon()).size() + " / " + stats.augmentSlots()),
+                    GuiTheme.TAB_VALUE));
             return lines;
+        }
+
+        /** The widest sharing the beacon offers, which is what its "reach" is worth to a player. */
+        private AuraMode widestAura(BeaconStats stats) {
+            AuraMode widest = AuraMode.SELF;
+            for (AuraMode mode : stats.allowedAuraModes()) {
+                if (mode.rank() > widest.rank()) {
+                    widest = mode;
+                }
+            }
+            return widest;
+        }
+
+        private int heightOf(Line line, boolean first) {
+            if (line.heading()) {
+                return GuiTheme.LINE + (first ? 2 : 5);
+            }
+            return line.value() == null ? GuiTheme.LINE + 2 : GuiTheme.LINE;
         }
 
         @Override
         protected int contentWidth() {
-            int widest = chipsX() + BeaconState.PRESETS * (CHIP_W + CHIP_GAP);
-            for (Component line : lines()) {
-                widest = Math.max(widest, font.width(line));
+            int widest = 96;
+            for (Line line : lines()) {
+                widest = Math.max(widest, line.value() == null
+                        ? font.width(line.label())
+                        : GuiTheme.tabRowWidth(font, line.label(), line.value()));
             }
             return widest;
         }
 
         @Override
         protected int contentHeight() {
-            return presetRowY() + GuiTheme.LINE;
+            int height = 0;
+            for (Line line : lines()) {
+                height += heightOf(line, height == 0);
+            }
+            return height;
         }
 
         @Override
         protected void renderContent(GuiGraphicsExtractor graphics, Font font, int x, int y,
                                      int mouseX, int mouseY) {
-            List<Component> lines = lines();
-            for (int i = 0; i < lines.size(); i++) {
-                int colour = i == 0 ? status().tabColour : GuiTheme.TAB_LABEL;
-                graphics.text(font, lines.get(i), x, y + i * GuiTheme.LINE, colour, true);
+            int width = contentWidth();
+            int at = 0;
+            for (Line line : lines()) {
+                int height = heightOf(line, at == 0);
+                // A heading carries its spacing above it, so the gap sits between groups, not before the first.
+                int top = y + at + (line.heading() && at > 0 ? 3 : 0);
+                if (line.heading()) {
+                    GuiTheme.tabHeading(graphics, font, line.label(), x, top, width);
+                } else if (line.value() == null) {
+                    graphics.text(font, line.label(), x, top, line.colour(), true);
+                } else {
+                    GuiTheme.tabRow(graphics, font, line.label(), line.value(), line.colour(), x, top, width);
+                }
+                at += height;
             }
-            int rowY = y + presetRowY();
-            graphics.text(font, PRESETS_LABEL, x, rowY + 1, GuiTheme.TAB_LABEL, true);
-            int hovered = presetAt(mouseX, mouseY);
+        }
+    }
+
+    /**
+     * The saved loadouts. On the right and purple, under the augments: it sets the whole beacon at
+     * once.
+     *
+     * <p>Three rows, each with what it holds as effect icons and two real buttons. They replaced
+     * numbered chips that loaded on click and saved on right-click - a control with no label and a
+     * hidden second meaning, which nobody could be expected to find.
+     */
+    private final class PresetsTab extends SideTab {
+
+        private static final int WIDTH = 112;
+        private static final int LABEL_LINE = 12;
+        private static final int BUTTON_H = 14;
+        private static final int STRIDE = LABEL_LINE + BUTTON_H + 4;
+        private static final int MINI_ICON = 9;
+        private static final int MAX_ICONS = 4;
+
+        private final List<IconButton> buttons = new ArrayList<>();
+
+        PresetsTab() {
+            super("presets", Side.RIGHT, GuiTheme.TAB_PRESETS);
+            int half = (WIDTH - 2) / 2;
             for (int i = 0; i < BeaconState.PRESETS; i++) {
-                int chipX = x + chipsX() + i * (CHIP_W + CHIP_GAP);
-                boolean saved = !menu.state().preset(i).isEmpty();
-                graphics.fill(chipX, rowY, chipX + CHIP_W, rowY + GuiTheme.LINE,
-                        hovered == i ? 0xFF6A6A6A : saved ? 0xFF3C3C3C : 0x60000000);
-                String number = String.valueOf(i + 1);
-                graphics.text(font, number, chipX + (CHIP_W - font.width(number)) / 2 + 1, rowY + 1,
-                        saved ? GuiTheme.TAB_VALUE : GuiTheme.TAB_MUTED, true);
+                int preset = i;
+                int top = i * STRIDE + LABEL_LINE;
+                buttons.add(new IconButton(0, top, half, BUTTON_H)
+                        .label(() -> Component.translatable("portablebeacons.gui.load"))
+                        // Nothing to load from an empty preset, or into a beacon that already has it.
+                        .active(() -> !menu.state().preset(preset).isEmpty()
+                                && !menu.state().preset(preset).equals(menu.state().effects()))
+                        .tooltip(() -> List.of(Component.translatable("portablebeacons.gui.preset_load_help")
+                                .withStyle(ChatFormatting.GRAY)))
+                        .onPress(() -> send(PortableBeaconMenu.ACTION_LOAD_PRESET, preset, 0)));
+                buttons.add(new IconButton(half + 2, top, WIDTH - half - 2, BUTTON_H)
+                        .label(() -> Component.translatable("portablebeacons.gui.save"))
+                        .active(() -> !menu.state().effects().isEmpty()
+                                && !menu.state().effects().equals(menu.state().preset(preset)))
+                        .tooltip(() -> List.of(Component.translatable("portablebeacons.gui.preset_save_help")
+                                .withStyle(ChatFormatting.GRAY)))
+                        .onPress(() -> send(PortableBeaconMenu.ACTION_SAVE_PRESET, preset, 0)));
             }
         }
 
         @Override
+        protected Component title() {
+            return Component.translatable("portablebeacons.gui.presets");
+        }
+
+        @Override
+        protected GuiSprites.Icon icon() {
+            return GuiSprites.Icon.PRESETS;
+        }
+
+        @Override
+        protected int contentWidth() {
+            return WIDTH;
+        }
+
+        @Override
+        protected int contentHeight() {
+            return BeaconState.PRESETS * STRIDE - 4;
+        }
+
+        @Override
+        protected void renderContent(GuiGraphicsExtractor graphics, Font font, int x, int y,
+                                     int mouseX, int mouseY) {
+            for (int i = 0; i < BeaconState.PRESETS; i++) {
+                int top = y + i * STRIDE;
+                graphics.text(font, Component.translatable("portablebeacons.gui.preset", i + 1), x, top + 1,
+                        GuiTheme.TAB_LABEL, true);
+                List<EffectSlotConfig> saved = menu.state().preset(i);
+                if (saved.isEmpty()) {
+                    Component empty = Component.translatable("portablebeacons.gui.preset_empty");
+                    graphics.text(font, empty, x + WIDTH - font.width(empty), top + 1, GuiTheme.TAB_MUTED, true);
+                    continue;
+                }
+                int shown = Math.min(saved.size(), MAX_ICONS);
+                int iconX = x + WIDTH - shown * (MINI_ICON + 1) + 1;
+                for (int e = 0; e < shown; e++) {
+                    drawEffectIcon(graphics, saved.get(e).effect(), iconX + e * (MINI_ICON + 1), top, MINI_ICON);
+                }
+            }
+            for (IconButton button : buttons) {
+                button.render(graphics, font, x, y, mouseX, mouseY);
+            }
+        }
+
+        @Override
+        protected boolean contentClicked(int x, int y, double mouseX, double mouseY, int button) {
+            for (IconButton control : buttons) {
+                if (control.mouseClicked(x, y, mouseX, mouseY)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
         protected List<Component> contentTooltip(int x, int y, int mouseX, int mouseY) {
-            int index = presetAt(mouseX, mouseY);
-            if (index < 0) {
-                return List.of();
+            for (IconButton control : buttons) {
+                List<Component> lines = control.tooltipAt(x, y, mouseX, mouseY);
+                if (!lines.isEmpty()) {
+                    return lines;
+                }
             }
-            Component load = menu.state().preset(index).isEmpty()
-                    ? Component.translatable("portablebeacons.gui.preset_empty")
-                    : Component.translatable("portablebeacons.gui.preset_load");
-            return List.of(Component.translatable("portablebeacons.gui.preset", index + 1), load,
-                    Component.translatable("portablebeacons.gui.preset_save"));
-        }
-
-        /**
-         * Presets sit under the figures as three numbered chips - click loads, right-click saves - so
-         * switching loadout is one click on a tab that is open anyway, not a screen of its own.
-         */
-        private static final int CHIP_W = 12;
-        private static final int CHIP_GAP = 2;
-        private static final Component PRESETS_LABEL = Component.translatable("portablebeacons.gui.presets");
-
-        private int presetRowY() {
-            return lines().size() * GuiTheme.LINE + 2;
-        }
-
-        private int chipsX() {
-            return font.width(PRESETS_LABEL) + 4;
-        }
-
-        /** The chip under the mouse, by preset number, or -1. Only once open: a sliding tab has no chips. */
-        int presetAt(double mouseX, double mouseY) {
-            if (!isFullyOpen()) {
-                return -1;
-            }
-            int x = (int) mouseX - (left() + GuiMetrics.TAB_PADDING) - chipsX();
-            int y = (int) mouseY - (top() + GuiMetrics.TAB_HEADER) - presetRowY();
-            if (x < 0 || y < 0 || y >= GuiTheme.LINE || x % (CHIP_W + CHIP_GAP) >= CHIP_W) {
-                return -1;
-            }
-            int index = x / (CHIP_W + CHIP_GAP);
-            return index < BeaconState.PRESETS ? index : -1;
+            return List.of();
         }
     }
 
@@ -1072,14 +1198,7 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
             confirm(cellAt(x, y));
             return true;
         }
-        if (tabs.mouseClicked(event.x(), event.y())) {
-            click();
-            return true;
-        }
-        int preset = infoTab.presetAt(event.x(), event.y());
-        if (preset >= 0) {
-            boolean save = event.button() == GLFW.GLFW_MOUSE_BUTTON_RIGHT;
-            send(save ? PortableBeaconMenu.ACTION_SAVE_PRESET : PortableBeaconMenu.ACTION_LOAD_PRESET, preset, 0);
+        if (tabs.mouseClicked(event.x(), event.y(), event.button())) {
             click();
             return true;
         }
