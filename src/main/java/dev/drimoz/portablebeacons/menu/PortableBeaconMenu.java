@@ -57,6 +57,9 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
     public static final int ACTION_CYCLE_AURA = 5;
     /** The level outright, so the screen can step down as well as up; sanitize caps it. */
     public static final int ACTION_SET_AMPLIFIER = 6;
+    /** Preset number in {@code slotIndex}: save keeps the current effects, load replaces them. */
+    public static final int ACTION_SAVE_PRESET = 7;
+    public static final int ACTION_LOAD_PRESET = 8;
 
     /**
      * Bottom of the beacon's own content - sockets, details and the fuel column - and so where the
@@ -294,6 +297,12 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
                     mutate(effects, slotIndex, slot -> slot.withAura(nextAura(slot.aura(), stats))));
             case ACTION_SET_AMPLIFIER -> state().withEffects(
                     mutate(effects, slotIndex, slot -> slot.withAmplifier(Math.min(value, BeaconStats.MAX_AMPLIFIER))));
+            case ACTION_SAVE_PRESET -> slotIndex < BeaconState.PRESETS
+                    ? state().withPreset(slotIndex, state().effects()) : null;
+            // Loaded through sanitize like any other change: a preset saved before an augment came
+            // out loses what the beacon can no longer hold, rather than being refused whole.
+            case ACTION_LOAD_PRESET -> slotIndex < BeaconState.PRESETS
+                    ? state().withEffects(state().preset(slotIndex)) : null;
             default -> null;
         };
 
@@ -349,6 +358,7 @@ public class PortableBeaconMenu extends AbstractContainerMenu {
      */
     private static boolean isReconfiguration(int action) {
         return action == ACTION_SET_EFFECT
+                || action == ACTION_LOAD_PRESET
                 || action == ACTION_CLEAR_EFFECT
                 || action == ACTION_SET_AMPLIFIER
                 || action == ACTION_CYCLE_AURA;

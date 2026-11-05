@@ -31,9 +31,14 @@ import java.util.List;
  * @param active  master switch; false means nothing is applied and nothing is consumed
  * @param starved switched on but out of fuel: nothing is applied until fuel arrives, then it resumes
  *                on its own. Added after release, so it defaults to false like every field
+ * @param presets saved effect loadouts, by preset number; an empty list is an empty preset. Added
+ *                after release too, so a beacon from an older version simply has none
  */
 public record BeaconState(List<EffectSlotConfig> effects, int fuel, boolean active, int capacity,
-                          boolean starved) {
+                          boolean starved, List<List<EffectSlotConfig>> presets) {
+
+    /** How many presets a beacon keeps: as many as the screen has room to offer. */
+    public static final int PRESETS = 3;
 
     public static final BeaconState EMPTY = new BeaconState(List.of(), 0, false, 0);
 
@@ -43,7 +48,9 @@ public record BeaconState(List<EffectSlotConfig> effects, int fuel, boolean acti
             Codec.INT.optionalFieldOf("fuel", 0).forGetter(BeaconState::fuel),
             Codec.BOOL.optionalFieldOf("active", false).forGetter(BeaconState::active),
             Codec.INT.optionalFieldOf("capacity", 0).forGetter(BeaconState::capacity),
-            Codec.BOOL.optionalFieldOf("starved", false).forGetter(BeaconState::starved)
+            Codec.BOOL.optionalFieldOf("starved", false).forGetter(BeaconState::starved),
+            EffectSlotConfig.CODEC.listOf().listOf().optionalFieldOf("presets", List.of())
+                    .forGetter(BeaconState::presets)
     ).apply(i, BeaconState::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, BeaconState> STREAM_CODEC =
@@ -53,10 +60,19 @@ public record BeaconState(List<EffectSlotConfig> effects, int fuel, boolean acti
                     ByteBufCodecs.BOOL, BeaconState::active,
                     ByteBufCodecs.VAR_INT, BeaconState::capacity,
                     ByteBufCodecs.BOOL, BeaconState::starved,
+                    EffectSlotConfig.STREAM_CODEC.apply(ByteBufCodecs.list()).apply(ByteBufCodecs.list()),
+                    BeaconState::presets,
                     BeaconState::new);
 
     public BeaconState {
         effects = List.copyOf(effects);
+        presets = presets.stream().map(List::copyOf).toList();
+    }
+
+    /** A beacon with no saved presets, which is every beacon built before presets existed. */
+    public BeaconState(List<EffectSlotConfig> effects, int fuel, boolean active, int capacity,
+                       boolean starved) {
+        this(effects, fuel, active, capacity, starved, List.of());
     }
 
     /** A beacon that is not starved, which is every beacon anyone constructs by hand. */
@@ -65,20 +81,20 @@ public record BeaconState(List<EffectSlotConfig> effects, int fuel, boolean acti
     }
 
     public BeaconState withEffects(List<EffectSlotConfig> newEffects) {
-        return new BeaconState(newEffects, fuel, active, capacity, starved);
+        return new BeaconState(newEffects, fuel, active, capacity, starved, presets);
     }
 
     public BeaconState withFuel(int newFuel) {
-        return new BeaconState(effects, Math.max(0, newFuel), active, capacity, starved);
+        return new BeaconState(effects, Math.max(0, newFuel), active, capacity, starved, presets);
     }
 
     /** Switching it either way clears starvation: off is off, and on starts a fresh attempt. */
     public BeaconState withActive(boolean newActive) {
-        return new BeaconState(effects, fuel, newActive, capacity, false);
+        return new BeaconState(effects, fuel, newActive, capacity, false, presets);
     }
 
     public BeaconState withStarved(boolean newStarved) {
-        return new BeaconState(effects, fuel, active, capacity, newStarved);
+        return new BeaconState(effects, fuel, active, capacity, newStarved, presets);
     }
 
     /**
@@ -89,7 +105,22 @@ public record BeaconState(List<EffectSlotConfig> effects, int fuel, boolean acti
      * Refreshed by {@link BeaconResolver#sanitize} on every action and every tick.
      */
     public BeaconState withCapacity(int newCapacity) {
-        return new BeaconState(effects, fuel, active, newCapacity, starved);
+        return new BeaconState(effects, fuel, active, newCapacity, starved, presets);
+    }
+
+    /** The preset at {@code index}, or an empty one: a preset never saved holds nothing. */
+    public List<EffectSlotConfig> preset(int index) {
+        return index >= 0 && index < presets.size() ? presets.get(index) : List.of();
+    }
+
+    /** Saves {@code loadout} as preset {@code index}, padding with empty presets up to it. */
+    public BeaconState withPreset(int index, List<EffectSlotConfig> loadout) {
+        List<List<EffectSlotConfig>> saved = new java.util.ArrayList<>(presets);
+        while (saved.size() <= index) {
+            saved.add(List.of());
+        }
+        saved.set(index, loadout);
+        return new BeaconState(effects, fuel, active, capacity, starved, saved);
     }
 
     public double fillRatio() {

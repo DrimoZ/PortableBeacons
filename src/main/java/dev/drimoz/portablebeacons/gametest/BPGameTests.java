@@ -433,6 +433,28 @@ public final class BPGameTests {
         });
     }
 
+    /**
+     * A preset saved, the effects cleared, the preset loaded: the beacon is back where it was. And a
+     * preset number past the last is refused, like every other out-of-range index a client can send.
+     */
+    public static void aPresetSavesAndRestoresTheEffects(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ServerPlayer carrier = spawnPlayer(helper, cleanup);
+            ItemStack beacon = giveBeacon(carrier, AuraMode.SELF);
+            PortableBeaconMenu menu = new PortableBeaconMenu(1, carrier.getInventory(), 0);
+            List<EffectSlotConfig> before = PortableBeaconItem.stateOf(beacon).effects();
+
+            helper.assertTrue(menu.applyAction(PortableBeaconMenu.ACTION_SAVE_PRESET, 1, 0), "saving was refused");
+            menu.applyAction(PortableBeaconMenu.ACTION_CLEAR_EFFECT, 0, 0);
+            helper.assertTrue(PortableBeaconItem.stateOf(beacon).effects().isEmpty(), "the effect was not cleared");
+            menu.applyAction(PortableBeaconMenu.ACTION_LOAD_PRESET, 1, 0);
+
+            helper.assertTrue(PortableBeaconItem.stateOf(beacon).effects().equals(before), "the preset did not restore");
+            helper.assertFalse(menu.applyAction(PortableBeaconMenu.ACTION_SAVE_PRESET, BeaconState.PRESETS, 0),
+                    "a preset past the last was accepted");
+        });
+    }
+
     /** Hunter marks the monster in reach and leaves the animal beside it alone. */
     public static void hunterMarksMonstersButNotAnimals(GameTestHelper helper) {
         run(helper, cleanup -> {
