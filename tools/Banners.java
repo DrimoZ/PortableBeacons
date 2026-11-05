@@ -9,16 +9,17 @@ import java.nio.file.Path;
 import java.util.zip.ZipFile;
 
 /**
- * CurseForge and wiki art in Minecraft's font, on the GUI preview's captures - FactoryIO's
+ * Store and wiki art in Minecraft's font, on the GUI preview's captures - FactoryIO's
  * {@code docs/showcase/Banners.java}, so the mods' pages share one look.
  *
  * <pre>
- *   BEACON_GUI_PREVIEW=1 ./gradlew runClient    (1920x1080, GUI scale 4)
+ *   BEACON_GUI_PREVIEW=1 ./gradlew runClient    (a 1920x1080 window at GUI scale 4, set by the run itself)
  *   java tools/Banners.java run/screenshots/preview run/store-art
  * </pre>
  *
- * The font comes from the game jar ModDevGradle already built: it is not committed. CurseForge's
- * description editor refuses any image wider than 850 px.
+ * The font comes from the game jar ModDevGradle already built: it is not committed. The images are
+ * 850 px wide at most - CurseForge's description column - and are committed under {@code docs/store-art/}
+ * for the store page to link from GitHub.
  */
 public class Banners {
 
@@ -37,23 +38,27 @@ public class Banners {
         loadFont();
 
         banner(shots, out);
-        header(shots, out, "header_beacons", "beacon_main", 0.45, "The beacons", "Four tiers, three themed, one for creative");
+        header(shots, out, "header_beacons", "beacon_main", 0.45, "The beacons", "Five tiers, three themed, one for creative");
         header(shots, out, "header_screen", "beacon_main", 0.3, "One screen", "Every setting in its row, nothing hidden");
-        header(shots, out, "header_augments", "beacon_info", 0.5, "Augments", "Fourteen of them, four slots at most");
+        header(shots, out, "header_augments", "beacon_info", 0.5, "Augments", "Twenty-one of them, five slots at most");
+        header(shots, out, "header_presets", "beacon_presets", 0.35, "Presets", "Three loadouts, saved and loaded in a click");
         header(shots, out, "header_fuel", "beacon_fuel_tooltip", 0.4, "Fuel", "Ingots, a real beacon, or Forge Energy");
         header(shots, out, "header_data", "beacon_selector", 0.5, "Data-driven", "Effects, tiers, augments and fuels from JSON");
 
-        itemSheet(out, "items_beacons", "Beacons", 4, shots,
-                "beacon_i", "beacon_ii", "beacon_iii", "beacon_iv",
+        itemSheet(out, "items_beacons", "Beacons", 5, shots,
+                "beacon_i", "beacon_ii", "beacon_iii", "beacon_iv", "beacon_v",
                 "cinder_beacon", "void_beacon", "tidal_beacon", "creative_beacon");
-        itemSheet(out, "items_augments", "Augments", 5, shots,
+        itemSheet(out, "items_augments", "Augments", 7, shots,
                 "range", "focus", "amplification", "efficiency", "capacity", "attunement", "discretion",
-                "communion", "wellspring", "wayfarer", "sentinel", "vanguard", "prism", "recluse");
+                "communion", "wellspring", "wayfarer", "sentinel", "vanguard", "prism", "recluse",
+                "sprinter", "miner", "diver", "solar", "bastion", "afterglow", "hunter");
 
-        // The two screens worth showing, cropped to the window and its tabs. Captured at GUI scale 4,
-        // so 3/4 maps every 4-pixel block onto exactly 3: no pixel blurs.
-        gui(shots, out, "screen", "beacon_main", 840, 268, 1972, 1104);
-        gui(shots, out, "picker", "beacon_selector", 928, 272, 1632, 1100);
+        // The screens worth showing, cropped to the window and its tabs. Captured at GUI scale 4, so 3/4
+        // maps every 4-pixel block onto exactly 3 and 2/4 onto exactly 2: no pixel blurs. The whole
+        // screen is at 2/4 because the open info tab, the window and the augments are 1500 pixels wide.
+        gui(shots, out, "screen", "beacon_info", 150, 112, 1650, 950, 2);
+        gui(shots, out, "picker", "beacon_selector", 608, 116, 1312, 944, 3);
+        gui(shots, out, "presets", "beacon_presets", 1308, 226, 1812, 686, 3);
     }
 
     /** The top banner: the title large, the logo beside it, on the main screen. */
@@ -98,7 +103,7 @@ public class Banners {
      * The repository's item textures, enlarged without smoothing, with their English name. An
      * augment is composed as the game composes it: casing, screen tinted by its data file's colour,
      * glyph - at its highest tier. A beacon is a 3D model, so it is cut from the GUI preview's capture
-     * instead: the inventory's third row holds the eight, in this order, at GUI scale 4.
+     * instead: the inventory's third row holds the nine, in this order, at GUI scale 4.
      */
     static void itemSheet(File out, String name, String title, int cols, File shots, String... ids) throws Exception {
         BufferedImage capture = ImageIO.read(new File(shots, "beacon_main.png"));
@@ -117,7 +122,7 @@ public class Banners {
             int cx = (i % cols) * cell, cy = top + (i / cols) * rowH;
             boolean augment = new File("src/main/resources/data/portablebeacons/portablebeacons/augment/" + ids[i] + ".json").exists();
             // The inventory slot's item, 16 GUI pixels at scale 4: column 0 of the window plus 18 per slot.
-            BufferedImage tex = augment ? augment(ids[i], maxTier(ids[i])) : cutOut(capture.getSubimage(960 + 72 * i, 916, 64, 64));
+            BufferedImage tex = augment ? augment(ids[i], maxTier(ids[i])) : cutOut(capture.getSubimage(640 + 72 * i, 760, 64, 64));
             int size = augment ? icon : 64, inset = (icon - size) / 2;
             g.setColor(new Color(255, 255, 255, 14));
             g.fillRect(cx + (cell - icon) / 2 - 8, cy - 4, icon + 16, icon + 8);
@@ -166,7 +171,8 @@ public class Banners {
         Graphics2D g = o.createGraphics();
         g.drawImage(ImageIO.read(new File(ITEMS + "augment_casing_" + tier + ".png")), 0, 0, null);
         g.drawImage(screen, 0, 0, null);
-        g.drawImage(ImageIO.read(new File(ITEMS + "augment_glyph_" + id + ".png")), 0, 0, null);
+        var glyph = java.util.regex.Pattern.compile("\"glyph\"\\s*:\\s*\"([a-z_]+)\"").matcher(json);
+        g.drawImage(ImageIO.read(new File(ITEMS + "augment_glyph_" + (glyph.find() ? glyph.group(1) : id) + ".png")), 0, 0, null);
         g.dispose();
         return o;
     }
@@ -179,13 +185,13 @@ public class Banners {
         return m.group(1).replace(" Augment %s", "").replace("Portable ", "");
     }
 
-    /** One capture, cut to the window and its tabs, at 3/4: every 4-pixel block becomes 3. */
-    static void gui(File shots, File out, String name, String shot, int x0, int y0, int x1, int y1) throws Exception {
+    /** One capture, cut and scaled to {@code quarters}/4: every 4-pixel block becomes that many pixels. */
+    static void gui(File shots, File out, String name, String shot, int x0, int y0, int x1, int y1, int quarters) throws Exception {
         BufferedImage cut = ImageIO.read(new File(shots, shot + ".png")).getSubimage(x0, y0, x1 - x0, y1 - y0);
-        int w = cut.getWidth() * 3 / 4, h = cut.getHeight() * 3 / 4;
+        int w = cut.getWidth() * quarters / 4, h = cut.getHeight() * quarters / 4;
         BufferedImage o = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
         for (int y = 0; y < h; y++)
-            for (int x = 0; x < w; x++) o.setRGB(x, y, cut.getRGB(x * 4 / 3, y * 4 / 3));
+            for (int x = 0; x < w; x++) o.setRGB(x, y, cut.getRGB(x * 4 / quarters, y * 4 / quarters));
         ImageIO.write(o, "png", new File(out, name + ".png"));
     }
 

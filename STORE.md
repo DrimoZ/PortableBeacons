@@ -6,10 +6,12 @@ the mod, the [wiki](https://github.com/DrimoZ/PortableBeacons/wiki) explains it.
 something the mod does today; check it against the data files and `CHANGELOG.md` before changing a
 number.
 
-Images are generated, not committed: `java tools/Banners.java run/screenshots/preview run/store-art`
-after a GUI preview run (see the tool's header). Upload each one through the description editor's
-image button, which refuses anything wider than 850 px, then replace its `UPLOAD:` placeholder below
-with the URL CurseForge gives it.
+Images live in `docs/store-art/` and the description links them from GitHub
+(`raw.githubusercontent.com`, `main`), never from the description editor: an image uploaded there joins
+the CurseForge gallery and cannot be changed without re-uploading it. Change an image, push `main`, and
+the page shows it. They are generated: `BEACON_GUI_PREVIEW=1 ./gradlew runClient`, then
+`java tools/Banners.java run/screenshots/preview run/store-art` (see the tool's header), and copied
+into `docs/store-art/`.
 
 
 ## Summary
@@ -31,7 +33,7 @@ artwork with redistribution granted.
 
 <!-- Everything below this line is pasted into CurseForge's Markdown editor as-is. -->
 
-![Portable Beacons](https://media.forgecdn.net/attachments/description/1650659/description_3f4d10a1-e6cc-40bb-90c9-a88bf1b6baa4.png)
+![Portable Beacons](https://raw.githubusercontent.com/DrimoZ/PortableBeacons/main/docs/store-art/banner.png)
 
 ### A beacon you carry.
 
@@ -44,9 +46,9 @@ below the block's, an effect a real beacon already gives you costs nothing, and 
 recharges the ones you carry. The block is still what you build for a base; this is what you take
 with you.
 
-![The beacons](https://media.forgecdn.net/attachments/description/1650659/description_2df3ae8f-8f01-4846-8d9d-f74f106c69b0.png)
+![The beacons](https://raw.githubusercontent.com/DrimoZ/PortableBeacons/main/docs/store-art/header_beacons.png)
 
-![Eight beacons](https://media.forgecdn.net/attachments/description/1650659/description_c868bd6b-73ca-46b6-ae57-4f9546402e13.png)
+![Nine beacons](https://raw.githubusercontent.com/DrimoZ/PortableBeacons/main/docs/store-art/items_beacons.png)
 
 | | Effects | Max level | Reaches | Range | Augment slots |
 |---|---|---|---|---|---|
@@ -61,9 +63,9 @@ with you.
 - **One runs at a time.** Switching one on switches your others off. Wear it in a
   [Curios](https://www.curseforge.com/minecraft/mc-mods/curios) charm slot if you like.
 
-![One screen](https://media.forgecdn.net/attachments/description/1650659/description_6ec9dc00-ec3b-47fe-b32a-fbd529913d79.png)
+![One screen](https://raw.githubusercontent.com/DrimoZ/PortableBeacons/main/docs/store-art/header_screen.png)
 
-![The beacon screen](https://media.forgecdn.net/attachments/description/1650659/description_c13ef2b8-455b-4351-8956-fdc68469c9c4.png)
+![The beacon screen](https://raw.githubusercontent.com/DrimoZ/PortableBeacons/main/docs/store-art/screen.png)
 
 One row per effect, and everything set right there: click the icon to choose the effect, the level
 to raise it, the figure to choose who it reaches, the switch to turn it off. Right-click steps back.
@@ -74,11 +76,19 @@ to raise it, the figure to choose who it reaches, the switch to turn it off. Rig
   loadout of effects with a Save and a Load button, and shows what it holds.
 - **Effects are picked from a searchable grid**, keyboard included.
 
-![Choosing an effect](https://media.forgecdn.net/attachments/description/1650659/description_0f87fb8c-cf5e-4b1e-ad39-1ef4dd0f3f1e.png)
+![Choosing an effect](https://raw.githubusercontent.com/DrimoZ/PortableBeacons/main/docs/store-art/picker.png)
 
-![Augments](https://media.forgecdn.net/attachments/description/1650659/description_fd5f1db3-cb61-4f53-953c-fb8c101ea8f0.png)
+![Presets](https://raw.githubusercontent.com/DrimoZ/PortableBeacons/main/docs/store-art/header_presets.png)
 
-![Fourteen augments](https://media.forgecdn.net/attachments/description/1650659/description_616748f0-9e37-45aa-8932-29ae1117e7fd.png)
+![The presets tab](https://raw.githubusercontent.com/DrimoZ/PortableBeacons/main/docs/store-art/presets.png)
+
+Three presets keep whole loadouts of effects. **Save** stores the current ones, **Load** puts them
+back, and each preset shows the effects it holds. A preset the beacon can no longer hold in full
+keeps what still fits.
+
+![Augments](https://raw.githubusercontent.com/DrimoZ/PortableBeacons/main/docs/store-art/header_augments.png)
+
+![Twenty-one augments](https://raw.githubusercontent.com/DrimoZ/PortableBeacons/main/docs/store-art/items_augments.png)
 
 Seven are pure gains: **Range**, **Focus** (+1 effect), **Amplification** (+1 level), **Efficiency**
 (up to −55% fuel), **Capacity** (up to ×4 buffer), **Attunement** (share wider) and **Discretion**
@@ -105,7 +115,7 @@ aura, and **Hunter** makes the monsters around you glow.
 
 Twenty-one augments, at most five slots: the question is never which ones you want, but which five.
 
-![Fuel](https://media.forgecdn.net/attachments/description/1650659/description_2a955d4f-a1b4-4c80-8979-e7e8b39d57e2.png)
+![Fuel](https://raw.githubusercontent.com/DrimoZ/PortableBeacons/main/docs/store-art/header_fuel.png)
 
 Every effect burns fuel each second, more for higher levels and more again for sharing it. Amethyst, copper,
 iron, gold, emerald, echo shards, diamond and netherite each last longer than the last.
@@ -119,7 +129,7 @@ iron, gold, emerald, echo shards, diamond and netherite each last longer than th
 - **A key switches it on and off** without opening anything, worn or carried.
 - **Servers can turn fuel off entirely**: the slot and gauge disappear with it.
 
-![Data-driven](https://media.forgecdn.net/attachments/description/1650659/description_cdd0e9e0-9035-4b96-bc91-e45484b09ce5.png)
+![Data-driven](https://raw.githubusercontent.com/DrimoZ/PortableBeacons/main/docs/store-art/header_data.png)
 
 Effects, tiers, augments and fuels are datapack files. A pack can retune every number, add any
 effect from the game or another mod, or make a new augment with its own colour and icon, all
@@ -177,9 +187,9 @@ but do not lift them into another project.
 
 ## Release checklist: 2.1.0
 
-- [ ] Regenerate the banners (`java tools/Banners.java run/screenshots/preview run/store-art`) and replace
-      the ones that state a count: "Fourteen augments" is now twenty-one, and the tiers are five.
-- [ ] Paste the description above, and add captures of the grouped info tab and the presets tab to the gallery.
+- [x] Images regenerated for five tiers, twenty-one augments and the new tabs, and committed in
+      `docs/store-art/`.
+- [ ] Paste the description above once `main` is pushed: its images link from GitHub, so none is uploaded.
 - [ ] Three files, release type **Release**, each with the `## 2.1.0` section of `CHANGELOG.md`; the same
       table as 2.0.0 below.
 - [ ] Optional dependencies: Curios and JEI on every file, EMI on the 1.21.1 file only, and **FTB Teams on
