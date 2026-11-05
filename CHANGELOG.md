@@ -3,16 +3,18 @@
 All notable changes to this project are documented here, newest first.
 Versions follow `{mod version}+{minecraft version}`.
 
-## Unreleased
+## 2.1.0
+
+One release for **1.21.1, 26.1 and 26.2**, with the same content on all three except where a
+dependency forbids it: team sharing counts FTB Teams parties on 1.21.1 and 26.1 only, because FTB
+Teams has no 26.2 build yet.
+
+Nothing in a world or a datapack has to change. Presets are an optional field on a beacon, so a
+beacon from 2.0.0 loads as it was, and the tier and `min_tier` ranges only widened.
 
 ### Added
 - **Team sharing counts FTB Teams parties** (1.21.1 and 26.1). FTB Teams never fills scoreboard
   teams, so in packs that use it a Team-mode effect reached nobody. Optional, like Curios.
-- **The info tab is grouped.** Aura, fuel and loadout, one figure per line with its value flush right,
-  instead of a sentence per figure; moving and standing runtimes are two lines when they differ, and
-  the runtime takes the status light's colour once it is short.
-- **Tabs own their clicks.** A tab's buttons are real buttons, drawn with the four button states
-  and handled by the tab, in the way YetAnotherFarmingStation does it.
 - **Three effect presets**, in a tab of their own under the augments: each shows the effects it holds
   as icons and has a Save and a Load button. Loading is a reconfiguration, so it needs a nearby beacon
   where `require_beacon_to_configure` says so; a preset the beacon can no longer hold in full keeps
@@ -41,6 +43,13 @@ Versions follow `{mod version}+{minecraft version}`.
 - **Three specialist augments.** Sprinter and Miner take Speed or Haste one level higher at 0.6×
   its cost; Diver halves the cost of Water Breathing, Dolphin's Grace and Conduit Power. Crafted
   like the others, around sugar, a golden pickaxe and a turtle scute.
+
+### Changed
+- **The info tab is grouped.** Aura, fuel and loadout, one figure per line with its value flush right,
+  instead of a sentence per figure; moving and standing runtimes are two lines when they differ, and
+  the runtime takes the status light's colour once it is short.
+- **Tabs own their clicks.** A tab's buttons are real buttons, drawn with the four button states
+  and handled by the tab, in the way YetAnotherFarmingStation does it.
 
 ## 2.0.0
 
