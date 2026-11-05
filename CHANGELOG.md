@@ -6,8 +6,13 @@ Versions follow `{mod version}+{minecraft version}`.
 ## Unreleased
 
 ### Added
-- **Three effect presets**, under the figures in the info tab: right-click a number to save the
-  current effects, click it to load them. Loading is a reconfiguration, so it needs a nearby beacon
+- **The info tab is grouped.** Aura, fuel and loadout, one figure per line with its value flush right,
+  instead of a sentence per figure; moving and standing runtimes are two lines when they differ, and
+  the runtime takes the status light's colour once it is short.
+- **Tabs own their clicks.** A tab's buttons are real buttons, drawn with the four button states
+  and handled by the tab, in the way YetAnotherFarmingStation does it.
+- **Three effect presets**, in a tab of their own under the augments: each shows the effects it holds
+  as icons and has a Save and a Load button. Loading is a reconfiguration, so it needs a nearby beacon
   where `require_beacon_to_configure` says so; a preset the beacon can no longer hold in full keeps
   what still fits. Beacons from before keep working: they simply have no presets yet.
 - **Hunter, and the `mark_hostiles` operation**: monsters in the aura's reach glow, and at level 2

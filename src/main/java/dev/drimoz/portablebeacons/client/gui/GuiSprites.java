@@ -166,7 +166,7 @@ public final class GuiSprites {
 
     public enum Icon {
         INFO("icon_info"), CLEAR("icon_clear"),
-        AUGMENTS("icon_augments"), PLUS("icon_plus"),
+        AUGMENTS("icon_augments"), PLUS("icon_plus"), PRESETS("icon_presets"),
         AURA_SELF("icon_aura_self"), AURA_TEAM("icon_aura_team"),
         AURA_ALLIES("icon_aura_allies"), AURA_PETS("icon_aura_pets");
 

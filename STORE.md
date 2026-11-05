@@ -70,7 +70,8 @@ to raise it, the figure to choose who it reaches, the switch to turn it off. Rig
 
 - **A bar under each effect** shows its share of what the beacon burns.
 - **A status light** says whether it is running, idle, low on fuel or dry.
-- **The beacon's figures and its augments** live in side tabs, with three presets for whole loadouts.
+- **The beacon's figures, its augments and three presets** live in side tabs. A preset is a whole
+  loadout of effects with a Save and a Load button, and shows what it holds.
 - **Effects are picked from a searchable grid**, keyboard included.
 
 ![Choosing an effect](https://media.forgecdn.net/attachments/description/1650659/description_0f87fb8c-cf5e-4b1e-ad39-1ef4dd0f3f1e.png)
