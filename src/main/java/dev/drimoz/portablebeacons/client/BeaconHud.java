@@ -24,7 +24,7 @@ final class BeaconHud implements GuiLayer {
     public void render(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker) {
         Minecraft minecraft = Minecraft.getInstance();
         // F1 is checked by hand: vanilla's layers carry a "HUD visible" condition, a mod's do not.
-        if (minecraft.player == null || minecraft.gui.hud.isHidden() || !BPConfig.showHud()
+        if (minecraft.player == null || minecraft.options.hideGui || !BPConfig.showHud()
                 || !BPConfig.fuelEnabled() || BPConfig.disabledIn(minecraft.player.level().dimension())) {
             return;
         }
