@@ -98,6 +98,7 @@ public class BPRecipeProvider extends RecipeProvider {
         augment(output, lookup, "solar", Items.SUNFLOWER, 2);
         augment(output, lookup, "bastion", Items.GOLDEN_APPLE, 2);
         augment(output, lookup, "afterglow", Items.GLOW_INK_SAC, 3);
+        augment(output, lookup, "hunter", Items.SPECTRAL_ARROW, 2);
     }
 
     /** 'P' is the previous tier: when there is one, it is upgraded rather than consumed. */

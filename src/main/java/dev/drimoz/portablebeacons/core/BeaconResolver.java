@@ -50,6 +50,7 @@ public final class BeaconResolver {
         double solarCharge = 0.0;
         int lingerSeconds = 0;
         int lastStand = 0;
+        int markHostiles = 0;
 
         for (AugmentInstance instance : dedupeByType(augments)) {
             Optional<AugmentDef> maybeDef = augmentLookup.get(instance.type());
@@ -84,6 +85,7 @@ public final class BeaconResolver {
                     case LINGER -> lingerSeconds += (int) value;
                     // A level, like HIDE_EFFECTS: the highest wins.
                     case LAST_STAND -> lastStand = Math.max(lastStand, (int) value);
+                    case MARK_HOSTILES -> markHostiles = Math.max(markHostiles, (int) value);
                 }
             }
         }
@@ -114,7 +116,8 @@ public final class BeaconResolver {
                 effectCost,
                 Math.max(0.0, solarCharge),
                 Math.max(0, lingerSeconds),
-                Math.clamp(lastStand, 0, 4));
+                Math.clamp(lastStand, 0, 4),
+                Math.clamp(markHostiles, 0, 2));
     }
 
     /**

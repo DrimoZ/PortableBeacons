@@ -65,15 +65,16 @@ built around it:
 | Miner | Haste one level higher, its cost ×0.6 |
 | Diver | Water Breathing, Dolphin's Grace and Conduit Power at half cost |
 
-And three give the beacon something it never had - an income, a reflex, a memory:
+And four give the beacon something it never had - an income, a reflex, a memory, an eye:
 
 | Augment | Gains | Pays |
 |---|---|---|
 | Solar | +0.5 / +1 fuel per second under open daylight sky, on or off | the slot |
 | Bastion | under a third of your health: Resistance I / II and Regeneration for 5 s, then a minute's cooldown | fuel ×1.15 / ×1.25 |
 | Afterglow | effects last 10 / 20 / 40 s longer once you leave the aura or switch off | the slot |
+| Hunter | monsters in reach glow; at II they are slowed too | fuel ×1.3 / ×1.6 |
 
-Twenty augments, at most five slots. The question is never which you want but which five.
+Twenty-one augments, at most five slots. The question is never which you want but which five.
 
 Sharing is earned rather than given: Beacons I and II keep everything to the carrier, III and IV
 reach your team, and anything wider needs Attunement or Vanguard. Each tier's starting point is a

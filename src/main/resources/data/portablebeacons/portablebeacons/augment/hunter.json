@@ -1,0 +1,9 @@
+{
+  "max_tier": 2,
+  "color": 14423100,
+  "glyph": "vanguard",
+  "operations": [
+    { "type": "mark_hostiles", "values": [1.0, 2.0] },
+    { "type": "mul_fuel", "values": [1.3, 1.6] }
+  ]
+}

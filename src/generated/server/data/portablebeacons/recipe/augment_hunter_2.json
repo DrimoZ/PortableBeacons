@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "A": "minecraft:amethyst_shard",
+    "B": "minecraft:amethyst_block",
+    "M": "minecraft:spectral_arrow"
+  },
+  "pattern": [
+    "BAB",
+    "AMA",
+    "BAB"
+  ],
+  "result": {
+    "components": {
+      "portablebeacons:augment": {
+        "type": "portablebeacons:hunter",
+        "tier": 2
+      }
+    },
+    "id": "portablebeacons:augment"
+  }
+}
