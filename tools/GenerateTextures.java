@@ -206,7 +206,8 @@ public final class GenerateTextures {
         if (pips > 0) {
             int[] at = {3, 5, 8, 10};
             for (int pip = 0; pip < 4; pip++) {
-                fill(image, at[pip], 10, 1, 1, 0xFF000000 | (pip < pips ? 0xF2F2F2 : PIP_OFF));
+                int lit = pips > 4 ? 0xFFD54A : 0xF2F2F2;
+                fill(image, at[pip], 10, 1, 1, 0xFF000000 | (pip < pips ? lit : PIP_OFF));
             }
         } else {
             // A continuous strip rather than four dots: themed beacons sit beside the ladder, not on it.
@@ -248,6 +249,9 @@ public final class GenerateTextures {
         write("beacon/beacon_ii", beacon(new int[]{0xF7D44A, 0xC08A1E}, beam, 2, 0));
         write("beacon/beacon_iii", beacon(new int[]{0x7FE8E0, 0x2FA8A0}, beam, 3, 0));
         write("beacon/beacon_iv", beacon(new int[]{0x7A6A74, 0x4E4249}, beam, 4, 0));
+        // Four gold pips rather than a fifth white one: the foot has room for four, and gold reads
+        // as "past the ladder" where a fifth dot would only read as crowded.
+        write("beacon/beacon_v", beacon(new int[]{0x4A3F45, 0x2A2328}, new int[]{0xF2C14E, 0xFFF3C4}, 5, 0));
 
         write("beacon/cinder_beacon", beacon(new int[]{0xE0603A, 0x8E2A18}, new int[]{0xF29B1D, 0xFFE08A}, 0, 0xF29B1D));
         write("beacon/void_beacon", beacon(new int[]{0xC48CE0, 0x7A4A9A}, new int[]{0xB07CD8, 0xEAD2FA}, 0, 0xC48CE0));

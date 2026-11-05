@@ -7,6 +7,7 @@
   "item.portablebeacons.beacon_ii": "Faro portatile II",
   "item.portablebeacons.beacon_iii": "Faro portatile III",
   "item.portablebeacons.beacon_iv": "Faro portatile IV",
+  "item.portablebeacons.beacon_v": "Faro portatile V",
   "item.portablebeacons.cinder_beacon": "Faro di brace",
   "item.portablebeacons.void_beacon": "Faro del vuoto",
   "item.portablebeacons.tidal_beacon": "Faro di marea",
@@ -117,6 +118,8 @@
   "advancement.portablebeacons.augmented.description": "Ottieni un modulo da inserire in uno zaino",
   "advancement.portablebeacons.tier_four.title": "La stella intera",
   "advancement.portablebeacons.tier_four.description": "Ottieni un Faro portatile IV",
+  "advancement.portablebeacons.tier_five.title": "Oltre la scala",
+  "advancement.portablebeacons.tier_five.description": "Ottieni un Faro portatile V",
   "advancement.portablebeacons.themed.title": "Specialista",
   "advancement.portablebeacons.themed.description": "Ottieni un faro di brace, del vuoto o di marea"
 }

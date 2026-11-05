@@ -1,0 +1,2 @@
+{ "level": 5, "effect_slots": 4, "augment_slots": 5, "base_range": 18.0, "fuel_capacity": 72000, "max_amplifier": 2, "aura_rank": 1,
+  "effect_pool": [ "#standard" ] }

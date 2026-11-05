@@ -1,9 +1,10 @@
-// 26.2	2026-10-02T14:12:04.3826096	Model Definitions - portablebeacons
+// 26.2	2026-11-05T14:15:38.5516413	Model Definitions - portablebeacons
 1386122182bb6366a6c85a95e0866eacfcf6988c assets/portablebeacons/items/augment.json
 f2d62b9a19c03206f1d93b646691b7bf6f894cbe assets/portablebeacons/items/beacon_i.json
 c2aa56b37e6ce57b9794c059d6cf2933c58db44f assets/portablebeacons/items/beacon_ii.json
 e0db50b63e55fbf2639a6e177ededde2d9483e81 assets/portablebeacons/items/beacon_iii.json
 6e71ebf8fe2897e6766440c3c18b7a94f1ed20d5 assets/portablebeacons/items/beacon_iv.json
+61cac843247e50002c1ce6b9f7863c826983444a assets/portablebeacons/items/beacon_v.json
 98b81e8d368d99cc201bafb8002e4858aaca02b7 assets/portablebeacons/items/cinder_beacon.json
 5af34686791e72c4a4f484d926be81c06d5a965f assets/portablebeacons/items/creative_beacon.json
 59f47110559851afb979264cb3cbef645a291c30 assets/portablebeacons/items/tidal_beacon.json
@@ -75,6 +76,7 @@ d04e8dbe45e8ec20a25cd1355f0aa65d9dd11a24 assets/portablebeacons/models/item/augm
 7e4e624dd6155761257146b779adbb4417f73d52 assets/portablebeacons/models/item/beacon_ii.json
 ca5e572e5a461a08c97865f2944c518c97a7dfa6 assets/portablebeacons/models/item/beacon_iii.json
 e450a9ae18c0dedb827791b2f5accd774d15f197 assets/portablebeacons/models/item/beacon_iv.json
+694ee9d234529ed1e890f39465da9c8c742527df assets/portablebeacons/models/item/beacon_v.json
 454d11b13b1a14ba225db66804a309c7e952aeb2 assets/portablebeacons/models/item/cinder_beacon.json
 57f9bc54f3a9a98c0420d2f4ab7c980af0945995 assets/portablebeacons/models/item/creative_beacon.json
 721d7a10f2278d73c8fe63acfd49617793f29134 assets/portablebeacons/models/item/tidal_beacon.json

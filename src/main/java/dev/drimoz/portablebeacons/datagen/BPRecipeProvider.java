@@ -57,6 +57,11 @@ public class BPRecipeProvider extends RecipeProvider {
                 'N', Ingredient.of(Items.NETHERITE_INGOT),
                 'P', Ingredient.of(BPItems.BEACON_III.get()),
                 'B', Ingredient.of(Items.BEACON)), " S ", "NPN", " B ");
+        beacon(output, lookup, BPItems.BEACON_V.get(), Map.of(
+                'S', Ingredient.of(Items.NETHER_STAR),
+                'N', Ingredient.of(Items.NETHERITE_BLOCK),
+                'P', Ingredient.of(BPItems.BEACON_IV.get()),
+                'B', Ingredient.of(Items.BEACON)), " S ", "NPN", "SBS");
 
         themed(output, lookup, BPItems.BEACON_CINDER.get(), Items.BLAZE_ROD, Items.MAGMA_CREAM);
         themed(output, lookup, BPItems.BEACON_VOID.get(), Items.DRAGON_BREATH, Items.ENDER_EYE);

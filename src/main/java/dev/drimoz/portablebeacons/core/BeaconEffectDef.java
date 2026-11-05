@@ -45,7 +45,7 @@ public record BeaconEffectDef(
                     .forGetter(BeaconEffectDef::cost),
             Codec.intRange(0, BeaconStats.MAX_AMPLIFIER).optionalFieldOf("max_amplifier", 0)
                     .forGetter(BeaconEffectDef::maxAmplifier),
-            Codec.intRange(1, 4).optionalFieldOf("min_tier", 1)
+            Codec.intRange(1, 5).optionalFieldOf("min_tier", 1)
                     .forGetter(BeaconEffectDef::minTier),
             Codec.DOUBLE.optionalFieldOf("amplifier_cost_multiplier", 2.0)
                     .forGetter(BeaconEffectDef::amplifierCostMultiplier),

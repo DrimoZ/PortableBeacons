@@ -7,6 +7,7 @@
   "item.portablebeacons.beacon_ii": "携帯ビーコン II",
   "item.portablebeacons.beacon_iii": "携帯ビーコン III",
   "item.portablebeacons.beacon_iv": "携帯ビーコン IV",
+  "item.portablebeacons.beacon_v": "携帯ビーコン V",
   "item.portablebeacons.cinder_beacon": "残火のビーコン",
   "item.portablebeacons.void_beacon": "虚空のビーコン",
   "item.portablebeacons.tidal_beacon": "潮流のビーコン",
@@ -117,6 +118,8 @@
   "advancement.portablebeacons.augmented.description": "パックに入れる強化モジュールを手に入れる",
   "advancement.portablebeacons.tier_four.title": "星まるごと",
   "advancement.portablebeacons.tier_four.description": "携帯ビーコン IV を手に入れる",
+  "advancement.portablebeacons.tier_five.title": "階段の先へ",
+  "advancement.portablebeacons.tier_five.description": "携帯ビーコン V を手に入れる",
   "advancement.portablebeacons.themed.title": "スペシャリスト",
   "advancement.portablebeacons.themed.description": "残火・虚空・潮流のいずれかのビーコンを手に入れる"
 }

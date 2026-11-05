@@ -7,6 +7,7 @@
   "item.portablebeacons.beacon_ii": "便攜烽火台 II",
   "item.portablebeacons.beacon_iii": "便攜烽火台 III",
   "item.portablebeacons.beacon_iv": "便攜烽火台 IV",
+  "item.portablebeacons.beacon_v": "便攜烽火台 V",
   "item.portablebeacons.cinder_beacon": "餘燼烽火台",
   "item.portablebeacons.void_beacon": "虛空烽火台",
   "item.portablebeacons.tidal_beacon": "潮汐烽火台",
@@ -117,6 +118,8 @@
   "advancement.portablebeacons.augmented.description": "取得一個可裝入背包的強化模組",
   "advancement.portablebeacons.tier_four.title": "整顆星辰",
   "advancement.portablebeacons.tier_four.description": "取得便攜烽火台 IV",
+  "advancement.portablebeacons.tier_five.title": "登峰造極",
+  "advancement.portablebeacons.tier_five.description": "取得便攜烽火台 V",
   "advancement.portablebeacons.themed.title": "專精",
   "advancement.portablebeacons.themed.description": "取得餘燼、虛空或潮汐烽火台"
 }

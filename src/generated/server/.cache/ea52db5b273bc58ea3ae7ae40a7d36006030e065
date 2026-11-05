@@ -1,4 +1,4 @@
-// 26.2	2026-10-29T20:29:56.6760467	Portable Beacons Recipes
+// 26.2	2026-11-05T14:15:49.5877379	Portable Beacons Recipes
 1494e4c07354745581dcaabb71d963949d6a7cde data/portablebeacons/advancement/recipes/misc/augment_amplification.json
 c418e94cd154ad5abd7d12897dde6185c45cff0b data/portablebeacons/advancement/recipes/misc/augment_attunement.json
 c71a0cd27817bd41b486ef564f018bd9c86507bf data/portablebeacons/advancement/recipes/misc/augment_attunement_2.json
@@ -31,6 +31,7 @@ fa164ba93d18a7f07ce4af2b8b396b4801334ea3 data/portablebeacons/advancement/recipe
 ef2e461350c21a8588f05f66c665771afed13eae data/portablebeacons/advancement/recipes/misc/beacon_ii.json
 219f64805f761f52e8740f67b02d46d5718d26d2 data/portablebeacons/advancement/recipes/misc/beacon_iii.json
 d96b3b29a3b21d36f80b79525947fb117ab48e58 data/portablebeacons/advancement/recipes/misc/beacon_iv.json
+ef69e87f875778cb850b975dfdee72108d4a63e9 data/portablebeacons/advancement/recipes/misc/beacon_v.json
 a6c321946dcef90cf84297fc2db139eb84066476 data/portablebeacons/advancement/recipes/misc/cinder_beacon.json
 1f768e97e31923cd3cd53a7d11b2cd93f863e430 data/portablebeacons/advancement/recipes/misc/tidal_beacon.json
 a7b65b63e17ef4cc8cde52e60bebf3bdfd8d05eb data/portablebeacons/advancement/recipes/misc/void_beacon.json
@@ -66,6 +67,7 @@ ccc835fd54d10ca08370daa321711065b991d8b6 data/portablebeacons/recipe/augment_wel
 7edaa29c46fe4e94e013de500a78905d53826417 data/portablebeacons/recipe/beacon_ii.json
 3072223cb8aa5462b3563603cbe3e67caef75be4 data/portablebeacons/recipe/beacon_iii.json
 edd1688887fdf0cce2f189ab9b459bfe76827b33 data/portablebeacons/recipe/beacon_iv.json
+18730d7d3050e06c6e86634ef4aadc4b41ff868b data/portablebeacons/recipe/beacon_v.json
 82b7c85a32f37c7d1851e4ae005939c3d6ead6cc data/portablebeacons/recipe/cinder_beacon.json
 4274f7d3cdc12d48947ff40a3ebda56cbb0d1816 data/portablebeacons/recipe/tidal_beacon.json
 10cada9c05fd8645adf289d32475ff4b85c4b00a data/portablebeacons/recipe/void_beacon.json
