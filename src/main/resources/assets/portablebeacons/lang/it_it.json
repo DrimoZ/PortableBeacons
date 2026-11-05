@@ -88,6 +88,7 @@
   "portablebeacons.msg.needs_beacon": "Devi essere vicino a un faro attivo per cambiarlo",
   "portablebeacons.msg.switched_on": "Faro acceso",
   "portablebeacons.msg.switched_off": "Faro spento",
+  "portablebeacons.msg.inspect_hold": "Tieni un faro portatile nella mano principale",
   "portablebeacons.pack.extended_effects": "Fari portatili: effetti estesi",
   "portablebeacons.pack.extended_effects.description": "Fortuna, Eroe del villaggio e Invisibilità per i fari portatili",
   "portablebeacons.gui.runtime": "Autonomia: %s",

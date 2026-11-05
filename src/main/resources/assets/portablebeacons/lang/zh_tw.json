@@ -88,6 +88,7 @@
   "portablebeacons.msg.needs_beacon": "必須靠近運作中的烽火台才能變更",
   "portablebeacons.msg.switched_on": "烽火台已開啟",
   "portablebeacons.msg.switched_off": "烽火台已關閉",
+  "portablebeacons.msg.inspect_hold": "請在主手持有可攜式烽火台",
   "portablebeacons.pack.extended_effects": "可攜式烽火台：擴充效果",
   "portablebeacons.pack.extended_effects.description": "為可攜式烽火台加入幸運、村莊英雄與隱形",
   "portablebeacons.gui.runtime": "可用時間：%s",

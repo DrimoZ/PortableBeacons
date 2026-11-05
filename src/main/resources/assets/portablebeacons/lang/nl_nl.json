@@ -88,6 +88,7 @@
   "portablebeacons.msg.needs_beacon": "Je moet bij een werkend vuurbaken staan om dit te wijzigen",
   "portablebeacons.msg.switched_on": "Vuurbaken aangezet",
   "portablebeacons.msg.switched_off": "Vuurbaken uitgezet",
+  "portablebeacons.msg.inspect_hold": "Houd een draagbaar vuurbaken in je hoofdhand",
   "portablebeacons.pack.extended_effects": "Draagbare vuurbakens: extra effecten",
   "portablebeacons.pack.extended_effects.description": "Geluk, Held van het dorp en Onzichtbaarheid voor draagbare vuurbakens",
   "portablebeacons.gui.runtime": "Looptijd: %s",

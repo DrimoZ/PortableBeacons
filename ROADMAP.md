@@ -73,7 +73,7 @@ whole list the day they arrive.
 | 9 | **New augment operations**: solar recharge, last-stand burst, lingering effects | Each opens a family of datapack augments rather than one item | Medium each |
 | 10 | **A Nether Star tier V** | An endgame target; must stay under the placed beacon's reach | Small in data, needs a balance pass |
 | 11 | **More fuels** (amethyst, echo shard) | Renewable early fuel. Waits on the sharing balance pass, since fuel value is the other half of the same numbers | Data only |
-| 12 | **`/portablebeacons inspect`** | Computed stats of the held beacon, for datapack authors | Small |
+| 12 | ~~**`/portablebeacons inspect`**~~ - done on 26.2 | Computed stats of the held beacon, for datapack authors | Small |
 
 Not on it: Fabric and 1.20.1 before reports exist, and a block that holds a portable beacon - it
 would compete with the vanilla beacon this mod is careful not to replace.

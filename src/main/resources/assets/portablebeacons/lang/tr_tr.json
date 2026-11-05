@@ -88,6 +88,7 @@
   "portablebeacons.msg.needs_beacon": "Bunu değiştirmek için çalışan bir fenerin yakınında olmalısın",
   "portablebeacons.msg.switched_on": "Fener açıldı",
   "portablebeacons.msg.switched_off": "Fener kapatıldı",
+  "portablebeacons.msg.inspect_hold": "Ana elinde taşınabilir bir fener tut",
   "portablebeacons.pack.extended_effects": "Taşınabilir fenerler: ek etkiler",
   "portablebeacons.pack.extended_effects.description": "Taşınabilir fenerler için Şans, Köyün Kahramanı ve Görünmezlik",
   "portablebeacons.gui.runtime": "Çalışma süresi: %s",

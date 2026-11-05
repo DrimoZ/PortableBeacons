@@ -88,6 +88,7 @@
   "portablebeacons.msg.needs_beacon": "Debes estar cerca de un faro activo para cambiar esto",
   "portablebeacons.msg.switched_on": "Faro encendido",
   "portablebeacons.msg.switched_off": "Faro apagado",
+  "portablebeacons.msg.inspect_hold": "Sostén un faro portátil en la mano principal",
   "portablebeacons.pack.extended_effects": "Faros portátiles: efectos ampliados",
   "portablebeacons.pack.extended_effects.description": "Suerte, Héroe de la aldea e Invisibilidad para los faros portátiles",
   "portablebeacons.gui.runtime": "Autonomía: %s",
