@@ -141,7 +141,13 @@ public record AugmentDef(int maxTier, int color, List<Operation> operations, Opt
          * for five seconds, then the beacon cools down for a minute - shown on the item, as an
          * ender pearl shows its own.
          */
-        LAST_STAND("last_stand");
+        LAST_STAND("last_stand"),
+        /**
+         * Turns the aura on monsters: at 1 those in reach glow, at 2 they are slowed as well. The
+         * only operation that reaches anything but the carrier's side, which is why it is a level
+         * rather than an amount - more of it would just be a weapon.
+         */
+        MARK_HOSTILES("mark_hostiles");
 
         public static final Codec<Type> CODEC = StringRepresentable.fromEnum(Type::values);
 

@@ -22,6 +22,7 @@ import java.util.Set;
  * @param solarChargePerSecond fuel units gained per second under open daylight sky
  * @param lingerSeconds        seconds added to every effect the beacon applies
  * @param lastStandLevel       Resistance level granted when the carrier drops low; 0 for none
+ * @param markHostiles         1 makes monsters in reach glow, 2 slows them too; 0 for none
  */
 public record BeaconStats(
         int effectSlots,
@@ -41,7 +42,8 @@ public record BeaconStats(
         Map<ResourceKey<BeaconEffectDef>, Double> effectCostMultipliers,
         double solarChargePerSecond,
         int lingerSeconds,
-        int lastStandLevel
+        int lastStandLevel,
+        int markHostiles
 ) {
     public BeaconStats {
         effectAmplifierBonus = Map.copyOf(effectAmplifierBonus);
@@ -55,7 +57,7 @@ public record BeaconStats(
                        boolean hideParticles, boolean hideIcon) {
         this(effectSlots, augmentSlots, range, fuelCapacity, maxAmplifier, fuelMultiplier, auraCostMultiplier,
                 freeEffectSlots, movingCostMultiplier, stillCostMultiplier, allowedAuraModes, hideParticles,
-                hideIcon, Map.of(), Map.of(), 0.0, 0, 0);
+                hideIcon, Map.of(), Map.of(), 0.0, 0, 0, 0);
     }
 
     /**
@@ -71,7 +73,7 @@ public record BeaconStats(
                 fuelMultiplier * Math.max(0.0, costFactor), auraCostMultiplier, freeEffectSlots,
                 movingCostMultiplier, stillCostMultiplier, allowedAuraModes, hideParticles, hideIcon,
                 effectAmplifierBonus, effectCostMultipliers, solarChargePerSecond, lingerSeconds,
-                lastStandLevel);
+                lastStandLevel, markHostiles);
     }
 
     /** The level ceiling for one effect: the beacon's, plus whatever a targeted augment adds. */

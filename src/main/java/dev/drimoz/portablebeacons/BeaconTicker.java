@@ -21,7 +21,9 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
@@ -281,6 +283,24 @@ public final class BeaconTicker {
         PortableBeaconItem.setState(beacon, state.withStarved(false));
         for (EffectSlotConfig slot : toApply) {
             apply(player, slot, stats, effectLookup);
+        }
+        markHostiles(player, stats);
+    }
+
+    /** Long enough to bridge one interval, short enough that a mark fades soon after the mob leaves. */
+    private static final int MARK_TICKS = INTERVAL + 20;
+
+    /** Hunter: monsters in the aura's reach glow, and at level 2 are slowed too. */
+    private static void markHostiles(Player carrier, BeaconStats stats) {
+        if (stats.markHostiles() <= 0 || stats.range() <= 0.0) {
+            return;
+        }
+        AABB box = carrier.getBoundingBox().inflate(stats.range());
+        for (Mob mob : carrier.level().getEntitiesOfClass(Mob.class, box, mob -> mob instanceof Enemy)) {
+            mob.addEffect(new MobEffectInstance(MobEffects.GLOWING, MARK_TICKS, 0, false, false));
+            if (stats.markHostiles() >= 2) {
+                mob.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, MARK_TICKS, 0, false, false));
+            }
         }
     }
 
