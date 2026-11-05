@@ -88,6 +88,7 @@
   "portablebeacons.msg.needs_beacon": "Você precisa estar perto de um sinalizador ativo para mudar isso",
   "portablebeacons.msg.switched_on": "Sinalizador ligado",
   "portablebeacons.msg.switched_off": "Sinalizador desligado",
+  "portablebeacons.msg.inspect_hold": "Segure um sinalizador portátil na mão principal",
   "portablebeacons.pack.extended_effects": "Sinalizadores portáteis: efeitos extras",
   "portablebeacons.pack.extended_effects.description": "Sorte, Herói da Vila e Invisibilidade para sinalizadores portáteis",
   "portablebeacons.gui.runtime": "Autonomia: %s",

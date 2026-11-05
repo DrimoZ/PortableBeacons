@@ -88,6 +88,7 @@
   "portablebeacons.msg.needs_beacon": "変更するには稼働中のビーコンの近くにいる必要があります",
   "portablebeacons.msg.switched_on": "ビーコンをオンにしました",
   "portablebeacons.msg.switched_off": "ビーコンをオフにしました",
+  "portablebeacons.msg.inspect_hold": "ポータブルビーコンを利き手に持ってください",
   "portablebeacons.pack.extended_effects": "ポータブルビーコン：追加効果",
   "portablebeacons.pack.extended_effects.description": "ポータブルビーコンに幸運・村の英雄・透明化を追加",
   "portablebeacons.gui.runtime": "稼働時間: %s",

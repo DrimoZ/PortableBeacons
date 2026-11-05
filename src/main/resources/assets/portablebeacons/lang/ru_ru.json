@@ -88,6 +88,7 @@
   "portablebeacons.msg.needs_beacon": "Чтобы это изменить, нужно быть рядом с активным маяком",
   "portablebeacons.msg.switched_on": "Маяк включён",
   "portablebeacons.msg.switched_off": "Маяк выключен",
+  "portablebeacons.msg.inspect_hold": "Держите переносной маяк в основной руке",
   "portablebeacons.pack.extended_effects": "Переносные маяки: доп. эффекты",
   "portablebeacons.pack.extended_effects.description": "Удача, Герой деревни и Невидимость для переносных маяков",
   "portablebeacons.gui.runtime": "Хватит на: %s",

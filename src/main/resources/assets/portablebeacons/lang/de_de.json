@@ -88,6 +88,7 @@
   "portablebeacons.msg.needs_beacon": "Du musst nahe einem aktiven Leuchtfeuer sein, um das zu ändern",
   "portablebeacons.msg.switched_on": "Leuchtfeuer eingeschaltet",
   "portablebeacons.msg.switched_off": "Leuchtfeuer ausgeschaltet",
+  "portablebeacons.msg.inspect_hold": "Halte ein tragbares Leuchtfeuer in der Haupthand",
   "portablebeacons.pack.extended_effects": "Tragbare Leuchtfeuer: erweiterte Effekte",
   "portablebeacons.pack.extended_effects.description": "Glück, Held des Dorfes und Unsichtbarkeit für tragbare Leuchtfeuer",
   "portablebeacons.gui.runtime": "Laufzeit: %s",

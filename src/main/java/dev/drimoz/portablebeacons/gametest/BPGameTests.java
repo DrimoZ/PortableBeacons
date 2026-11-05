@@ -410,6 +410,24 @@ public final class BPGameTests {
         helper.succeed();
     }
 
+    /** The inspect command answers for a held beacon and refuses an empty hand, rather than throwing. */
+    public static void inspectReportsTheHeldBeacon(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ServerPlayer carrier = spawnPlayer(helper, cleanup);
+            var source = helper.getLevel().getServer().createCommandSourceStack().withEntity(carrier).withSuppressedOutput();
+            var dispatcher = helper.getLevel().getServer().getCommands().getDispatcher();
+            try {
+                helper.assertTrue(dispatcher.execute("portablebeacons inspect", source) == 0,
+                        "inspect succeeded with nothing in hand");
+                giveBeacon(carrier, AuraMode.SELF);
+                helper.assertTrue(dispatcher.execute("portablebeacons inspect", source) == 1,
+                        "inspect failed on a held beacon");
+            } catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {
+                throw new AssertionError("inspect is not registered: " + e.getMessage());
+            }
+        });
+    }
+
     /**
      * One augment per type still holds across slots, but not against the slot being replaced: a
      * Wayfarer II dropped on a Wayfarer I is an upgrade, not a duplicate.
