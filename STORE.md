@@ -175,6 +175,18 @@ but do not lift them into another project.
 <!-- End of the pasted description. -->
 
 
+## Release checklist: 2.1.0
+
+- [ ] Regenerate the banners (`java tools/Banners.java run/screenshots/preview run/store-art`) and replace
+      the ones that state a count: "Fourteen augments" is now twenty-one, and the tiers are five.
+- [ ] Paste the description above, and add captures of the grouped info tab and the presets tab to the gallery.
+- [ ] Three files, release type **Release**, each with the `## 2.1.0` section of `CHANGELOG.md`; the same
+      table as 2.0.0 below.
+- [ ] Optional dependencies: Curios and JEI on every file, EMI on the 1.21.1 file only, and **FTB Teams on
+      the 1.21.1 and 26.1 files**.
+- [ ] Modrinth, once the project exists: `MODRINTH_TOKEN` in the environment and
+      `gradlew modrinth -Pmodrinth_project=<id>` on each branch.
+
 ## Release checklist: 2.0.0
 
 - [x] Upload the images from `run/store-art/` and replace every `UPLOAD:` above.
