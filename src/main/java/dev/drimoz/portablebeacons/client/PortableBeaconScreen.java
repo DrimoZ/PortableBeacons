@@ -583,7 +583,7 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
                 graphics.drawString(font, lines.get(i), x, y + i * GuiTheme.LINE, colour, true);
             }
             int rowY = y + presetRowY();
-            graphics.text(font, PRESETS_LABEL, x, rowY + 1, GuiTheme.TAB_LABEL, true);
+            graphics.drawString(font, PRESETS_LABEL, x, rowY + 1, GuiTheme.TAB_LABEL, true);
             int hovered = presetAt(mouseX, mouseY);
             for (int i = 0; i < BeaconState.PRESETS; i++) {
                 int chipX = x + chipsX() + i * (CHIP_W + CHIP_GAP);
@@ -591,7 +591,7 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
                 graphics.fill(chipX, rowY, chipX + CHIP_W, rowY + GuiTheme.LINE,
                         hovered == i ? 0xFF6A6A6A : saved ? 0xFF3C3C3C : 0x60000000);
                 String number = String.valueOf(i + 1);
-                graphics.text(font, number, chipX + (CHIP_W - font.width(number)) / 2 + 1, rowY + 1,
+                graphics.drawString(font, number, chipX + (CHIP_W - font.width(number)) / 2 + 1, rowY + 1,
                         saved ? GuiTheme.TAB_VALUE : GuiTheme.TAB_MUTED, true);
             }
         }
@@ -1060,9 +1060,9 @@ public class PortableBeaconScreen extends AbstractContainerScreen<PortableBeacon
             click();
             return true;
         }
-        int preset = infoTab.presetAt(event.x(), event.y());
+        int preset = infoTab.presetAt(mouseX, mouseY);
         if (preset >= 0) {
-            boolean save = event.button() == GLFW.GLFW_MOUSE_BUTTON_RIGHT;
+            boolean save = button == GLFW.GLFW_MOUSE_BUTTON_RIGHT;
             send(save ? PortableBeaconMenu.ACTION_SAVE_PRESET : PortableBeaconMenu.ACTION_LOAD_PRESET, preset, 0);
             click();
             return true;

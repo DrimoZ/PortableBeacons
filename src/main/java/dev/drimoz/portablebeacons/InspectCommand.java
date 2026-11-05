@@ -34,7 +34,7 @@ public final class InspectCommand {
     public static void register(RegisterCommandsEvent event) {
         event.getDispatcher().register(Commands.literal(PortableBeacons.MOD_ID)
                 .then(Commands.literal("inspect")
-                        .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                        .requires(source -> source.hasPermission(2))
                         .executes(InspectCommand::inspect)));
     }
 

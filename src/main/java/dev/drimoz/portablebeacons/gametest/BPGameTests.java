@@ -447,6 +447,94 @@ public final class BPGameTests {
         helper.succeed();
     }
 
+    /** The inspect command answers for a held beacon and refuses an empty hand, rather than throwing. */
+    @GameTest(template = PLATFORM, timeoutTicks = TIMEOUT)
+    public static void inspectReportsTheHeldBeacon(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ServerPlayer carrier = spawnPlayer(helper, cleanup);
+            var source = helper.getLevel().getServer().createCommandSourceStack()
+                    .withEntity(carrier).withSuppressedOutput();
+            var dispatcher = helper.getLevel().getServer().getCommands().getDispatcher();
+            try {
+                helper.assertTrue(dispatcher.execute("portablebeacons inspect", source) == 0,
+                        "inspect succeeded with nothing in hand");
+                giveBeacon(carrier, AuraMode.SELF);
+                helper.assertTrue(dispatcher.execute("portablebeacons inspect", source) == 1,
+                        "inspect failed on a held beacon");
+            } catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {
+                throw new AssertionError("inspect is not registered: " + e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Bastion answers a hit that leaves the carrier under a third of their health, once: the second
+     * answer inside the cooldown grants nothing, which keeps it a last stand rather than permanent
+     * Resistance.
+     */
+    @GameTest(template = PLATFORM, timeoutTicks = TIMEOUT)
+    public static void bastionAnswersALowHitOncePerCooldown(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ServerPlayer carrier = spawnPlayer(helper, cleanup);
+            ItemStack beacon = giveBeacon(carrier, AuraMode.SELF);
+            install(beacon, ResourceKey.create(BPRegistryKeys.AUGMENT, BPRegistryKeys.id("bastion")), 1);
+
+            // Health set and the handler driven by hand: the test player is creative, and takes no
+            // damage at all to fire the event with.
+            carrier.setHealth(4.0F);
+            BeaconTicker.lastStand(carrier);
+            helper.assertTrue(carrier.hasEffect(MobEffects.DAMAGE_RESISTANCE), "a low hit granted no Resistance");
+            helper.assertTrue(carrier.getCooldowns().isOnCooldown(beacon.getItem()), "the beacon did not cool down");
+
+            carrier.removeEffect(MobEffects.DAMAGE_RESISTANCE);
+            BeaconTicker.lastStand(carrier);
+            helper.assertFalse(carrier.hasEffect(MobEffects.DAMAGE_RESISTANCE),
+                    "Bastion fired again inside its cooldown");
+        });
+    }
+
+    /** Hunter marks the monster in reach and leaves the animal beside it alone. */
+    @GameTest(template = PLATFORM, timeoutTicks = TIMEOUT)
+    public static void hunterMarksMonstersButNotAnimals(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ServerPlayer carrier = spawnPlayer(helper, cleanup);
+            ItemStack beacon = giveBeacon(carrier, AuraMode.SELF);
+            install(beacon, ResourceKey.create(BPRegistryKeys.AUGMENT, BPRegistryKeys.id("hunter")), 2);
+            var zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, CENTRE);
+            var pig = helper.spawnWithNoFreeWill(EntityType.PIG, CENTRE);
+
+            BeaconTicker.tickPlayer(carrier);
+
+            helper.assertTrue(zombie.hasEffect(MobEffects.GLOWING), "the zombie in reach is not marked");
+            helper.assertTrue(zombie.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "Hunter II did not slow the zombie");
+            helper.assertFalse(pig.hasEffect(MobEffects.GLOWING), "an animal was marked as a monster");
+        });
+    }
+
+    /**
+     * A preset saved, the effects cleared, the preset loaded: the beacon is back where it was. And a
+     * preset number past the last is refused, like every other out-of-range index a client can send.
+     */
+    @GameTest(template = PLATFORM, timeoutTicks = TIMEOUT)
+    public static void aPresetSavesAndRestoresTheEffects(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ServerPlayer carrier = spawnPlayer(helper, cleanup);
+            ItemStack beacon = giveBeacon(carrier, AuraMode.SELF);
+            PortableBeaconMenu menu = new PortableBeaconMenu(1, carrier.getInventory(), 0);
+            List<EffectSlotConfig> before = PortableBeaconItem.stateOf(beacon).effects();
+
+            helper.assertTrue(menu.applyAction(PortableBeaconMenu.ACTION_SAVE_PRESET, 1, 0), "saving was refused");
+            menu.applyAction(PortableBeaconMenu.ACTION_CLEAR_EFFECT, 0, 0);
+            helper.assertTrue(PortableBeaconItem.stateOf(beacon).effects().isEmpty(), "the effect was not cleared");
+            menu.applyAction(PortableBeaconMenu.ACTION_LOAD_PRESET, 1, 0);
+
+            helper.assertTrue(PortableBeaconItem.stateOf(beacon).effects().equals(before),
+                    "the preset did not restore");
+            helper.assertFalse(menu.applyAction(PortableBeaconMenu.ACTION_SAVE_PRESET, BeaconState.PRESETS, 0),
+                    "a preset past the last was accepted");
+        });
+    }
+
     /**
      * One augment per type still holds across slots, but not against the slot being replaced: a
      * Wayfarer II dropped on a Wayfarer I is an upgrade, not a duplicate.

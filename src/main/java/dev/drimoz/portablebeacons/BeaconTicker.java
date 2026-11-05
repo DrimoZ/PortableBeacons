@@ -78,7 +78,7 @@ public final class BeaconTicker {
      * so the augment pays out on the walk rather than only while it runs - as a real beacon does.
      */
     public static void rechargeFromSun(Player player) {
-        if (!BPConfig.fuelEnabled() || !player.level().isBrightOutside()
+        if (!BPConfig.fuelEnabled() || !player.level().isDay()
                 || !player.level().canSeeSky(player.blockPosition().above())) {
             return;
         }
@@ -128,16 +128,16 @@ public final class BeaconTicker {
         }
         ItemStack beacon = findActiveBeacon(player);
         if (beacon.isEmpty() || PortableBeaconItem.stateOf(beacon).starved()
-                || player.getCooldowns().isOnCooldown(beacon)) {
+                || player.getCooldowns().isOnCooldown(beacon.getItem())) {
             return;
         }
         BeaconStats stats = BPLookups.stats(beacon, player.level().registryAccess());
         if (stats == null || stats.lastStandLevel() <= 0) {
             return;
         }
-        player.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, LAST_STAND_TICKS, stats.lastStandLevel() - 1));
+        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, LAST_STAND_TICKS, stats.lastStandLevel() - 1));
         player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, LAST_STAND_TICKS, 1));
-        player.getCooldowns().addCooldown(beacon, LAST_STAND_COOLDOWN);
+        player.getCooldowns().addCooldown(beacon.getItem(), LAST_STAND_COOLDOWN);
         player.level().playSound(null, player.blockPosition(),
                 SoundEvents.BEACON_POWER_SELECT, SoundSource.PLAYERS, 0.6F, 1.4F);
     }
@@ -300,7 +300,7 @@ public final class BeaconTicker {
         for (Mob mob : carrier.level().getEntitiesOfClass(Mob.class, box, mob -> mob instanceof Enemy)) {
             mob.addEffect(new MobEffectInstance(MobEffects.GLOWING, MARK_TICKS, 0, false, false));
             if (stats.markHostiles() >= 2) {
-                mob.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, MARK_TICKS, 0, false, false));
+                mob.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, MARK_TICKS, 0, false, false));
             }
         }
     }

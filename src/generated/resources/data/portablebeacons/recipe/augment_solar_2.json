@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "minecraft:amethyst_shard"
+    },
+    "B": {
+      "item": "minecraft:amethyst_block"
+    },
+    "M": {
+      "item": "minecraft:sunflower"
+    }
+  },
+  "pattern": [
+    "BAB",
+    "AMA",
+    "BAB"
+  ],
+  "result": {
+    "components": {
+      "portablebeacons:augment": {
+        "type": "portablebeacons:solar",
+        "tier": 2
+      }
+    },
+    "count": 1,
+    "id": "portablebeacons:augment"
+  }
+}
