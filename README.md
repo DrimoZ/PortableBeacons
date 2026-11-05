@@ -94,8 +94,8 @@ dearer.
 
 ### Fuel
 
-Each effect costs fuel per second, scaled by its level and by how widely it is shared. Copper,
-iron, gold, emerald, diamond and netherite are worth increasing amounts; the beacon draws from its own
+Each effect costs fuel per second, scaled by its level and by how widely it is shared. Amethyst, copper,
+iron, gold, emerald, echo shards, diamond and netherite are worth increasing amounts; the beacon draws from its own
 fuel slot. Sharing an effect with allies costs more than keeping it to yourself, which is the
 main decision the mod asks you to make.
 
