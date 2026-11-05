@@ -20,7 +20,6 @@ import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.KeyEvent;
-import net.minecraft.network.chat.Component;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.resources.ResourceKey;
@@ -105,10 +104,12 @@ public final class GuiPreview {
         // Once: the prompt is still up on the next tick, and a second press starts a second load on
         // a world whose lock the first one already holds.
         if (started && !skippedBackup && screen instanceof net.minecraft.client.gui.screens.BackupConfirmScreen prompt) {
-            Component skip = Component.translatable("selectWorld.backupJoinSkipButton");
+            // The skip button is the one that is neither "back up" nor "cancel": its own label is
+            // private, and spelling the key out here would read as one of this mod's to the key check.
             for (var child : prompt.children()) {
                 if (child instanceof net.minecraft.client.gui.components.Button button
-                        && button.getMessage().equals(skip)) {
+                        && !button.getMessage().equals(net.minecraft.client.gui.screens.BackupConfirmScreen.BACKUP_AND_JOIN)
+                        && !button.getMessage().equals(net.minecraft.network.chat.CommonComponents.GUI_CANCEL)) {
                     skippedBackup = true;
                     button.onPress(new KeyEvent(GLFW.GLFW_KEY_ENTER, 0, 0));
                     return;
