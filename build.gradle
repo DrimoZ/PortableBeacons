@@ -3,6 +3,7 @@ plugins {
     id 'maven-publish'
     // ModDevGradle 2.x — the current NeoForge build plugin
     id 'net.neoforged.moddev' version '2.0.148'
+    id 'com.modrinth.minotaur' version '2.8.7'
 }
 
 version = "${mod_version}+${minecraft_version}"
@@ -265,5 +266,27 @@ publishing {
     }
     repositories {
         maven { url = "file://${project.projectDir}/repo" }
+    }
+}
+
+// `gradlew modrinth` uploads this branch's jar. The token comes from the environment, so it is never
+// committed; the project is the `modrinth_project` property, in gradle.properties or -P. With either
+// missing the task fails before uploading anything. The changelog is the newest section of CHANGELOG.md - the same text the
+// CurseForge page renders - so the two stores never tell different stories.
+modrinth {
+    token = providers.environmentVariable('MODRINTH_TOKEN')
+    projectId = providers.gradleProperty('modrinth_project')
+    versionNumber = version
+    versionType = 'release'
+    uploadFile = tasks.named('jar')
+    gameVersions = [minecraft_version]
+    loaders = ['neoforge']
+    changelog = providers.provider {
+        def sections = file('CHANGELOG.md').text.split(/(?m)^## /)
+        sections.length > 1 ? '## ' + sections[1].trim() : ''
+    }
+    dependencies {
+        optional.project 'curios'
+        optional.project 'jei'
     }
 }
