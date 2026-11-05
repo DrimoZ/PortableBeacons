@@ -30,6 +30,11 @@ neoForge {
             client()
             gameDirectory = project.file('run')
             systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+            // The store art is cut from a 1920x1080 capture (tools/Banners.java), but only a preview
+            // run is that size: an ordinary dev client keeps the window it is given.
+            if (System.getenv('BEACON_GUI_PREVIEW')) {
+                programArguments.addAll('--width', '1920', '--height', '1080')
+            }
         }
         /**
          * A second client, for the one thing a single client cannot show: whether the aura actually

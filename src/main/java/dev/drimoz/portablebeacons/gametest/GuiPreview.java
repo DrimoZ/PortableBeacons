@@ -119,6 +119,10 @@ public final class GuiPreview {
         if (!started && minecraft.gui.screen() instanceof TitleScreen) {
             started = true;
             minecraft.options.pauseOnLostFocus = false;
+            // Scale 4 on 1080p, which is what tools/Banners.java's crops are measured in: its pixels
+            // and the game's GUI pixels then differ by a whole factor, so nothing blurs.
+            minecraft.options.guiScale().set(4);
+            minecraft.resizeGui();
             copyWorld(minecraft);
             script();
             minecraft.createWorldOpenFlows().openWorld(WORLD, () -> {});
@@ -241,7 +245,9 @@ public final class GuiPreview {
                 "discretion", "communion", "wellspring", "wayfarer", "sentinel", "vanguard", "prism", "recluse",
                 "sprinter", "miner", "diver", "solar", "bastion", "afterglow", "hunter"};
         for (int i = 0; i < augments.length; i++) {
-            player.getInventory().setItem(9 + i, augment(augments[i], 1 + i % 3));
+            // Eighteen fit above the beacons' row, which tools/Banners.java cuts from; the rest take
+            // the free hotbar slots instead of being overwritten by it.
+            player.getInventory().setItem(i < 18 ? 9 + i : 4 + (i - 18), augment(augments[i], 1 + i % 3));
         }
         var beacons = BPItems.beacons();
         for (int i = 0; i < beacons.size(); i++) {
