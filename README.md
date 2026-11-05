@@ -243,6 +243,10 @@ carried in the inventory — the binding ships with the mod, so nothing needs co
 beacon wins if you somehow carry two: one you deliberately equipped should beat one that merely
 happens to be in your bag. Without Curios, none of that code is ever touched.
 
+**FTB Teams** is optional too. With it installed, "your team" means your FTB party as well as your
+scoreboard team, so team sharing works in the packs that use it. Not on 26.2 yet: FTB Teams has no
+26.2 build to compile against.
+
 ---
 
 ## Permissions

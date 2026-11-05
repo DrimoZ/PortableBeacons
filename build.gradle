@@ -122,6 +122,11 @@ repositories {
         name = 'TheIllusiveC4 (Curios)'
         url = 'https://maven.theillusivec4.top'
     }
+    maven {
+        name = 'FTB (FTB Teams)'
+        url = 'https://maven.ftb.dev/releases'
+        content { includeGroup 'dev.ftb.mods' }
+    }
 }
 
 configurations {
@@ -142,6 +147,10 @@ dependencies {
     // so the mod runs identically without them - Curios behind a load check, JEI behind a class
     // only JEI itself ever loads.
     compileOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}"
+    // The API only, and not transitively: TeamCompat asks one question of it, and pulling in FTB
+    // Library and Architectury for that would put a dependency chain on the classpath to compile a
+    // single call. Not a devMod either - without FTB Library beside it, it would not load.
+    compileOnly("dev.ftb.mods:ftb-teams-neoforge:${ftb_teams_version}") { transitive = false }
     compileOnly "mezz.jei:jei-${jei_minecraft_version}-neoforge:${jei_version}"
 
     // Pure-logic classes under core/ are plain Java and unit-testable.

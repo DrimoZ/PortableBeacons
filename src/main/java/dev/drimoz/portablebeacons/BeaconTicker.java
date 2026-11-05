@@ -1,6 +1,7 @@
 package dev.drimoz.portablebeacons;
 
 import dev.drimoz.portablebeacons.compat.CuriosCompat;
+import dev.drimoz.portablebeacons.compat.TeamCompat;
 import dev.drimoz.portablebeacons.core.AuraMode;
 import dev.drimoz.portablebeacons.core.Durations;
 import dev.drimoz.portablebeacons.core.BeaconEffectDef;
@@ -463,9 +464,9 @@ public final class BeaconTicker {
 
     private static boolean reaches(Player carrier, Player other, AuraMode mode) {
         if (mode == AuraMode.TEAM) {
-            return other.isAlliedTo(carrier);
+            return TeamCompat.sameTeam(carrier, other);
         }
-        return BPConfig.INSTANCE.auraAffectsNonTeamPlayers.get() || other.isAlliedTo(carrier);
+        return BPConfig.INSTANCE.auraAffectsNonTeamPlayers.get() || TeamCompat.sameTeam(carrier, other);
     }
 
     private BeaconTicker() {}
