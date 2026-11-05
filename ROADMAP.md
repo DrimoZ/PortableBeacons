@@ -66,7 +66,7 @@ whole list the day they arrive.
 | 2 | **Check team sharing against FTB Teams / Open Parties and Claims** | Team mode asks `isAlliedTo`, i.e. vanilla scoreboard teams. Neither mod documents a bridge to them, so team sharing may silently do nothing in the packs this mod grows through. Next step: two players in one FTB team, in a pack, before writing any binding | Small to check, medium to bind |
 | 3 | ~~**An optional built-in "Extended effects" datapack**~~ - done on all three versions | Luck, Hero of the Village, Invisibility - off by default so the default pool stays vanilla. Absorption and Health Boost left out: re-applied every pass, they misbehave | Small: data plus a pack finder |
 | 4 | ~~**A fuel and runtime HUD while the beacon runs**~~ - done on all three versions | A fuel-burning item with no gauge on screen is checked by opening it, which is what the dry warning papers over | Medium: a GUI layer, a toggle |
-| 5 | **Publish on Modrinth too** | The direct competitors (Inventory Beacon, Beacon Overhaul Continued) live there; one Gradle task can upload to both, so it is not two pages kept half-current | Small once `curseforge-gradle` is wired |
+| 5 | **Publish on Modrinth too** - upload task wired on 26.2 (`gradlew modrinth`); waits on the project being created and a token | The direct competitors (Inventory Beacon, Beacon Overhaul Continued) live there; one Gradle task can upload to both, so it is not two pages kept half-current | Small once `curseforge-gradle` is wired |
 | 6 | ~~**Specialised example augments** (Sprinter, Miner, Diver)~~ - done on all three versions | Shows off `add_effect_amplifier` / `mul_effect_cost`, which nothing shipped uses | Small: data, glyphs exist |
 | 7 | ~~**Effect presets**~~ - done on 26.2 | Two or three saved loadouts, switched from the screen | Medium: state, codec, GUI |
 | 8 | ~~**A hostile aura mode**~~ - done on 26.2, as the `mark_hostiles` operation rather than a mode | Glowing or Slowness on monsters in range, behind a costly augment - the one idea no other beacon mod does well | Medium: new `AuraMode`, balance |
@@ -89,12 +89,15 @@ saved beacon and into any datapack written against it. That reasoning is right i
 wrong here twice over: the beta had been public a day, and 1.0.0 had not shipped at all. If the ids
 ever have to move again, it belongs to a 2.0 with a migration, not to a patch.
 
-**CurseForge only.** One page kept current beats two kept half-current, and the audience this mod is
-aimed at is already there.
+**CurseForge first, Modrinth from the same jar.** One page kept current beats two kept half-current,
+which is why Modrinth waited. What changed is that the upload no longer means a second page to keep
+by hand: `gradlew modrinth` sends the jar with the newest CHANGELOG section as its notes, so both
+stores say the same thing from the same file.
 
 ## Publishing mechanics
 
-Manual uploads for now. Once CurseForge has accepted one by hand, `curseforge-gradle` can publish
-from a local Gradle task — no CI needed, which is consistent with this project not having any.
+Manual uploads to CurseForge for now; Modrinth through `gradlew modrinth`, with `MODRINTH_TOKEN`
+in the environment and `modrinth_project` set. Once CurseForge has accepted one by hand,
+`curseforge-gradle` can publish from a local Gradle task the same way — no CI needed, which is consistent with this project not having any.
 
 Keep the changelog current as things land: the store page renders its release notes straight from it.
