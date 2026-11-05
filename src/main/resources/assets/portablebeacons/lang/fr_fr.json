@@ -88,6 +88,7 @@
   "portablebeacons.msg.needs_beacon": "Il faut être près d’un beacon allumé pour modifier ceci",
   "portablebeacons.msg.switched_on": "Balise allumée",
   "portablebeacons.msg.switched_off": "Balise éteinte",
+  "portablebeacons.msg.inspect_hold": "Tenez une balise portative en main principale",
   "portablebeacons.pack.extended_effects": "Balises portatives : effets étendus",
   "portablebeacons.pack.extended_effects.description": "Chance, Héros du village et Invisibilité pour les balises portatives",
   "portablebeacons.gui.runtime": "Autonomie : %s",

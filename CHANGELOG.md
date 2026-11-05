@@ -6,6 +6,8 @@ Versions follow `{mod version}+{minecraft version}`.
 ## Unreleased
 
 ### Added
+- **`/portablebeacons inspect`** for operators: the held beacon's stats after augments and server
+  rules, factor by factor, for whoever is writing a datapack.
 - **A key to switch the beacon on and off** without opening it - the running one goes off, or the
   one the open key would pick comes on. Unbound by default, under *Portable Beacon* in the controls.
 - **An optional Extended effects datapack**, shipped inside the mod and off until a world enables

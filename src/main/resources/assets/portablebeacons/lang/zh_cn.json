@@ -88,6 +88,7 @@
   "portablebeacons.msg.needs_beacon": "必须靠近已激活的信标才能更改",
   "portablebeacons.msg.switched_on": "信标已开启",
   "portablebeacons.msg.switched_off": "信标已关闭",
+  "portablebeacons.msg.inspect_hold": "请在主手持有便携信标",
   "portablebeacons.pack.extended_effects": "便携信标：扩展效果",
   "portablebeacons.pack.extended_effects.description": "为便携信标添加幸运、村庄英雄和隐身",
   "portablebeacons.gui.runtime": "可用时长：%s",

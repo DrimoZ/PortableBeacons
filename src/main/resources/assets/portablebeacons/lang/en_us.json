@@ -88,6 +88,7 @@
   "portablebeacons.msg.needs_beacon": "You must be near a lit beacon to change this",
   "portablebeacons.msg.switched_on": "Beacon switched on",
   "portablebeacons.msg.switched_off": "Beacon switched off",
+  "portablebeacons.msg.inspect_hold": "Hold a portable beacon in your main hand",
   "portablebeacons.pack.extended_effects": "Portable Beacons: extended effects",
   "portablebeacons.pack.extended_effects.description": "Luck, Hero of the Village and Invisibility for portable beacons",
   "portablebeacons.gui.runtime": "Runtime: %s",

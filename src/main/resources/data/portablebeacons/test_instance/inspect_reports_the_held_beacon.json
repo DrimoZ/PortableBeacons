@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:function",
+  "function": "portablebeacons:inspect_reports_the_held_beacon",
+  "environment": "minecraft:default",
+  "structure": "portablebeacons:platform",
+  "max_ticks": 200
+}

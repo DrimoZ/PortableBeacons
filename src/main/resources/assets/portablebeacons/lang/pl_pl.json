@@ -88,6 +88,7 @@
   "portablebeacons.msg.needs_beacon": "Musisz być blisko działającego sygnalizatora, aby to zmienić",
   "portablebeacons.msg.switched_on": "Sygnalizator włączony",
   "portablebeacons.msg.switched_off": "Sygnalizator wyłączony",
+  "portablebeacons.msg.inspect_hold": "Trzymaj przenośny sygnalizator w głównej ręce",
   "portablebeacons.pack.extended_effects": "Przenośne sygnalizatory: dodatkowe efekty",
   "portablebeacons.pack.extended_effects.description": "Szczęście, Bohater wioski i Niewidzialność dla przenośnych sygnalizatorów",
   "portablebeacons.gui.runtime": "Czas pracy: %s",

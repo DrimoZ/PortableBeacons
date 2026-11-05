@@ -88,6 +88,7 @@
   "portablebeacons.msg.needs_beacon": "변경하려면 작동 중인 신호기 근처에 있어야 합니다",
   "portablebeacons.msg.switched_on": "신호기를 켰습니다",
   "portablebeacons.msg.switched_off": "신호기를 껐습니다",
+  "portablebeacons.msg.inspect_hold": "주 손에 휴대용 신호기를 드세요",
   "portablebeacons.pack.extended_effects": "휴대용 신호기: 확장 효과",
   "portablebeacons.pack.extended_effects.description": "휴대용 신호기에 행운, 마을의 영웅, 투명화 추가",
   "portablebeacons.gui.runtime": "가동 시간: %s",

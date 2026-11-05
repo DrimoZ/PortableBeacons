@@ -201,6 +201,10 @@ built this way:
 }
 ```
 
+`/portablebeacons inspect` (operators) prints the held beacon's stats after augments and server
+rules - every factor the screen folds into time and reach - which is where to start when an
+augment seems to do nothing.
+
 **[Full datapack guide →](https://github.com/DrimoZ/PortableBeacons/wiki/Datapack-Guide)** — every field
 of all four registries, with worked examples for adding an effect, an augment and a themed tier.
 
