@@ -6,6 +6,8 @@ Versions follow `{mod version}+{minecraft version}`.
 ## Unreleased
 
 ### Added
+- **Team sharing counts FTB Teams parties** (1.21.1 and 26.1). FTB Teams never fills scoreboard
+  teams, so in packs that use it a Team-mode effect reached nobody. Optional, like Curios.
 - **Three effect presets**, under the figures in the info tab: right-click a number to save the
   current effects, click it to load them. Loading is a reconfiguration, so it needs a nearby beacon
   where `require_beacon_to_configure` says so; a preset the beacon can no longer hold in full keeps
