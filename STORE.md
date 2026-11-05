@@ -102,8 +102,8 @@ Seventeen augments, at most four slots: the question is never which ones you wan
 
 ![Fuel](https://media.forgecdn.net/attachments/description/1650659/description_2a955d4f-a1b4-4c80-8979-e7e8b39d57e2.png)
 
-Every effect burns fuel each second, more for higher levels and more again for sharing it. Copper,
-iron, gold, emerald, diamond and netherite each last longer than the last.
+Every effect burns fuel each second, more for higher levels and more again for sharing it. Amethyst, copper,
+iron, gold, emerald, echo shards, diamond and netherite each last longer than the last.
 
 - **The screen shows time, not units**: how long the beacon lasts at what it is drawing now - and
   so does a corner of the HUD while it runs, without opening anything.

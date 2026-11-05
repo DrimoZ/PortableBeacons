@@ -6,6 +6,8 @@ Versions follow `{mod version}+{minecraft version}`.
 ## Unreleased
 
 ### Added
+- **Two more fuels.** Amethyst shards, renewable and just under copper (120 units), for an early
+  beacon; echo shards (2400), between emerald and diamond, for whoever has been to an Ancient City.
 - **Portable Beacon V**, the endgame rung: four effects up to level III, five augment slots, 18
   blocks of reach and double the buffer of IV - still under a placed beacon's 20. Crafted from a
   Beacon IV with three Nether Stars and two blocks of netherite; it keeps what the IV carried.
