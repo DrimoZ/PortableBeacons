@@ -20,6 +20,7 @@ import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.KeyEvent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.resources.ResourceKey;
@@ -65,7 +66,9 @@ public final class GuiPreview {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final boolean ENABLED = "1".equals(System.getenv("BEACON_GUI_PREVIEW"));
-    private static final String SOURCE_WORLD = "26_1";
+    // The world of this branch's own version: one from an older drop opens on a "back it up?" prompt
+    // that waits for a click, which is how the 26.2 preview stopped producing anything.
+    private static final String SOURCE_WORLD = "26_2";
     private static final String WORLD = "GuiPreview";
 
     private record Step(int delay, Consumer<Minecraft> action) {}
@@ -74,6 +77,8 @@ public final class GuiPreview {
     private static boolean started;
     private static int wait;
     private static String pendingShot;
+    private static String lastScreen;
+    private static boolean skippedBackup;
 
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
@@ -81,6 +86,35 @@ public final class GuiPreview {
             return;
         }
         Minecraft minecraft = Minecraft.getInstance();
+        // A dependency's loading warning - Curios' deprecated logoFile on 26.2 - waits for a click
+        // nobody is there to give, and the preview sat on it until killed. Warnings only reach here:
+        // a loading error would have stopped the game before any tick.
+        if (!started && minecraft.gui.screen() instanceof net.neoforged.neoforge.client.gui.LoadingErrorScreen) {
+            minecraft.gui.setScreen(new TitleScreen());
+            return;
+        }
+        // Every screen it passes through, by class: a preview that stalls on a prompt says which one.
+        Object screen = minecraft.gui.screen();
+        String name = screen == null ? "none" : screen.getClass().getName();
+        if (!name.equals(lastScreen)) {
+            lastScreen = name;
+            LOGGER.info("GUI preview screen: {}", name);
+        }
+        // Opening the copy asks whether to back it up first, because the mod's version moved since
+        // the source world was saved. The copy is thrown away on the next run, so: no backup.
+        // Once: the prompt is still up on the next tick, and a second press starts a second load on
+        // a world whose lock the first one already holds.
+        if (started && !skippedBackup && screen instanceof net.minecraft.client.gui.screens.BackupConfirmScreen prompt) {
+            Component skip = Component.translatable("selectWorld.backupJoinSkipButton");
+            for (var child : prompt.children()) {
+                if (child instanceof net.minecraft.client.gui.components.Button button
+                        && button.getMessage().equals(skip)) {
+                    skippedBackup = true;
+                    button.onPress(new KeyEvent(GLFW.GLFW_KEY_ENTER, 0, 0));
+                    return;
+                }
+            }
+        }
         if (!started && minecraft.gui.screen() instanceof TitleScreen) {
             started = true;
             minecraft.options.pauseOnLostFocus = false;
