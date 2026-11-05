@@ -68,7 +68,7 @@ whole list the day they arrive.
 | 4 | ~~**A fuel and runtime HUD while the beacon runs**~~ - done on all three versions | A fuel-burning item with no gauge on screen is checked by opening it, which is what the dry warning papers over | Medium: a GUI layer, a toggle |
 | 5 | **Publish on Modrinth too** | The direct competitors (Inventory Beacon, Beacon Overhaul Continued) live there; one Gradle task can upload to both, so it is not two pages kept half-current | Small once `curseforge-gradle` is wired |
 | 6 | ~~**Specialised example augments** (Sprinter, Miner, Diver)~~ - done on all three versions | Shows off `add_effect_amplifier` / `mul_effect_cost`, which nothing shipped uses | Small: data, glyphs exist |
-| 7 | **Effect presets** | Two or three saved loadouts, switched from the screen | Medium: state, codec, GUI |
+| 7 | ~~**Effect presets**~~ - done on 26.2 | Two or three saved loadouts, switched from the screen | Medium: state, codec, GUI |
 | 8 | ~~**A hostile aura mode**~~ - done on 26.2, as the `mark_hostiles` operation rather than a mode | Glowing or Slowness on monsters in range, behind a costly augment - the one idea no other beacon mod does well | Medium: new `AuraMode`, balance |
 | 9 | ~~**New augment operations**: solar recharge, last-stand burst, lingering effects~~ - done on 26.2 | Each opens a family of datapack augments rather than one item | Medium each |
 | 10 | ~~**A Nether Star tier V**~~ - done on 26.2 | An endgame target; must stay under the placed beacon's reach | Small in data, needs a balance pass |

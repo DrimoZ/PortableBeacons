@@ -137,7 +137,8 @@ One row per effect, with everything set in place: click the icon to change the e
 raise it, the figure to choose who it reaches, the switch to turn it off - right-click steps back.
 A bar under each name shows its share of the drain. The fuel gauge and slot sit beside the list,
 the master switch and a status light in the title band; the beacon's figures and its augments are
-side tabs. Effects are picked from a searchable grid filtered to what the beacon accepts.
+side tabs. Effects are picked from a searchable grid filtered to what the beacon accepts. Three
+presets under the figures keep whole loadouts: right-click a number to save, click it to load.
 
 ---
 
