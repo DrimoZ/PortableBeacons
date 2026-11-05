@@ -68,6 +68,8 @@ public final class InspectCommand {
             line(source, "per effect: levels %s, cost %s",
                     stats.effectAmplifierBonus(), stats.effectCostMultipliers());
         }
+        line(source, "solar %.2f/s, linger %d s, last stand %d", stats.solarChargePerSecond(),
+                stats.lingerSeconds(), stats.lastStandLevel());
         line(source, "drawing %.3f/s standing, runtime %s", perSecond,
                 seconds < 0 ? "idle" : Durations.format(seconds));
         return 1;

@@ -29,6 +29,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.items.IItemHandler;
 
@@ -65,7 +66,77 @@ public final class BeaconTicker {
             return;
         }
         rechargeFromBeacons(player);
+        rechargeFromSun(player);
         tickPlayer(player);
+    }
+
+    /**
+     * Solar Charge: carried beacons top themselves up under open daylight sky, switched on or not,
+     * so the augment pays out on the walk rather than only while it runs - as a real beacon does.
+     */
+    public static void rechargeFromSun(Player player) {
+        if (!BPConfig.fuelEnabled() || !player.level().isBrightOutside()
+                || !player.level().canSeeSky(player.blockPosition().above())) {
+            return;
+        }
+        RegistryAccess access = player.level().registryAccess();
+        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+            rechargeFromSun(player.getInventory().getItem(slot), access);
+        }
+        rechargeFromSun(CuriosCompat.findBeacon(player), access);
+    }
+
+    private static void rechargeFromSun(ItemStack stack, RegistryAccess access) {
+        if (!(stack.getItem() instanceof PortableBeaconItem)) {
+            return;
+        }
+        BeaconStats stats = BPLookups.stats(stack, access);
+        if (stats == null || stats.solarChargePerSecond() <= 0.0) {
+            return;
+        }
+        BeaconState state = PortableBeaconItem.stateOf(stack);
+        int fuel = FuelBudget.recharge(state.fuel(), stats.fuelCapacity(),
+                (int) (stats.solarChargePerSecond() * SECONDS_PER_INTERVAL));
+        if (fuel != state.fuel()) {
+            PortableBeaconItem.setState(stack, state.withFuel(fuel).withCapacity(stats.fuelCapacity()));
+        }
+    }
+
+    /** Last Stand: how long its burst lasts, and how long the beacon then cools down. */
+    public static final int LAST_STAND_TICKS = 100;
+    public static final int LAST_STAND_COOLDOWN = 1200;
+
+    /**
+     * Read after the damage lands, so it answers the very hit that took the carrier low rather than
+     * the next one. Off while starved: a beacon that is not paying for its effects grants nothing.
+     */
+    @SubscribeEvent
+    public static void onDamaged(LivingDamageEvent.Post event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            lastStand(player);
+        }
+    }
+
+    /** Split out of the event, as {@link #tickPlayer} is, so a game test can drive it directly. */
+    public static void lastStand(ServerPlayer player) {
+        if (player.isDeadOrDying() || player.getHealth() > player.getMaxHealth() / 3.0F
+                || BPConfig.disabledIn(player.level().dimension())) {
+            return;
+        }
+        ItemStack beacon = findActiveBeacon(player);
+        if (beacon.isEmpty() || PortableBeaconItem.stateOf(beacon).starved()
+                || player.getCooldowns().isOnCooldown(beacon)) {
+            return;
+        }
+        BeaconStats stats = BPLookups.stats(beacon, player.level().registryAccess());
+        if (stats == null || stats.lastStandLevel() <= 0) {
+            return;
+        }
+        player.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, LAST_STAND_TICKS, stats.lastStandLevel() - 1));
+        player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, LAST_STAND_TICKS, 1));
+        player.getCooldowns().addCooldown(beacon, LAST_STAND_COOLDOWN);
+        player.level().playSound(null, player.blockPosition(),
+                SoundEvents.BEACON_POWER_SELECT, SoundSource.PLAYERS, 0.6F, 1.4F);
     }
 
     /**
@@ -339,7 +410,8 @@ public final class BeaconTicker {
         for (LivingEntity target : targets(carrier, slot.aura(), stats.range())) {
             // Not ambient on purpose: that flag is what lets isCoveredByRealBeacon tell a genuine
             // beacon apart from our own effect a tick later.
-            target.addEffect(new MobEffectInstance(def.effect(), EFFECT_DURATION, slot.amplifier(),
+            target.addEffect(new MobEffectInstance(def.effect(), EFFECT_DURATION + stats.lingerSeconds() * 20,
+                    slot.amplifier(),
                     false, !stats.hideParticles(), !stats.hideIcon()));
         }
     }

@@ -47,6 +47,9 @@ public final class BeaconResolver {
         int concealment = 0;
         Map<ResourceKey<BeaconEffectDef>, Integer> effectBonus = new HashMap<>();
         Map<ResourceKey<BeaconEffectDef>, Double> effectCost = new HashMap<>();
+        double solarCharge = 0.0;
+        int lingerSeconds = 0;
+        int lastStand = 0;
 
         for (AugmentInstance instance : dedupeByType(augments)) {
             Optional<AugmentDef> maybeDef = augmentLookup.get(instance.type());
@@ -77,6 +80,10 @@ public final class BeaconResolver {
                             effectBonus.merge(key, (int) value, Integer::sum));
                     case MUL_EFFECT_COST -> op.effect().ifPresent(key ->
                             effectCost.merge(key, Math.max(0.0, value), (a, b) -> a * b));
+                    case SOLAR_CHARGE -> solarCharge += value;
+                    case LINGER -> lingerSeconds += (int) value;
+                    // A level, like HIDE_EFFECTS: the highest wins.
+                    case LAST_STAND -> lastStand = Math.max(lastStand, (int) value);
                 }
             }
         }
@@ -104,7 +111,10 @@ public final class BeaconResolver {
                 concealment >= 1,
                 concealment >= 2,
                 effectBonus,
-                effectCost);
+                effectCost,
+                Math.max(0.0, solarCharge),
+                Math.max(0, lingerSeconds),
+                Math.clamp(lastStand, 0, 4));
     }
 
     /**
