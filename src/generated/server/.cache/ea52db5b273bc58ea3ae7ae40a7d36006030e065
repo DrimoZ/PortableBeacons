@@ -1,4 +1,4 @@
-// 26.2	2026-11-05T14:21:53.7481744	Portable Beacons Recipes
+// 26.2	2026-11-05T14:29:16.2609309	Portable Beacons Recipes
 41bdc35191351345b8a2022b27656dd03dba3895 data/portablebeacons/advancement/recipes/misc/augment_afterglow.json
 b4512ca20672fab8b2dc918b1290d1b8c2d0836d data/portablebeacons/advancement/recipes/misc/augment_afterglow_2.json
 b4cc5da5ef2a1796daa123151b6ed5fd55852d85 data/portablebeacons/advancement/recipes/misc/augment_afterglow_3.json
@@ -19,6 +19,8 @@ d5e18848cb7af6b56ba8414e52daa5c9838de075 data/portablebeacons/advancement/recipe
 750e6e669fe152be055254f88cb433f572c69113 data/portablebeacons/advancement/recipes/misc/augment_efficiency_2.json
 585c34800a3a43f792b5ebceee1e2ea6e6dd4325 data/portablebeacons/advancement/recipes/misc/augment_efficiency_3.json
 6a44ae07e61d1a58484374ed68d33b0bfac19d39 data/portablebeacons/advancement/recipes/misc/augment_focus.json
+05a6a0d9a83288696d87b9d893db83e01bec58e7 data/portablebeacons/advancement/recipes/misc/augment_hunter.json
+708847ddc653a0f7f6b3968b14ff126e91e49cbb data/portablebeacons/advancement/recipes/misc/augment_hunter_2.json
 f56086144e1f0c109be3f953ef08bfcf23e391dd data/portablebeacons/advancement/recipes/misc/augment_miner.json
 04e98b52afdf7f4e2b917a75a4d4fb4060038820 data/portablebeacons/advancement/recipes/misc/augment_prism.json
 7bdf01bda2223f30b60deeb9daad9f15d337fb2b data/portablebeacons/advancement/recipes/misc/augment_range.json
@@ -62,6 +64,8 @@ d6bccf89f8dbcb522b698afa5d33d462094b3378 data/portablebeacons/recipe/augment_eff
 af1959ebc3b9010e78c15069956370c2d54efc27 data/portablebeacons/recipe/augment_efficiency_2.json
 96f5a64c20cc5340c23924fd38ab903e06f47352 data/portablebeacons/recipe/augment_efficiency_3.json
 259deb4fc40b82a339641918ac1502c5705fd9c4 data/portablebeacons/recipe/augment_focus.json
+7faa0888e8123734eb5990477dedf08af49ffc03 data/portablebeacons/recipe/augment_hunter.json
+46749c56446abe416b66cdcc7b490f9de0aebb74 data/portablebeacons/recipe/augment_hunter_2.json
 de64119a5145c787651c3d039661c6f76ba5c01c data/portablebeacons/recipe/augment_miner.json
 99570a478b850e524288fd83e1997ed52029f2c0 data/portablebeacons/recipe/augment_prism.json
 ac9c50bc508fe74006fd97610398977e7f2ec60e data/portablebeacons/recipe/augment_range.json

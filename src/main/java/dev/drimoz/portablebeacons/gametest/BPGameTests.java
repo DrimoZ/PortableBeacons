@@ -434,6 +434,23 @@ public final class BPGameTests {
         });
     }
 
+    /** Hunter marks the monster in reach and leaves the animal beside it alone. */
+    public static void hunterMarksMonstersButNotAnimals(GameTestHelper helper) {
+        run(helper, cleanup -> {
+            ServerPlayer carrier = spawnPlayer(helper, cleanup);
+            ItemStack beacon = giveBeacon(carrier, AuraMode.SELF);
+            install(beacon, ResourceKey.create(BPRegistryKeys.AUGMENT, BPRegistryKeys.id("hunter")), 2);
+            var zombie = helper.spawnWithNoFreeWill(EntityTypes.ZOMBIE, CENTRE);
+            var pig = helper.spawnWithNoFreeWill(EntityTypes.PIG, CENTRE);
+
+            BeaconTicker.tickPlayer(carrier);
+
+            helper.assertTrue(zombie.hasEffect(MobEffects.GLOWING), "the zombie in reach is not marked");
+            helper.assertTrue(zombie.hasEffect(MobEffects.SLOWNESS), "Hunter II did not slow the zombie");
+            helper.assertFalse(pig.hasEffect(MobEffects.GLOWING), "an animal was marked as a monster");
+        });
+    }
+
     /** The inspect command answers for a held beacon and refuses an empty hand, rather than throwing. */
     public static void inspectReportsTheHeldBeacon(GameTestHelper helper) {
         run(helper, cleanup -> {

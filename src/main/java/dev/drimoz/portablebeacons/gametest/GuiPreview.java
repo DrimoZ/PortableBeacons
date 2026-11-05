@@ -194,7 +194,7 @@ public final class GuiPreview {
         // casing pips can be checked against the tooltip.
         String[] augments = {"range", "focus", "amplification", "efficiency", "capacity", "attunement",
                 "discretion", "communion", "wellspring", "wayfarer", "sentinel", "vanguard", "prism", "recluse",
-                "sprinter", "miner", "diver", "solar", "bastion", "afterglow"};
+                "sprinter", "miner", "diver", "solar", "bastion", "afterglow", "hunter"};
         for (int i = 0; i < augments.length; i++) {
             player.getInventory().setItem(9 + i, augment(augments[i], 1 + i % 3));
         }

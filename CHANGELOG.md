@@ -6,6 +6,8 @@ Versions follow `{mod version}+{minecraft version}`.
 ## Unreleased
 
 ### Added
+- **Hunter, and the `mark_hostiles` operation**: monsters in the aura's reach glow, and at level 2
+  are slowed. Only while the beacon runs and pays; fuel ×1.3 / ×1.6.
 - **Three new augment operations, and an augment for each.** `solar_charge` (fuel per second under
   open daylight sky, carried or running), `linger` (seconds added to every effect) and `last_stand`
   (below a third of health, Resistance at its level and Regeneration for 5 s, then a minute's
