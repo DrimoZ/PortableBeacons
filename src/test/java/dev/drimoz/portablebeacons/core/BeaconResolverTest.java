@@ -48,6 +48,31 @@ class BeaconResolverTest {
             COMMUNION, COMMUNION_DEF,
             WELLSPRING, WELLSPRING_DEF));
 
+    /**
+     * The three income-and-survival operations resolve to their own stats, and a plain beacon has
+     * none of them - a default of anything else would hand every beacon a free Last Stand.
+     */
+    @Test
+    void solarLingerAndLastStandResolveAndDefaultToNothing() {
+        ResourceKey<AugmentDef> kit = augmentKey("kit");
+        AugmentDef kitDef = new AugmentDef(2, 0, List.of(
+                new AugmentDef.Operation(AugmentDef.Type.SOLAR_CHARGE, List.of(0.5, 1.0)),
+                new AugmentDef.Operation(AugmentDef.Type.LINGER, List.of(10.0, 20.0)),
+                new AugmentDef.Operation(AugmentDef.Type.LAST_STAND, List.of(1.0, 9.0))));
+
+        BeaconStats plain = BeaconResolver.resolve(TIER_4, List.of(), AUGMENTS);
+        BeaconStats fitted = BeaconResolver.resolve(TIER_4, List.of(new AugmentInstance(kit, 2)),
+                lookup(Map.of(kit, kitDef)));
+
+        assertEquals(0.0, plain.solarChargePerSecond());
+        assertEquals(0, plain.lingerSeconds());
+        assertEquals(0, plain.lastStandLevel());
+        assertEquals(1.0, fitted.solarChargePerSecond());
+        assertEquals(20, fitted.lingerSeconds());
+        // Resistance V is invulnerability, which the effect table already refuses; so does this.
+        assertEquals(4, fitted.lastStandLevel());
+    }
+
     /** The ceiling is level X now, not IV: a datapack raising it is not clamped back by the resolver. */
     @Test
     void theLevelCeilingIsLevelTen() {

@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "B": "minecraft:amethyst_block",
+    "E": "minecraft:ender_eye",
+    "M": "minecraft:glow_ink_sac"
+  },
+  "pattern": [
+    "BEB",
+    "EME",
+    "BEB"
+  ],
+  "result": {
+    "components": {
+      "portablebeacons:augment": {
+        "type": "portablebeacons:afterglow",
+        "tier": 3
+      }
+    },
+    "id": "portablebeacons:augment"
+  }
+}

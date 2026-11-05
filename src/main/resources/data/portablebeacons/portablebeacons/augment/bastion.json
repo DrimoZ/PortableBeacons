@@ -1,0 +1,9 @@
+{
+  "max_tier": 2,
+  "color": 12632272,
+  "glyph": "shield",
+  "operations": [
+    { "type": "last_stand", "values": [1.0, 2.0] },
+    { "type": "mul_fuel", "values": [1.15, 1.25] }
+  ]
+}

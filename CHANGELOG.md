@@ -6,6 +6,10 @@ Versions follow `{mod version}+{minecraft version}`.
 ## Unreleased
 
 ### Added
+- **Three new augment operations, and an augment for each.** `solar_charge` (fuel per second under
+  open daylight sky, carried or running), `linger` (seconds added to every effect) and `last_stand`
+  (below a third of health, Resistance at its level and Regeneration for 5 s, then a minute's
+  cooldown shown on the item). Solar, Bastion and Afterglow ship with them.
 - **Two more fuels.** Amethyst shards, renewable and just under copper (120 units), for an early
   beacon; echo shards (2400), between emerald and diamond, for whoever has been to an Ancient City.
 - **Portable Beacon V**, the endgame rung: four effects up to level III, five augment slots, 18

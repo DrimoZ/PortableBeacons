@@ -1,0 +1,8 @@
+{
+  "max_tier": 3,
+  "color": 11832575,
+  "glyph": "heart",
+  "operations": [
+    { "type": "linger", "values": [10.0, 20.0, 40.0] }
+  ]
+}

@@ -125,7 +125,21 @@ public record AugmentDef(int maxTier, int color, List<Operation> operations, Opt
          */
         ADD_EFFECT_AMPLIFIER("add_effect_amplifier"),
         /** Multiplies one effect's cost, named by {@code effect}: a discount with a subject. */
-        MUL_EFFECT_COST("mul_effect_cost");
+        MUL_EFFECT_COST("mul_effect_cost"),
+        /**
+         * Fuel units per second while the carrier stands under open sky in daylight - carried, not
+         * only running, the way a real beacon recharges. The first income an augment can give rather
+         * than a discount.
+         */
+        SOLAR_CHARGE("solar_charge"),
+        /** Seconds added to every effect the beacon applies, so they outlast leaving its reach. */
+        LINGER("linger"),
+        /**
+         * Below a third of their health the carrier gets Resistance at this level and Regeneration
+         * for five seconds, then the beacon cools down for a minute - shown on the item, as an
+         * ender pearl shows its own.
+         */
+        LAST_STAND("last_stand");
 
         public static final Codec<Type> CODEC = StringRepresentable.fromEnum(Type::values);
 

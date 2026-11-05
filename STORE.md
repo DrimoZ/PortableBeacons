@@ -16,7 +16,7 @@ with the URL CurseForge gives it.
 
 > One line, 256 characters at most, shown under the name in every search result.
 
-A beacon you carry. Pick its effects, choose who they reach, and pay for them in fuel. Five tiers, three themed beacons, seventeen augments, and everything defined in datapacks.
+A beacon you carry. Pick its effects, choose who they reach, and pay for them in fuel. Five tiers, three themed beacons, twenty augments, and everything defined in datapacks.
 
 ## Categories
 
@@ -98,7 +98,11 @@ Seven give something up, and those are where the decisions are:
 Three are specialists: **Sprinter** and **Miner** take Speed or Haste a level higher for less, and
 **Diver** halves the cost of the aquatic effects.
 
-Seventeen augments, at most four slots: the question is never which ones you want, but which four.
+And three do something no other augment does: **Solar** recharges in daylight, **Bastion** answers
+a hit that leaves you low with a burst of Resistance, and **Afterglow** makes effects outlast the
+aura.
+
+Twenty augments, at most five slots: the question is never which ones you want, but which five.
 
 ![Fuel](https://media.forgecdn.net/attachments/description/1650659/description_2a955d4f-a1b4-4c80-8979-e7e8b39d57e2.png)
 
