@@ -99,7 +99,7 @@ Three are specialists: **Sprinter** and **Miner** take Speed or Haste a level hi
 **Diver** halves the cost of the aquatic effects.
 
 And four do something no other augment does: **Solar** recharges in daylight, **Bastion** answers
-a hit that leaves you low with a burst of Resistance, and **Afterglow** makes effects outlast the
+a hit that leaves you low with a burst of Resistance, **Afterglow** makes effects outlast the
 aura, and **Hunter** makes the monsters around you glow.
 
 Twenty-one augments, at most five slots: the question is never which ones you want, but which five.
